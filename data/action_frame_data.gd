@@ -131,7 +131,21 @@ const SPECS: Dictionary = {
 		"logic": {"startup": 0, "active": 0, "recovery": 0},
 		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
 		"visual": {"fps": 30, "frames": ["block.png", "knife-guard.png"]},
-		"note": "站格擋循環姿態；不可被普通攻擊造成硬直"
+		"note": "站格擋循環姿態（防中按重可反擊）；不可被普通攻擊造成硬直"
+	},
+	"CrouchBlock": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 30, "frames": ["crouch.png"]},
+		"note": "蹲防（下+防）：僅受 35% 傷害、擊退最小；防中按重可反擊；不可造成硬直"
+	},
+	"AirBlock": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 30, "frames": ["jump-down.png"]},
+		"note": "空防（空中按住防）：受 40% 傷害且不浮空；隨下落落地解除"
 	},
 	"HurtStand": {
 		"loop": false,
@@ -201,13 +215,22 @@ const SPECS: Dictionary = {
 		"visual": {"fps": 30, "frames": ["fighter-stance.png"]},
 		"note": "醉打蔣門神 RB，穿身無敵 10 幀，CD 4s（06 §3.3）"
 	},
+	"Counter": {
+		"loop": false,
+		"logic": {"startup": 6, "active": 4, "recovery": 14},
+		"damage": 120, "cancel_frame": -1, "hit_range": 190.0, "knockback": 160.0,
+		"knock_up": 260.0,
+		"invuln": {"start": 0, "end": 6},
+		"visual": {"fps": 30, "frames": ["punch-start.png", "punch.png"]},
+		"note": "飞云浦反击：站/蹲防中或HurtStand前4帧按重触发；前6帧招架无敌，命中120浮空；完整214方向输入缓冲为后续迭代"
+	},
 	"Super": {
 		"loop": false,
 		"logic": {"startup": 24, "active": 60, "recovery": 24},
 		"damage": 320, "cancel_frame": -1, "hit_range": 260.0, "knockback": 200.0,
 		"invuln": {"start": 0, "end": 108},
 		"visual": {"fps": 30, "frames": ["awaken.png"]},
-		"note": "覺醒演出 108 幀=1800ms 全程無敵（06 §3.5）"
+		"note": "覺醒必殺 RT/O：酒氣滿100觸發、全程無敵、active窗口320傷害、結束清氣；金黄modulate演出（06 §3.5）"
 	},
 }
 
