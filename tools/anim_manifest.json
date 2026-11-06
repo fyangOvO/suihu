@@ -1,0 +1,722 @@
+[
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "awaken.png",
+    "category": "Performance"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "back-dodge.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "backstep.png",
+    "category": "Evade"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "block.png",
+    "category": "Block"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "bow.png",
+    "category": "Performance"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "chest-in.png",
+    "category": "Unassigned"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "combo-punch.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "crawl-up.png",
+    "category": "Down"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "crouch-punch.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "crouch.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "dash.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "defeat.png",
+    "category": "Performance"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "dodge.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "double-palm.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "draw-knife.png",
+    "category": "Knife"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "drawknife.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "drink-finish.png",
+    "category": "Drink"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "drink-prep.png",
+    "category": "Drink"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "drink-tilt.png",
+    "category": "Drink"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "drink.png",
+    "category": "Drink"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "duck.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "elbow.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "fighter-stance.png",
+    "category": "Idle"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "guard-crouch.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "headbutt.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "heavy-end.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "heavy-start.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "heavyslash.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "hurt-back.png",
+    "category": "Hurt"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "hurt-head.png",
+    "category": "Hurt"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "hurt.png",
+    "category": "Hurt"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "idle-front.png",
+    "category": "Idle"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "idle-side.png",
+    "category": "Idle"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "idle.png",
+    "category": "Idle"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "jump-down.png",
+    "category": "AirJump"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "jump-punch.png",
+    "category": "AirJump"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "jump-slash.png",
+    "category": "AirJump"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "jump-up.png",
+    "category": "AirJump"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "jump.png",
+    "category": "AirJump"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "kick-back.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "kick-recover.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "kick-side.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "kick-start.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "kick.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knee.png",
+    "category": "HeavyAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "kneel.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-block.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-charge.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-down.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-finish.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-full-swing.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-guard.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-hack.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-mid.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-one.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-ready.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-sheath.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-slash.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-spin.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-stab.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-two.png",
+    "category": "Knife"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "knife-up.png",
+    "category": "Knife"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "knockdown.png",
+    "category": "Down"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "land-roll.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "land-stance.png",
+    "category": "Down"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "land-stand.png",
+    "category": "Down"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "launched.png",
+    "category": "Hurt"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "lunge.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "meditate.png",
+    "category": "Performance"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "prone.png",
+    "category": "Crouch"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "punch-end.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "punch-left.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "punch-start.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "punch.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "rising-punch.png",
+    "category": "LightAttack"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "roar.png",
+    "category": "Performance"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "roll.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "side-fall.png",
+    "category": "Down"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "slide.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "spin-kick.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "spin.png",
+    "category": "Evade"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "uppercut-start.png",
+    "category": "Unassigned"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "uppercut.png",
+    "category": "Unassigned"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "victory.png",
+    "category": "Performance"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "wakeup.png",
+    "category": "Unassigned"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "walk-a.png",
+    "category": "Walk"
+  },
+  {
+    "format": "PNG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": true,
+    "file": "walk-b.png",
+    "category": "Walk"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "walk-c.png",
+    "category": "Walk"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "walk-d.png",
+    "category": "Walk"
+  },
+  {
+    "format": "JPEG",
+    "width": 2048,
+    "height": 2048,
+    "has_alpha": false,
+    "file": "walk-mid.png",
+    "category": "Walk"
+  }
+]

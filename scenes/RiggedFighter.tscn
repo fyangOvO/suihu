@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/rigged_fighter.gd" id="2_ctrl"]
+[ext_resource type="Script" path="res://scripts/frame_animator.gd" id="3_anim"]
+[ext_resource type="Texture2D" path="res://assets/anim/idle.png" id="4_idle"]
+
+[sub_resource type="RectangleShape2D" id="body_shape"]
+size = Vector2(60, 180)
+
+[sub_resource type="RectangleShape2D" id="attack_shape"]
+size = Vector2(180, 120)
+
+[sub_resource type="RectangleShape2D" id="hurt_shape"]
+size = Vector2(64, 180)
+
+[node name="RiggedFighter" type="CharacterBody2D"]
+collision_layer = 1
+collision_mask = 1
+script = ExtResource("2_ctrl")
+
+; 身體移動碰撞：原點(0,0)=腳底，形狀由 y=-180 延伸到 0
+[node name="Collision" type="CollisionShape2D" parent="."]
+shape = SubResource("body_shape")
+position = Vector2(0, -90)
+
+; 受擊盒 HurtBox：layer 3(值4)，供對方攻擊盒 layer 2(值2) 偵測
+[node name="HurtBox" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+monitoring = false
+monitorable = true
+
+[node name="HurtShape" type="CollisionShape2D" parent="HurtBox"]
+shape = SubResource("hurt_shape")
+position = Vector2(0, -90)
+
+; 攻擊盒 HitBox：layer 2(值2)，只偵測 layer 3(值4) 的 HurtBox；預設關閉，活躍幀才開
+[node name="HitBox" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 4
+monitoring = true
+monitorable = false
+
+[node name="AttackShape" type="CollisionShape2D" parent="HitBox"]
+shape = SubResource("attack_shape")
+position = Vector2(90, -90)
+disabled = true
+
+[node name="Visual" type="Sprite2D" parent="."]
+scale = Vector2(0.55, 0.55)
+position = Vector2(0, -160)
+texture = ExtResource("4_idle")
+script = ExtResource("3_anim")

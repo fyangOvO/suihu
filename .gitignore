@@ -1,0 +1,19 @@
+# ---- Godot 引擎导入缓存（本地可再生，不入库）----
+.godot/
+
+# ---- 导出/构建输出目录 ----
+/export/
+build/
+
+# ---- Python 缓存 ----
+__pycache__/
+*.py[cod]
+
+# ---- 本地临时日志 ----
+*.log
+
+# ---- 系统/编辑器垃圾 ----
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp

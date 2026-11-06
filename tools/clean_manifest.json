@@ -1,0 +1,1982 @@
+[
+  {
+    "file": "awaken.png",
+    "method": "rembg",
+    "foreground_ratio": 0.337,
+    "group": "stand",
+    "bbox": [
+      299,
+      95,
+      1966,
+      2048
+    ],
+    "source_size": [
+      1667,
+      1953
+    ],
+    "scale": 0.2458,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\awaken.png"
+  },
+  {
+    "file": "back-dodge.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2246,
+    "group": "stand",
+    "bbox": [
+      249,
+      128,
+      1986,
+      2017
+    ],
+    "source_size": [
+      1737,
+      1889
+    ],
+    "scale": 0.2418,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\back-dodge.png"
+  },
+  {
+    "file": "backstep.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1068,
+    "group": "air",
+    "bbox": [
+      25,
+      204,
+      2030,
+      1972
+    ],
+    "source_size": [
+      2005,
+      1768
+    ],
+    "scale": 0.1697,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\backstep.png"
+  },
+  {
+    "file": "block.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2751,
+    "group": "stand",
+    "bbox": [
+      164,
+      95,
+      1870,
+      2048
+    ],
+    "source_size": [
+      1706,
+      1953
+    ],
+    "scale": 0.2458,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\block.png"
+  },
+  {
+    "file": "bow.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3272,
+    "group": "stand",
+    "bbox": [
+      146,
+      50,
+      1959,
+      2048
+    ],
+    "source_size": [
+      1813,
+      1998
+    ],
+    "scale": 0.2317,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\bow.png"
+  },
+  {
+    "file": "chest-in.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2049,
+    "group": "stand",
+    "bbox": [
+      460,
+      56,
+      1665,
+      2017
+    ],
+    "source_size": [
+      1205,
+      1961
+    ],
+    "scale": 0.2448,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\chest-in.png"
+  },
+  {
+    "file": "combo-punch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2606,
+    "group": "stand",
+    "bbox": [
+      120,
+      57,
+      1992,
+      2004
+    ],
+    "source_size": [
+      1872,
+      1947
+    ],
+    "scale": 0.2244,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\combo-punch.png"
+  },
+  {
+    "file": "crawl-up.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0685,
+    "group": "ground",
+    "bbox": [
+      306,
+      190,
+      1875,
+      1909
+    ],
+    "source_size": [
+      1569,
+      1719
+    ],
+    "scale": 0.1222,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\crawl-up.png"
+  },
+  {
+    "file": "crouch-punch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.306,
+    "group": "stand",
+    "bbox": [
+      333,
+      82,
+      1881,
+      2011
+    ],
+    "source_size": [
+      1548,
+      1929
+    ],
+    "scale": 0.2488,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\crouch-punch.png"
+  },
+  {
+    "file": "crouch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3581,
+    "group": "stand",
+    "bbox": [
+      270,
+      110,
+      1808,
+      1994
+    ],
+    "source_size": [
+      1538,
+      1884
+    ],
+    "scale": 0.2548,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\crouch.png"
+  },
+  {
+    "file": "dash.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2476,
+    "group": "stand",
+    "bbox": [
+      224,
+      184,
+      1934,
+      1938
+    ],
+    "source_size": [
+      1710,
+      1754
+    ],
+    "scale": 0.2456,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\dash.png"
+  },
+  {
+    "file": "defeat.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0734,
+    "group": "ground",
+    "bbox": [
+      344,
+      211,
+      1928,
+      1927
+    ],
+    "source_size": [
+      1584,
+      1716
+    ],
+    "scale": 0.1224,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\defeat.png"
+  },
+  {
+    "file": "dodge.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1187,
+    "group": "air",
+    "bbox": [
+      293,
+      127,
+      1991,
+      2011
+    ],
+    "source_size": [
+      1698,
+      1884
+    ],
+    "scale": 0.1592,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\dodge.png"
+  },
+  {
+    "file": "double-palm.png",
+    "method": "rembg",
+    "foreground_ratio": 0.306,
+    "group": "stand",
+    "bbox": [
+      101,
+      20,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1947,
+      2028
+    ],
+    "scale": 0.2157,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\double-palm.png"
+  },
+  {
+    "file": "draw-knife.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2901,
+    "group": "stand",
+    "bbox": [
+      0,
+      37,
+      1979,
+      2048
+    ],
+    "source_size": [
+      1979,
+      2011
+    ],
+    "scale": 0.2122,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\draw-knife.png"
+  },
+  {
+    "file": "drawknife.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2896,
+    "group": "stand",
+    "bbox": [
+      43,
+      76,
+      1993,
+      2048
+    ],
+    "source_size": [
+      1950,
+      1972
+    ],
+    "scale": 0.2154,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\drawknife.png"
+  },
+  {
+    "file": "drink-finish.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3231,
+    "group": "stand",
+    "bbox": [
+      5,
+      24,
+      2048,
+      2048
+    ],
+    "source_size": [
+      2043,
+      2024
+    ],
+    "scale": 0.2056,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\drink-finish.png"
+  },
+  {
+    "file": "drink-prep.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3204,
+    "group": "stand",
+    "bbox": [
+      50,
+      101,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1998,
+      1947
+    ],
+    "scale": 0.2102,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\drink-prep.png"
+  },
+  {
+    "file": "drink-tilt.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3382,
+    "group": "stand",
+    "bbox": [
+      126,
+      82,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1922,
+      1966
+    ],
+    "scale": 0.2185,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\drink-tilt.png"
+  },
+  {
+    "file": "drink.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3242,
+    "group": "stand",
+    "bbox": [
+      23,
+      242,
+      2048,
+      2048
+    ],
+    "source_size": [
+      2025,
+      1806
+    ],
+    "scale": 0.2074,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\drink.png"
+  },
+  {
+    "file": "duck.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0623,
+    "group": "ground",
+    "bbox": [
+      147,
+      228,
+      1922,
+      1928
+    ],
+    "source_size": [
+      1775,
+      1700
+    ],
+    "scale": 0.1235,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\duck.png"
+  },
+  {
+    "file": "elbow.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3117,
+    "group": "stand",
+    "bbox": [
+      338,
+      63,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1710,
+      1985
+    ],
+    "scale": 0.2418,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\elbow.png"
+  },
+  {
+    "file": "fighter-stance.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2774,
+    "group": "stand",
+    "bbox": [
+      203,
+      134,
+      1792,
+      1964
+    ],
+    "source_size": [
+      1589,
+      1830
+    ],
+    "scale": 0.2623,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\fighter-stance.png"
+  },
+  {
+    "file": "guard-crouch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2867,
+    "group": "stand",
+    "bbox": [
+      230,
+      88,
+      1883,
+      1992
+    ],
+    "source_size": [
+      1653,
+      1904
+    ],
+    "scale": 0.2521,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\guard-crouch.png"
+  },
+  {
+    "file": "headbutt.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2444,
+    "group": "stand",
+    "bbox": [
+      229,
+      133,
+      1947,
+      1953
+    ],
+    "source_size": [
+      1718,
+      1820
+    ],
+    "scale": 0.2445,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\headbutt.png"
+  },
+  {
+    "file": "heavy-end.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2898,
+    "group": "stand",
+    "bbox": [
+      357,
+      95,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1691,
+      1953
+    ],
+    "scale": 0.2458,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\heavy-end.png"
+  },
+  {
+    "file": "heavy-start.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2319,
+    "group": "stand",
+    "bbox": [
+      102,
+      165,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1946,
+      1883
+    ],
+    "scale": 0.2158,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\heavy-start.png"
+  },
+  {
+    "file": "heavyslash.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2671,
+    "group": "stand",
+    "bbox": [
+      59,
+      119,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1989,
+      1929
+    ],
+    "scale": 0.2112,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\heavyslash.png"
+  },
+  {
+    "file": "hurt-back.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2,
+    "group": "stand",
+    "bbox": [
+      44,
+      120,
+      1915,
+      1952
+    ],
+    "source_size": [
+      1871,
+      1832
+    ],
+    "scale": 0.2245,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\hurt-back.png"
+  },
+  {
+    "file": "hurt-head.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2792,
+    "group": "stand",
+    "bbox": [
+      383,
+      101,
+      1895,
+      1998
+    ],
+    "source_size": [
+      1512,
+      1897
+    ],
+    "scale": 0.253,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\hurt-head.png"
+  },
+  {
+    "file": "hurt.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2296,
+    "group": "stand",
+    "bbox": [
+      188,
+      204,
+      1935,
+      1999
+    ],
+    "source_size": [
+      1747,
+      1795
+    ],
+    "scale": 0.2404,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\hurt.png"
+  },
+  {
+    "file": "idle-front.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1751,
+    "group": "stand",
+    "bbox": [
+      351,
+      70,
+      1684,
+      2011
+    ],
+    "source_size": [
+      1333,
+      1941
+    ],
+    "scale": 0.2473,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\idle-front.png"
+  },
+  {
+    "file": "idle-side.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1612,
+    "group": "stand",
+    "bbox": [
+      679,
+      63,
+      1715,
+      2030
+    ],
+    "source_size": [
+      1036,
+      1967
+    ],
+    "scale": 0.244,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\idle-side.png"
+  },
+  {
+    "file": "idle.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1586,
+    "group": "stand",
+    "bbox": [
+      702,
+      84,
+      1573,
+      2010
+    ],
+    "source_size": [
+      871,
+      1926
+    ],
+    "scale": 0.2492,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\idle.png"
+  },
+  {
+    "file": "jump-down.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1127,
+    "group": "air",
+    "bbox": [
+      146,
+      179,
+      1941,
+      1864
+    ],
+    "source_size": [
+      1795,
+      1685
+    ],
+    "scale": 0.178,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\jump-down.png"
+  },
+  {
+    "file": "jump-punch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1043,
+    "group": "air",
+    "bbox": [
+      203,
+      32,
+      1952,
+      1992
+    ],
+    "source_size": [
+      1749,
+      1960
+    ],
+    "scale": 0.1531,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\jump-punch.png"
+  },
+  {
+    "file": "jump-slash.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0887,
+    "group": "air",
+    "bbox": [
+      446,
+      82,
+      1735,
+      1991
+    ],
+    "source_size": [
+      1289,
+      1909
+    ],
+    "scale": 0.1572,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\jump-slash.png"
+  },
+  {
+    "file": "jump-up.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0939,
+    "group": "air",
+    "bbox": [
+      447,
+      122,
+      1735,
+      1928
+    ],
+    "source_size": [
+      1288,
+      1806
+    ],
+    "scale": 0.1661,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\jump-up.png"
+  },
+  {
+    "file": "jump.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1225,
+    "group": "air",
+    "bbox": [
+      161,
+      143,
+      1936,
+      1776
+    ],
+    "source_size": [
+      1775,
+      1633
+    ],
+    "scale": 0.1837,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\jump.png"
+  },
+  {
+    "file": "kick-back.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2267,
+    "group": "stand",
+    "bbox": [
+      198,
+      114,
+      1817,
+      1985
+    ],
+    "source_size": [
+      1619,
+      1871
+    ],
+    "scale": 0.2565,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kick-back.png"
+  },
+  {
+    "file": "kick-recover.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2468,
+    "group": "stand",
+    "bbox": [
+      299,
+      76,
+      1819,
+      1986
+    ],
+    "source_size": [
+      1520,
+      1910
+    ],
+    "scale": 0.2513,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kick-recover.png"
+  },
+  {
+    "file": "kick-side.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2034,
+    "group": "stand",
+    "bbox": [
+      192,
+      230,
+      1998,
+      1998
+    ],
+    "source_size": [
+      1806,
+      1768
+    ],
+    "scale": 0.2326,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kick-side.png"
+  },
+  {
+    "file": "kick-start.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2138,
+    "group": "stand",
+    "bbox": [
+      402,
+      95,
+      1703,
+      1992
+    ],
+    "source_size": [
+      1301,
+      1897
+    ],
+    "scale": 0.253,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kick-start.png"
+  },
+  {
+    "file": "kick.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2409,
+    "group": "stand",
+    "bbox": [
+      268,
+      99,
+      1960,
+      1950
+    ],
+    "source_size": [
+      1692,
+      1851
+    ],
+    "scale": 0.2482,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kick.png"
+  },
+  {
+    "file": "knee.png",
+    "method": "rembg",
+    "foreground_ratio": 0.232,
+    "group": "stand",
+    "bbox": [
+      75,
+      89,
+      2048,
+      1958
+    ],
+    "source_size": [
+      1973,
+      1869
+    ],
+    "scale": 0.2129,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knee.png"
+  },
+  {
+    "file": "kneel.png",
+    "method": "rembg",
+    "foreground_ratio": 0.065,
+    "group": "ground",
+    "bbox": [
+      126,
+      49,
+      1922,
+      1953
+    ],
+    "source_size": [
+      1796,
+      1904
+    ],
+    "scale": 0.1103,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\kneel.png"
+  },
+  {
+    "file": "knife-block.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2267,
+    "group": "stand",
+    "bbox": [
+      65,
+      115,
+      1981,
+      1992
+    ],
+    "source_size": [
+      1916,
+      1877
+    ],
+    "scale": 0.2192,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-block.png"
+  },
+  {
+    "file": "knife-charge.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2445,
+    "group": "stand",
+    "bbox": [
+      255,
+      83,
+      1729,
+      1973
+    ],
+    "source_size": [
+      1474,
+      1890
+    ],
+    "scale": 0.254,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-charge.png"
+  },
+  {
+    "file": "knife-down.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2499,
+    "group": "stand",
+    "bbox": [
+      191,
+      107,
+      1998,
+      1998
+    ],
+    "source_size": [
+      1807,
+      1891
+    ],
+    "scale": 0.2324,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-down.png"
+  },
+  {
+    "file": "knife-finish.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2397,
+    "group": "stand",
+    "bbox": [
+      95,
+      95,
+      1805,
+      1979
+    ],
+    "source_size": [
+      1710,
+      1884
+    ],
+    "scale": 0.2456,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-finish.png"
+  },
+  {
+    "file": "knife-full-swing.png",
+    "method": "rembg",
+    "foreground_ratio": 0.228,
+    "group": "stand",
+    "bbox": [
+      76,
+      12,
+      2037,
+      2042
+    ],
+    "source_size": [
+      1961,
+      2030
+    ],
+    "scale": 0.2142,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-full-swing.png"
+  },
+  {
+    "file": "knife-guard.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2701,
+    "group": "stand",
+    "bbox": [
+      37,
+      63,
+      2004,
+      2048
+    ],
+    "source_size": [
+      1967,
+      1985
+    ],
+    "scale": 0.2135,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-guard.png"
+  },
+  {
+    "file": "knife-hack.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2376,
+    "group": "stand",
+    "bbox": [
+      50,
+      82,
+      1960,
+      1979
+    ],
+    "source_size": [
+      1910,
+      1897
+    ],
+    "scale": 0.2199,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-hack.png"
+  },
+  {
+    "file": "knife-mid.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3003,
+    "group": "stand",
+    "bbox": [
+      223,
+      192,
+      1902,
+      1985
+    ],
+    "source_size": [
+      1679,
+      1793
+    ],
+    "scale": 0.2501,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-mid.png"
+  },
+  {
+    "file": "knife-one.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2075,
+    "group": "stand",
+    "bbox": [
+      268,
+      56,
+      1767,
+      2024
+    ],
+    "source_size": [
+      1499,
+      1968
+    ],
+    "scale": 0.2439,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-one.png"
+  },
+  {
+    "file": "knife-ready.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2246,
+    "group": "stand",
+    "bbox": [
+      62,
+      114,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1986,
+      1934
+    ],
+    "scale": 0.2115,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-ready.png"
+  },
+  {
+    "file": "knife-sheath.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2809,
+    "group": "stand",
+    "bbox": [
+      109,
+      62,
+      1934,
+      2048
+    ],
+    "source_size": [
+      1825,
+      1986
+    ],
+    "scale": 0.2301,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-sheath.png"
+  },
+  {
+    "file": "knife-slash.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2305,
+    "group": "stand",
+    "bbox": [
+      6,
+      76,
+      2011,
+      2024
+    ],
+    "source_size": [
+      2005,
+      1948
+    ],
+    "scale": 0.2095,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-slash.png"
+  },
+  {
+    "file": "knife-spin.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2944,
+    "group": "stand",
+    "bbox": [
+      141,
+      70,
+      1953,
+      1997
+    ],
+    "source_size": [
+      1812,
+      1927
+    ],
+    "scale": 0.2318,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-spin.png"
+  },
+  {
+    "file": "knife-stab.png",
+    "method": "rembg",
+    "foreground_ratio": 0.238,
+    "group": "stand",
+    "bbox": [
+      76,
+      184,
+      1887,
+      2018
+    ],
+    "source_size": [
+      1811,
+      1834
+    ],
+    "scale": 0.2319,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-stab.png"
+  },
+  {
+    "file": "knife-two.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3299,
+    "group": "stand",
+    "bbox": [
+      165,
+      63,
+      1972,
+      2048
+    ],
+    "source_size": [
+      1807,
+      1985
+    ],
+    "scale": 0.2324,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-two.png"
+  },
+  {
+    "file": "knife-up.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2743,
+    "group": "stand",
+    "bbox": [
+      286,
+      88,
+      1775,
+      2017
+    ],
+    "source_size": [
+      1489,
+      1929
+    ],
+    "scale": 0.2488,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knife-up.png"
+  },
+  {
+    "file": "knockdown.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0876,
+    "group": "ground",
+    "bbox": [
+      76,
+      466,
+      1996,
+      1566
+    ],
+    "source_size": [
+      1920,
+      1100
+    ],
+    "scale": 0.1909,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\knockdown.png"
+  },
+  {
+    "file": "land-roll.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0703,
+    "group": "ground",
+    "bbox": [
+      0,
+      255,
+      1960,
+      2048
+    ],
+    "source_size": [
+      1960,
+      1793
+    ],
+    "scale": 0.1171,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\land-roll.png"
+  },
+  {
+    "file": "land-stance.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0509,
+    "group": "ground",
+    "bbox": [
+      210,
+      103,
+      1830,
+      1973
+    ],
+    "source_size": [
+      1620,
+      1870
+    ],
+    "scale": 0.1123,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\land-stance.png"
+  },
+  {
+    "file": "land-stand.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1935,
+    "group": "stand",
+    "bbox": [
+      353,
+      75,
+      1576,
+      2011
+    ],
+    "source_size": [
+      1223,
+      1936
+    ],
+    "scale": 0.2479,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\land-stand.png"
+  },
+  {
+    "file": "launched.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1372,
+    "group": "air",
+    "bbox": [
+      120,
+      172,
+      1998,
+      1742
+    ],
+    "source_size": [
+      1878,
+      1570
+    ],
+    "scale": 0.1911,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\launched.png"
+  },
+  {
+    "file": "lunge.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2455,
+    "group": "stand",
+    "bbox": [
+      139,
+      146,
+      2048,
+      2017
+    ],
+    "source_size": [
+      1909,
+      1871
+    ],
+    "scale": 0.22,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\lunge.png"
+  },
+  {
+    "file": "meditate.png",
+    "method": "rembg",
+    "foreground_ratio": 0.324,
+    "group": "stand",
+    "bbox": [
+      63,
+      44,
+      2009,
+      2048
+    ],
+    "source_size": [
+      1946,
+      2004
+    ],
+    "scale": 0.2158,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\meditate.png"
+  },
+  {
+    "file": "prone.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0624,
+    "group": "ground",
+    "bbox": [
+      0,
+      184,
+      2030,
+      1825
+    ],
+    "source_size": [
+      2030,
+      1641
+    ],
+    "scale": 0.128,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\prone.png"
+  },
+  {
+    "file": "punch-end.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1904,
+    "group": "stand",
+    "bbox": [
+      345,
+      50,
+      1700,
+      2004
+    ],
+    "source_size": [
+      1355,
+      1954
+    ],
+    "scale": 0.2456,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\punch-end.png"
+  },
+  {
+    "file": "punch-left.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2861,
+    "group": "stand",
+    "bbox": [
+      121,
+      50,
+      2048,
+      2048
+    ],
+    "source_size": [
+      1927,
+      1998
+    ],
+    "scale": 0.218,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\punch-left.png"
+  },
+  {
+    "file": "punch-start.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2101,
+    "group": "stand",
+    "bbox": [
+      415,
+      89,
+      1595,
+      2004
+    ],
+    "source_size": [
+      1180,
+      1915
+    ],
+    "scale": 0.2507,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\punch-start.png"
+  },
+  {
+    "file": "punch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2762,
+    "group": "stand",
+    "bbox": [
+      251,
+      82,
+      1928,
+      2000
+    ],
+    "source_size": [
+      1677,
+      1918
+    ],
+    "scale": 0.2503,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\punch.png"
+  },
+  {
+    "file": "rising-punch.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2775,
+    "group": "stand",
+    "bbox": [
+      280,
+      185,
+      1761,
+      1954
+    ],
+    "source_size": [
+      1481,
+      1769
+    ],
+    "scale": 0.2713,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\rising-punch.png"
+  },
+  {
+    "file": "roar.png",
+    "method": "rembg",
+    "foreground_ratio": 0.3139,
+    "group": "stand",
+    "bbox": [
+      62,
+      75,
+      2011,
+      2048
+    ],
+    "source_size": [
+      1949,
+      1973
+    ],
+    "scale": 0.2155,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\roar.png"
+  },
+  {
+    "file": "roll.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0644,
+    "group": "ground",
+    "bbox": [
+      466,
+      383,
+      1755,
+      1883
+    ],
+    "source_size": [
+      1289,
+      1500
+    ],
+    "scale": 0.14,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\roll.png"
+  },
+  {
+    "file": "side-fall.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0767,
+    "group": "ground",
+    "bbox": [
+      0,
+      204,
+      2037,
+      1862
+    ],
+    "source_size": [
+      2037,
+      1658
+    ],
+    "scale": 0.1267,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\side-fall.png"
+  },
+  {
+    "file": "slide.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1738,
+    "group": "stand",
+    "bbox": [
+      0,
+      235,
+      1928,
+      1902
+    ],
+    "source_size": [
+      1928,
+      1667
+    ],
+    "scale": 0.2178,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\slide.png"
+  },
+  {
+    "file": "spin-kick.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1829,
+    "group": "stand",
+    "bbox": [
+      11,
+      107,
+      2016,
+      2017
+    ],
+    "source_size": [
+      2005,
+      1910
+    ],
+    "scale": 0.2095,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\spin-kick.png"
+  },
+  {
+    "file": "spin.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1757,
+    "group": "stand",
+    "bbox": [
+      0,
+      166,
+      2048,
+      1986
+    ],
+    "source_size": [
+      2048,
+      1820
+    ],
+    "scale": 0.2051,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\spin.png"
+  },
+  {
+    "file": "uppercut-start.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2628,
+    "group": "stand",
+    "bbox": [
+      267,
+      62,
+      1702,
+      1997
+    ],
+    "source_size": [
+      1435,
+      1935
+    ],
+    "scale": 0.2481,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\uppercut-start.png"
+  },
+  {
+    "file": "uppercut.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2175,
+    "group": "stand",
+    "bbox": [
+      24,
+      0,
+      1789,
+      1974
+    ],
+    "source_size": [
+      1765,
+      1974
+    ],
+    "scale": 0.238,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\uppercut.png"
+  },
+  {
+    "file": "victory.png",
+    "method": "rembg",
+    "foreground_ratio": 0.2972,
+    "group": "stand",
+    "bbox": [
+      210,
+      62,
+      1933,
+      2048
+    ],
+    "source_size": [
+      1723,
+      1986
+    ],
+    "scale": 0.2417,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\victory.png"
+  },
+  {
+    "file": "wakeup.png",
+    "method": "rembg",
+    "foreground_ratio": 0.0817,
+    "group": "ground",
+    "bbox": [
+      214,
+      234,
+      1892,
+      1876
+    ],
+    "source_size": [
+      1678,
+      1642
+    ],
+    "scale": 0.1279,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\wakeup.png"
+  },
+  {
+    "file": "walk-a.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1795,
+    "group": "stand",
+    "bbox": [
+      629,
+      160,
+      1542,
+      2002
+    ],
+    "source_size": [
+      913,
+      1842
+    ],
+    "scale": 0.2606,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\walk-a.png"
+  },
+  {
+    "file": "walk-b.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1784,
+    "group": "stand",
+    "bbox": [
+      559,
+      108,
+      1562,
+      2020
+    ],
+    "source_size": [
+      1003,
+      1912
+    ],
+    "scale": 0.251,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\walk-b.png"
+  },
+  {
+    "file": "walk-c.png",
+    "method": "rembg",
+    "foreground_ratio": 0.187,
+    "group": "stand",
+    "bbox": [
+      549,
+      75,
+      1608,
+      1992
+    ],
+    "source_size": [
+      1059,
+      1917
+    ],
+    "scale": 0.2504,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\walk-c.png"
+  },
+  {
+    "file": "walk-d.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1737,
+    "group": "stand",
+    "bbox": [
+      530,
+      101,
+      1479,
+      1985
+    ],
+    "source_size": [
+      949,
+      1884
+    ],
+    "scale": 0.2548,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\walk-d.png"
+  },
+  {
+    "file": "walk-mid.png",
+    "method": "rembg",
+    "foreground_ratio": 0.1882,
+    "group": "stand",
+    "bbox": [
+      262,
+      89,
+      1696,
+      1997
+    ],
+    "source_size": [
+      1434,
+      1908
+    ],
+    "scale": 0.2516,
+    "output_size": [
+      512,
+      640
+    ],
+    "output": "assets\\anim\\clean\\walk-mid.png"
+  }
+]

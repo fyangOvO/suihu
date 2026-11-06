@@ -1,0 +1,90 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/node_map.gd" id="1_map"]
+
+[node name="NodeMap" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_map")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.1, 0.15, 1)
+
+[node name="Title" type="Label" parent="."]
+offset_left = 660.0
+offset_top = 20.0
+offset_right = 1260.0
+offset_bottom = 70.0
+text = "水滸：妖魔劫 — 選擇你的路"
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.9, 0.8, 0.6, 1)
+
+[node name="BtnFight1" type="Button" parent="."]
+offset_left = 520.0
+offset_top = 680.0
+offset_right = 680.0
+offset_bottom = 740.0
+text = "伥鬼"
+
+[node name="BtnDrink1" type="Button" parent="."]
+offset_left = 1240.0
+offset_top = 680.0
+offset_right = 1400.0
+offset_bottom = 740.0
+text = "酒肆"
+
+[node name="BtnFight2" type="Button" parent="."]
+offset_left = 370.0
+offset_top = 500.0
+offset_right = 530.0
+offset_bottom = 560.0
+text = "乱冈"
+disabled = true
+
+[node name="BtnElite" type="Button" parent="."]
+offset_left = 880.0
+offset_top = 460.0
+offset_right = 1040.0
+offset_bottom = 520.0
+text = "母夜叉"
+disabled = true
+
+[node name="BtnFight3" type="Button" parent="."]
+offset_left = 1390.0
+offset_top = 500.0
+offset_right = 1550.0
+offset_bottom = 560.0
+text = "黑店"
+disabled = true
+
+[node name="BtnShop" type="Button" parent="."]
+offset_left = 620.0
+offset_top = 300.0
+offset_right = 780.0
+offset_bottom = 360.0
+text = "十字坡"
+disabled = true
+
+[node name="BtnTemple" type="Button" parent="."]
+offset_left = 1140.0
+offset_top = 300.0
+offset_right = 1300.0
+offset_bottom = 360.0
+text = "山神庙"
+disabled = true
+
+[node name="BtnBoss" type="Button" parent="."]
+offset_left = 860.0
+offset_top = 100.0
+offset_right = 1060.0
+offset_bottom = 160.0
+text = "景陽岡猛虎"
+disabled = true
+

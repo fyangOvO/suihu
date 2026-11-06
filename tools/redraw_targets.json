@@ -1,0 +1,426 @@
+{
+  "total_unique": 46,
+  "redrawn": 46,
+  "pending_count": 0,
+  "pending_by_group": {
+    "stand": [],
+    "air": [],
+    "ground": []
+  },
+  "rows": [
+    {
+      "frame": "awaken.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "block.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "combo-punch.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "crouch-punch.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "crouch.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "dash.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "double-palm.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "draw-knife.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "drawknife.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "drink-finish.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "drink-prep.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "drink-tilt.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "drink.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "elbow.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "fighter-stance.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "headbutt.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "heavy-end.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "heavy-start.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "heavyslash.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "hurt-back.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "hurt-head.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "hurt.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "idle-front.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "idle-side.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "idle.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "jump-down.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "jump-punch.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "jump-slash.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "jump-up.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "jump.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "knife-guard.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "knockdown.png",
+      "group": "ground",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "launched.png",
+      "group": "air",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "punch-end.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "punch-left.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "punch-start.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "punch.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "rising-punch.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "uppercut-start.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "uppercut.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "wakeup.png",
+      "group": "ground",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "walk-a.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "walk-b.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "walk-c.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "walk-d.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    },
+    {
+      "frame": "walk-mid.png",
+      "group": "stand",
+      "redrawn": true,
+      "in_clean": true,
+      "used_by": [
+        "visual"
+      ]
+    }
+  ]
+}
