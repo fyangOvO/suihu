@@ -79,6 +79,18 @@ func _initialize() -> void:
 	b.change_state("Idle")
 	_check("Super ends with wine drained", b.wine_gauge == 0.0)
 
+	# ---- E. 214（後→下→前）指令緩衝識別 ----
+	b._dir_history = ["back", "down", "front"]
+	_check("214 recognized in order", b._has_214())
+	b._dir_history = ["front", "down", "back"]
+	_check("reverse order rejected", not b._has_214())
+	b._dir_history = ["back", "neutral", "down", "neutral", "front"]
+	_check("214 ignores neutral gaps", b._has_214())
+	b._dir_history = ["back", "down"]
+	_check("missing front rejected", not b._has_214())
+	b._dir_history = []
+	_check("empty history rejected", not b._has_214())
+
 	if fails.is_empty():
 		print("GAMEPLAY_SELFTEST result=PASS")
 		quit(0)

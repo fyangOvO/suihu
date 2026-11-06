@@ -37,6 +37,7 @@ var _block_held: bool = false
 var _dash_pressed: bool = false
 var _drink_pressed: bool = false
 var _super_pressed: bool = false
+var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 214 指令緩衝判定
 
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
@@ -48,6 +49,7 @@ const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
 const SUPER_REQUIRE_WINE: float = 100.0
+const CMD_BUFFER_FRAMES: int = 18   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
 
 func _ready() -> void:
 	current_hp = max_hp
@@ -76,6 +78,9 @@ func change_state(new_state: String) -> void:
 	# 覺醒演出結束後清空酒氣
 	if old_state == "Super" and new_state != "Super":
 		wine_gauge = 0.0
+	# 反擊出手後清空指令緩衝
+	if new_state == "Counter":
+		_dir_history.clear()
 
 func _physics_process(delta: float) -> void:
 	_read_input()
@@ -135,6 +140,7 @@ func _read_input() -> void:
 		_dash_pressed = Input.is_action_just_pressed("p1_dash")
 		_drink_pressed = Input.is_action_just_pressed("p1_drink")
 		_super_pressed = Input.is_action_just_pressed("p1_super")
+		_record_relative_dir()
 	else:
 		_move_x = 0.0
 		_down = false
@@ -145,6 +151,44 @@ func _read_input() -> void:
 		_dash_pressed = false
 		_drink_pressed = false
 		_super_pressed = false
+		_dir_history.clear()
+
+## 記錄本幀相對朝向的方向事件，維持指令緩衝窗口（舊→新）
+func _record_relative_dir() -> void:
+	var raw: float = Input.get_axis("p1_left", "p1_right")
+	var rel: String = "neutral"
+	if _down:
+		if raw < -0.1:
+			rel = "back"      # 斜下後，併入 214 後段
+		elif raw > 0.1:
+			rel = "front"     # 斜下前，併入前段
+		else:
+			rel = "down"
+	elif raw < -0.1:
+		rel = "back" if face_direction > 0.0 else "front"
+	elif raw > 0.1:
+		rel = "front" if face_direction > 0.0 else "back"
+	_dir_history.append(rel)
+	if _dir_history.size() > CMD_BUFFER_FRAMES:
+		_dir_history.pop_front()
+
+## 214（後→下→前，相對朝向）指令識別：緩衝窗口內按時間先後出現 back、down、front
+func _has_214() -> bool:
+	var seq: Array = _dir_history
+	var i_back: int = seq.find("back")
+	if i_back < 0:
+		return false
+	var i_down: int = -1
+	for i in range(i_back + 1, seq.size()):
+		if seq[i] == "down":
+			i_down = i
+			break
+	if i_down < 0:
+		return false
+	for i in range(i_down + 1, seq.size()):
+		if seq[i] == "front":
+			return true
+	return false
 
 func _run_ai(delta: float) -> void:
 	if opponent == null:
@@ -187,8 +231,12 @@ func _decide_free_state(_delta: float) -> void:
 	if _drink_pressed:
 		change_state("Drink")
 		return
-	# 防禦中按重 → 飛雲浦反擊（招架無敵後出手）
+	# 防禦中按重 → 飛雲浦反擊（招架無敵後出手，簡化觸發）
 	if _heavy_pressed and _state in ["Block", "CrouchBlock"]:
+		change_state("Counter")
+		return
+	# 完整指令技：214（後→下→前）+重 → 飛雲浦反擊
+	if _heavy_pressed and _has_214():
 		change_state("Counter")
 		return
 	if _light_pressed:
