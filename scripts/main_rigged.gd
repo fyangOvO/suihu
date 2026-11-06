@@ -24,6 +24,12 @@ func _process(delta):
 	$HUD/P1HP.value = $P1.current_hp
 	$HUD/P2HP.value = $P2.current_hp
 
+	# 酒氣條：滿氣 100 高亮並顯示覺醒提示（P2 為占位 AI，不繪製氣條）
+	$HUD/P1Wine.value = $P1.wine_gauge
+	var super_ready: bool = $P1.wine_gauge >= 100.0
+	$HUD/P1Wine.modulate = Color(1.0, 0.85, 0.3) if super_ready else Color(0.8, 0.75, 0.55)
+	$HUD/P1SuperHint.visible = super_ready
+
 	if $P1.current_hp <= 0:
 		_show_result("你敗了…")
 	elif $P2.current_hp <= 0:
