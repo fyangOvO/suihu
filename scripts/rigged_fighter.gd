@@ -36,20 +36,23 @@ var _heavy_pressed: bool = false
 var _block_held: bool = false
 var _dash_pressed: bool = false
 var _drink_pressed: bool = false
+var _special_pressed: bool = false
 var _super_pressed: bool = false
+var _drunk_cd: float = 0.0      # 醉打蔣門神冷卻（秒）
 var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 214 指令緩衝判定
 
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
 
 # 狀態分組（與 data spec 對應）
-const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "AirLight", "AirHeavy", "CmdTiger", "CmdUp", "Counter", "Super"]
+const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "AirLight", "AirHeavy", "CmdTiger", "CmdUp", "Counter", "CmdDrunk", "Super"]
 const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
 const SUPER_REQUIRE_WINE: float = 100.0
 const CMD_BUFFER_FRAMES: int = 18   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
+const DRUNK_CD: float = 4.0         # 醉打蔣門神冷卻（06 §3.3）
 
 func _ready() -> void:
 	current_hp = max_hp
@@ -75,6 +78,13 @@ func change_state(new_state: String) -> void:
 	else:
 		_defense = "none"
 	is_blocking = _defense != "none"
+	# 醉打穿身：起手忽略對手身體碰撞（地面/牆仍保留），離開即恢復
+	if new_state == "CmdDrunk":
+		if opponent != null and is_instance_valid(opponent):
+			add_collision_exception_with(opponent)
+	elif old_state == "CmdDrunk":
+		if opponent != null and is_instance_valid(opponent):
+			remove_collision_exception_with(opponent)
 	# 覺醒演出結束後清空酒氣
 	if old_state == "Super" and new_state != "Super":
 		wine_gauge = 0.0
@@ -84,6 +94,7 @@ func change_state(new_state: String) -> void:
 
 func _physics_process(delta: float) -> void:
 	_read_input()
+	_tick_cooldowns(delta)
 	_update_super_effect()
 	if not is_player1:
 		_run_ai(delta)
@@ -114,6 +125,8 @@ func _physics_process(delta: float) -> void:
 		_apply_gravity(delta)
 		if _state == "Dash":
 			velocity.x = face_direction * 480.0
+		elif _state == "CmdDrunk" and _frame <= 13:
+			velocity.x = face_direction * 360.0   # 醉打：僅起手＋活躍段前衝穿身
 		else:
 			velocity.x = 0.0
 		move_and_slide()
@@ -145,6 +158,7 @@ func _read_input() -> void:
 		_block_held = Input.is_action_pressed("p1_block")
 		_dash_pressed = Input.is_action_just_pressed("p1_dash")
 		_drink_pressed = Input.is_action_just_pressed("p1_drink")
+		_special_pressed = Input.is_action_just_pressed("p1_special")
 		_super_pressed = Input.is_action_just_pressed("p1_super")
 		_record_relative_dir()
 	else:
@@ -156,8 +170,13 @@ func _read_input() -> void:
 		_block_held = false
 		_dash_pressed = false
 		_drink_pressed = false
+		_special_pressed = false
 		_super_pressed = false
 		_dir_history.clear()
+
+## 冷卻推進（醉打蔣門神 4s）
+func _tick_cooldowns(delta: float) -> void:
+	_drunk_cd = maxf(0.0, _drunk_cd - delta)
 
 ## 記錄本幀相對朝向的方向事件，維持指令緩衝窗口（舊→新）
 ## 採數字小鍵盤語義（相對朝向）：5 中 / 2 下 / 1 下後 / 3 下前 / 4 後 / 6 前 / 7 上後 / 8 上 / 9 上前
@@ -248,6 +267,11 @@ func _decide_free_state(_delta: float) -> void:
 		return
 	if _drink_pressed:
 		change_state("Drink")
+		return
+	# 醉打蔣門神（RB / U）：4s 冷卻，穿身無敵
+	if _special_pressed and _drunk_cd <= 0.0:
+		_drunk_cd = DRUNK_CD
+		change_state("CmdDrunk")
 		return
 	# 防禦中按重 → 飛雲浦反擊（招架無敵後出手，簡化觸發）
 	if _heavy_pressed and _state in ["Block", "CrouchBlock"]:

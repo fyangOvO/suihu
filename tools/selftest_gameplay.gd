@@ -195,6 +195,46 @@ func _on_physics() -> void:
 	b.wine_gauge = 0.0
 	b.change_state("Idle")
 
+	# ---- H. 醉打蔣門神（RB/U，4s 冷卻）----
+	var drunk: Dictionary = DATA.spec("CmdDrunk")
+	_check("CmdDrunk counts as attack", "CmdDrunk" in b.ATTACKS)
+	_check("CmdDrunk damage 70", int(drunk.get("damage", 0)) == 70)
+	_check("CmdDrunk total 33 frames", DATA.total_frames(drunk) == 33)
+	_check("CmdDrunk active 8..12", DATA.is_active_frame(drunk, 8) and DATA.is_active_frame(drunk, 12) and not DATA.is_active_frame(drunk, 13))
+	_check("CmdDrunk invuln 8..17 only", DATA.is_invulnerable(drunk, 8) and DATA.is_invulnerable(drunk, 17) and not DATA.is_invulnerable(drunk, 7) and not DATA.is_invulnerable(drunk, 18))
+
+	b.change_state("Idle")
+	b._drunk_cd = 0.0
+	b._special_pressed = true
+	b._decide_free_state(0.016)
+	_check("special+heavy-free -> CmdDrunk", b._state == "CmdDrunk")
+	_check("CmdDrunk starts cooldown", b._drunk_cd == 4.0)
+
+	b.change_state("Idle")
+	b._drunk_cd = 4.0
+	b._special_pressed = true
+	b._decide_free_state(0.016)
+	_check("cooldown blocks CmdDrunk", b._state != "CmdDrunk")
+
+	b._tick_cooldowns(1.0)
+	b._tick_cooldowns(1.0)
+	b._tick_cooldowns(1.0)
+	_check("cooldown ticks down", b._drunk_cd == 1.0)
+	b._tick_cooldowns(1.0)
+	_check("cooldown expires at 0", b._drunk_cd == 0.0)
+	b._special_pressed = true
+	b._decide_free_state(0.016)
+	_check("CmdDrunk available after cooldown", b._state == "CmdDrunk")
+
+	# 穿身：僅忽略對手身體碰撞，離開即恢復
+	_check("CmdDrunk ignores opponent body", b.get_collision_exceptions().size() == 1)
+	b.change_state("Idle")
+	_check("CmdDrunk restores body collision", b.get_collision_exceptions().is_empty())
+
+	b._special_pressed = false
+	b._drunk_cd = 0.0
+	b.change_state("Idle")
+
 	_finish()
 
 func _finish() -> void:
