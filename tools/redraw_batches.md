@@ -36,12 +36,13 @@
 7. **bust 与全身帧衔接**：6 帧 bust 顶边此前在 108/109，比全身 stand 组顶边中位数 132 高 27px，仰头饮酒/拔刀切换时头顶会跳。现以 `paste_at_top` 只平移不缩放对齐到 132，高度仍 378–380、水平中心 256（顶边差 0px）。`docs/preview/art-bust-vs-fullbody.png` 可见全身与半身头顶连成一线。
 8. **逐帧离群断言**：`tools/check_frame_outliers.py` 把 diff 升级为带阈值判据——fg 0.05–0.42、主体亮度 42–78、主色距 ≤42、亮像素 ≤3.0%、水平中心 ±4px、bust 高度 368–386 与顶边 ±6px 判 FAIL；灰边占比 >3.5% 只作 INFO（水墨飞白与去背白边数值重叠，必须目视）。46 帧 0 FAIL。同时修正度量口径：bbox 取 alpha>0，与管线 `getbbox` 一致（旧口径 alpha>8 会因淡边像素误报 wakeup 偏移 6px）。
 9. **脚位（落地基线）**：新增 `tools/refine_baseline_report.py` 与断言项——stand/air/ground 组底边必须落在 611±2（基线 612 的最后一像素行）。实测 46 帧底边范围 −2~−1px，浮空 0、压线 0；`docs/preview/art-all-frames.png` 为 46 帧总览（按 stand/air/ground/bust 排序并画出基线）。
+10. **刀光／酒气独立图层（V0.2.6，非美术帧，纯程序）**：`scripts/fighter_fx.gd` 四层（SlashCore／SlashHalo／Aura／DrunkVapor）挂在 `RiggedFighter.tscn` 的 `Fx` 下，不依赖任何新贴图。踩坑两条已固化为断言/文档：① 主场景 `Background` 与角色同层 z=0，会把 z=−1 的 aura 全遮（截图曾因此“酒气不可见”），已把 Background 压到 z=−2 并加 `aura z<0`、`刀光 z>0` 两条断言；② 截图脚本只关 `set_physics_process` 不足以冻结角色，仍会自由落体（y 614→888），必须 `process_mode=DISABLED` 并手动推 `visual.play_action`／`fx._physics_process`。离屏渲染走 1280×720 SubViewport，主窗口 16×16 并移到屏幕外（`--display-driver headless` 是 dummy 渲染器，取纹理必 null）。对照图 `docs/preview/fx-sheet.png`（六态拼图）。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 
 - 全部帧脚位/缩放/重心与动态连贯性，需在 Godot 2D 视图实跑各动作序列目视；bust 顶边已数值对齐（0px 差），若观感仍跳可微调 `refine_rules.STAND_TOP_Y`。
 - 8 张飞白帧灰边占比仍 3.6–5.1%（已压暗一轮），属水墨留白笔触；若仍觉亮可调 `TONE_HI_GAIN`（更小更暗，0.62 会发浊）后重跑 `python tools/refine_frames.py apply`。
-- 后续可选提升（非阻断）：刀光/酒气独立图层、补间级连贯中帧。
+- 后续可选提升（非阻断）：补间级连贯中帧。
 
 ## 精修命令（第二輪）
 
@@ -56,4 +57,5 @@
 - `python tools/verify_frame_links.py`
 - `python tools/inventory_frames.py`
 - `python tools/diff_redraw_frames.py`
-- 仅当改动 GDScript/数据后补跑：`godot --headless --path 'D:\水滸g\game' --script res://tools/check_visual_fps.gd`、`... selftest_hitbox.gd`
+- 仅当改动 GDScript/数据后补跑：`godot --headless --path 'D:\水滸g\game' --script res://tools/check_visual_fps.gd`、`... selftest_hitbox.gd`、`... selftest_fx.gd`
+- 要重出特效对照图（16×16、屏幕外，不弹大窗）：`godot --path 'D:\水滸g\game' --resolution 16x16 --position -32000,-32000 --script res://tools/capture_fx_preview.gd`，再 `python -X utf8 tools/fx_sheet.py` 拼图

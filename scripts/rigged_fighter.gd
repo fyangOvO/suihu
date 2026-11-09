@@ -91,11 +91,13 @@ func change_state(new_state: String) -> void:
 	# 指令技出手後清空指令緩衝，避免同一次輸入重複觸發
 	if new_state in ["Counter", "CmdTiger", "CmdUp"]:
 		_dir_history.clear()
+	_fx_state(new_state)
 
 func _physics_process(delta: float) -> void:
 	_read_input()
 	_tick_cooldowns(delta)
 	_update_super_effect()
+	_fx_sync()
 	if not is_player1:
 		_run_ai(delta)
 
@@ -409,6 +411,40 @@ func _update_super_effect() -> void:
 		vis.modulate = Color(1.0, 0.94 + 0.10 * breath, 0.72 + 0.22 * breath)
 	elif vis.modulate != Color(1.0, 1.0, 1.0):
 		vis.modulate = Color(1.0, 1.0, 1.0)
+
+## 特效層一次性觸發：進入招式狀態即出一刀刀光；醉打額外出酒紅刀光
+func _fx_state(state_name: String) -> void:
+	var fx := get_node_or_null("Fx")
+	if fx == null:
+		return
+	var kind := _fx_kind(state_name)
+	if kind != "":
+		fx.strike(kind, face_direction)
+	if state_name == "CmdDrunk":
+		fx.strike("drunk", face_direction)
+
+## 招式 → 刀光種類（弧度/寬度/色溫不同，rise 由下往上、air 由上往下）
+func _fx_kind(state_name: String) -> String:
+	match state_name:
+		"Light1", "Light2", "Counter":
+			return "light"
+		"Light3", "Heavy", "CmdTiger":
+			return "heavy"
+		"CrouchLight":
+			return "low"
+		"AirLight", "AirHeavy":
+			return "air"
+		"CmdUp":
+			return "rising"
+		"Super":
+			return "drunk"
+	return ""
+
+## 每邏輯幀同步酒氣模式（Super 金脈衝 / 滿氣柔和呼吸 / 醉打酒紅）與酒霧開關
+func _fx_sync() -> void:
+	var fx := get_node_or_null("Fx")
+	if fx != null:
+		fx.sync(_state, _frame, wine_gauge)
 
 func _apply_gravity(delta: float) -> void:
 	if not is_on_floor():
