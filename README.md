@@ -68,7 +68,7 @@
 - [x] **V0.1.4 素材/時序收尾**：Light3 7 槽按蓄力→上升→頂點→滯空→空中拳→下落→起身重排；倒地/騰空分組縮放錨點（stand 71 / air 8 / ground 11，docs/07 §6.5）；高速技提速 Light3 40、Heavy·CmdTiger 45、AirLight·AirHeavy·CmdUp 50（docs/07 §6.6）；`tools/check_visual_fps.gd` 無頭斷言 PASS、邏輯窗口不變
 - [x] **V0.1.5 統一造型第一批（高速/空中鏈路，暗黑頹廢定稿）**：以 idle 為身份母版 `image_edit` 保姿態重繪 6 幀（uppercut、jump-punch、jump、jump-down、jump-slash、launched），去冠、去念珠、不袒胸，暗沉青灰近墨＋磨損毛邊；`tools/build_redraw_frames.py` 去背分組縮放輸出 `assets/anim/redraw_clean/`，播放器 `ANIM_DIRS` 最高優先 `redraw_clean/`→`clean/`→原始目錄，缺圖自動回退、刪目錄即整體回退；`tools/check_redraw_spec.py` 6/6 PASS；斷鏈/帧率/命中無頭回歸全綠
 - [x] **V0.1.6 統一造型覆蓋 1.0（46/46 唯一被引用幀，暗黑頹廢定稿）**：在第一批基礎上續完成 ground 2、待機/行走 9、C2 輕拳 8、C3 重拳突進 8、C4 防禦/受擊/覺醒 6、C5 飲酒/拔刀 6、jump-up 1；持刀技保留一把樸素中式單刀、徒手技空手、飲酒保酒具並壓暗；`tools/inventory_frames.py` 唯一 46＝已重繪 46、待處理 0；`check_redraw_spec.py` PASS、`verify_frame_links.py` 零斷鏈、主場景 headless RC=0 無錯；批次與精修台賬見 `tools/redraw_batches.md`
-- [ ] 純美術精修（程序不可代勞，docs/07 §6.5、台賬 task17）：造型覆蓋已完成，剩目視微調——jump-down 張臂方向、draw-knife 腰鞘多餘刀、碎飄帶連通域清理＋暗色邊緣去灰、半身飲酒/拔刀幀錨點縮放與全身幀銜接、全套逐幀 diff 回調身份漂移；Sprite 腳位/縮放與最終暗色調待編輯器 2D 視圖目視（§6.4）；刀光/酒氣獨立圖層與補間級連貫中幀列為後續提升項
+- [x] 純美術精修（程序可代勞部分已完成）：jump-down 張臂方向、draw-knife 腰鞘多餘刀、碎飄帶連通域清理＋暗色邊緣去灰、半身飲酒/拔刀幀錨點縮放與全身幀銜接、全套逐幀 diff 回調離群——見 V0.2.4；剩餘純目視項：Sprite 腳位/縮放在編輯器 2D 視圖實跑各動作序列（docs/07 §6.4）、刀光/酒氣獨立圖層與補間級連貫中幀（後續提升，非阻斷）
 - [x] **V0.1.7 玩法補全（`tools/selftest_gameplay.gd` 18 項斷言 PASS）**：覺醒必殺 Super 滿酒氣按 O(RT) 觸發、全程無敵、active 窗口 320 傷害、金黃 modulate 脈衝演出、結束清氣；飛雲浦反擊 Counter（站/蹲防中或受擊前 4 邏輯幀按重，前 6 幀招架無敵、命中 120 浮空；完整 214 方向序列緩衝留待後續）；防禦分化＝站防 50%／蹲防 CrouchBlock 35% 小退卻／空防 AirBlock 40% 且不浮空；順帶修復「無敵招式攻擊盒被誤關閉、Super/醉打打不中」的耦合問題；回歸 selftest_hitbox、check_visual_fps、主場景 headless 全綠
 - [x] **V0.1.8 P1 酒氣條 HUD（`tools/selftest_hud.gd` 7 項斷言 PASS）**：MainRigged 場景於 P1 血條下新增 P1Wine 進度條（0–100）與滿氣提示 Label，主邏輯每幀同步 wine_gauge；滿 100 時氣條轉金黃高亮、顯示「覺醒可發（O / RT）」，Super 結束清氣後自動回落；P2 為占位 AI 不繪氣條；補上此前文檔已列但代碼缺失的酒氣條；回歸 gameplay／hitbox／fps／headless 全綠
 - [x] **V0.1.9 飛雲浦反擊完整指令技 214（`tools/selftest_gameplay.gd` 23 項斷言 PASS）**：新增相對朝向方向歷史緩衝窗口（18 邏輯幀），識別方向序列並按重觸發 Counter；與既有簡化觸發（站/蹲防中按重、受擊前 4 幀按重）並存，出手即清空緩衝；本次只接入 214，236/623 方向緩衝尚未實現（現 CmdTiger/CmdUp 仍為按鍵直觸）；回歸 hitbox／fps／hud／主場景 headless 全綠
@@ -76,6 +76,11 @@
 - [x] **V0.2.1 覺醒過場演出（`tools/selftest_cinematic.gd` 21 項斷言 PASS）**：MainRigged 新增 BattleCam(960,540) 與 Cinematic 層（Dim 暗角／Slash 金色刀光／Flash 定格白閃）；P1 進入 Super 即啟動 2.0s 時間軸——0–0.30s 推鏡（zoom→1.20 並追隨 P1、暗角→0.55）、0.28–0.55s 刀光橫掃＋白閃定格、1.30–2.00s 全部復位；演出期間 P2 定格外，離開 Super 或超時即中斷復位；HUD 屬獨立 CanvasLayer 不受鏡頭影響；回歸 gameplay／hud／hitbox／fps／主場景 headless 全綠
 - [x] **V0.2.2 醉打蔣門神接入（`tools/selftest_gameplay.gd` 59 項斷言 PASS）**：`CmdDrunk` 補上輸入路徑（P1 的 `p1_special`＝RB／U），4s 冷卻（`_tick_cooldowns` 逐幀遞減，冷卻中按鍵無效）、起手＋活躍段（邏輯幀 1–13）以 360 速度前衝、8–18 幀無敵、穿身以 `add_collision_exception_with(opponent)` 只忽略對手身體碰撞（地面／牆仍保留，離開狀態即恢復例外）；並將 `CmdDrunk` 補入 `ATTACKS`，否則攻擊盒不會開啟（與 V0.1.7 修過的「無敵招式打不中」屬同一類耦合）；自測新增 13 項（觸發、冷卻封鎖／遞減／歸零、傷害 70、總 33 幀、active 8–12、invuln 僅 8–17、攻擊盒歸類、穿身例外增減）
 - [x] **V0.2.3 醉打冷卻 HUD（`tools/selftest_hud.gd` 13 項斷言 PASS）**：P1 酒氣條新增一行 `P1DrunkHint`——可發時顯示「醉打可發（RB / U）」暖色，冷卻中灰化並改為「醉打冷卻 X.Xs」逐幀倒數，主邏輯每幀讀 `$P1._drunk_cd` 同步；自測新增 6 項（節點存在、倒數文案、秒數、灰化、恢復可發、恢復非灰）
+- [x] **V0.2.4 美術精修三項（`tools/check_frame_outliers.py` PASS 0 fail、`check_redraw_spec.py` PASS）**：
+  ① **8 張飛白偏亮幀壓暗**（punch-start／crouch-punch／crouch／headbutt／rising-punch／uppercut-start／dash／hurt-head）：新增 `tools/refine_rules.py` 的高光肩部壓縮（pivot 0.60、gain 0.78），只降 0.60 以上的高光、暗部與 alpha 不動；亮像素佔比中位由 1.80% 降到 1.16%（全身組 1.24%），主體亮度 61→61 不變，避免把飛白壓成灰泥；
+  ② **bust 半身幀與全身幀銜接**：6 幀 bust 高度統一 378–380、水平中心 256、頂邊由 108/109 下移到 132＝全身 stand 組頂邊中位數，切換時頭頂不再跳 27px；`paste_at_top` 只平移不縮放，等比與身份不變；
+  ③ **逐幀 diff 回調離群**：新增帶閾值的 `tools/check_frame_outliers.py`（fg／主體亮度／主色距／亮像素／水平中心／bust 高度與頂邊硬性判 FAIL，灰邊佔比只提示需目視），46 幀全過；順帶修正度量口徑——bbox 改用 alpha>0 與管線 `getbbox` 一致，先前 alpha>8 會把淡邊像素算成偏移（wakeup 誤報 cx=262）。
+  三項規則同時寫回 `tools/build_redraw_frames.py`，整目錄重建可復現；目視對照圖在 `D:\水滸g\docs\preview\`
 
 ## 待實現
 

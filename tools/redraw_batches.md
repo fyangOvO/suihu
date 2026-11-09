@@ -20,21 +20,34 @@
 | stand | 480 / 420 | 脚底基线 y=612 | 全身站姿/拳/刀/受击 |
 | air | 300 / 430 | 腾空居中偏上 | jump 族、launched |
 | ground | 210 / 440 | 躺地锚点 | knockdown、wakeup |
-| bust | 380 / 400 | 垂直居中偏上（不贴脚底线） | drink×4、draw-knife、drawknife |
+| bust | 380 / 400 | 顶边对齐全身帧顶边中位 132（不贴脚底线） | drink×4、draw-knife、drawknife |
 
 ## 精修落地（task17 自动化部分）
 
 1. **jump-down**：已重出，双臂改为躯干两侧斜下方缓冲张开、双手不高于肩，不再上举（air 组）。
 2. **draw-knife**：已重出，仅一把出鞘朴素单刀，删除腰侧多余刀鞘（bust 组）。
 3. **碎块清理＋边缘去灰**：已并入管线并对全量重建生效；scipy 可用时执行连通域清理，近白低饱和半透明边衰减，暗墨衣边保留。
-4. **半身帧锚点**：6 帧 bust 组统一限高 380、居中偏上，body 高 374–378，不再按全身脚底线贴位，消除高度/位置突兀。
+4. **半身帧锚点**：6 帧 bust 组统一限高 380、居中偏上，body 高 374–378，不再按全身脚底线贴位，消除高度/位置突兀（第二轮进一步把顶边对齐到全身帧 132，见第 7 条）。
 5. **全套客观 diff**：`tools/diff_redraw_frames.py` 输出 bbox/fg/亮度/灰边占比/主色距离；无 color-far、无 fg 离群、无尺寸离群。
+
+## 精修第二轮（V0.2.4，全部有客观判据）
+
+6. **8 张飞白偏亮帧压暗**：`tools/refine_rules.py` 高光肩部压缩（`TONE_PIVOT=0.60`、`TONE_HI_GAIN=0.78`），只动 0.60 以上高光，alpha 与暗部不变。亮像素（L>200）占前景比（%）：crouch-punch 2.09→1.46、crouch 1.78→1.07、dash 2.71→1.26、headbutt 1.02→0.60、hurt-head 3.21→2.61、punch-start 1.74→1.06、rising-punch 1.83→1.33、uppercut-start 1.64→0.96；8 帧中位 1.80→1.16，对齐全身组中位 1.24。主体亮度（alpha>128 均值）61→61 基本不变，五官/刀锋高光不受损。档位对比见 `docs/preview/art-tone-variants.png`（0.78 与 0.62 并列，0.62 已发浊故未采用）。
+7. **bust 与全身帧衔接**：6 帧 bust 顶边此前在 108/109，比全身 stand 组顶边中位数 132 高 27px，仰头饮酒/拔刀切换时头顶会跳。现以 `paste_at_top` 只平移不缩放对齐到 132，高度仍 378–380、水平中心 256（顶边差 0px）。`docs/preview/art-bust-vs-fullbody.png` 可见全身与半身头顶连成一线。
+8. **逐帧离群断言**：`tools/check_frame_outliers.py` 把 diff 升级为带阈值判据——fg 0.05–0.42、主体亮度 42–78、主色距 ≤42、亮像素 ≤3.0%、水平中心 ±4px、bust 高度 368–386 与顶边 ±6px 判 FAIL；灰边占比 >3.5% 只作 INFO（水墨飞白与去背白边数值重叠，必须目视）。46 帧 0 FAIL。同时修正度量口径：bbox 取 alpha>0，与管线 `getbbox` 一致（旧口径 alpha>8 会因淡边像素误报 wakeup 偏移 6px）。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 
-- 8 张动态/蹲/受击帧水墨飞白偏亮（diff gray 3.6–5.1%，经目视确认为水墨留白笔触、非 rembg 白边，未重出）：punch-start、crouch-punch、crouch、headbutt、rising-punch、uppercut-start、dash、hurt-head；如觉过亮可在编辑器整体压暗或单帧再调。
-- 全部帧脚位/缩放/重心与动态连贯性，需在 Godot 2D 视图实跑各动作序列目视；bust 特写帧与全身帧切换的视觉衔接可微调锚点偏移。
+- 全部帧脚位/缩放/重心与动态连贯性，需在 Godot 2D 视图实跑各动作序列目视；bust 顶边已数值对齐（0px 差），若观感仍跳可微调 `refine_rules.STAND_TOP_Y`。
+- 8 张飞白帧灰边占比仍 3.6–5.1%（已压暗一轮），属水墨留白笔触；若仍觉亮可调 `TONE_HI_GAIN`（更小更暗，0.62 会发浊）后重跑 `python tools/refine_frames.py apply`。
 - 后续可选提升（非阻断）：刀光/酒气独立图层、补间级连贯中帧。
+
+## 精修命令（第二輪）
+
+- `python tools/refine_frames.py report`（只读指标与 bust 锚点核对）
+- `python tools/refine_frames.py apply --align-bust`（压暗 + 顶边对齐，幂等；`--gain` 可换档）
+- `python tools/check_frame_outliers.py`（阈值断言，0 FAIL 才算过）
+- `python tools/refine_preview.py`、`python tools/refine_tone_variants.py`、`python tools/refine_bust_sheet.py`（对视/档位/衔接对照图 → `docs/preview/`）
 
 ## 回归命令
 

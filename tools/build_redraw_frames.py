@@ -7,11 +7,15 @@
 bust 組：飲酒/拔刀半身特寫，垂直居中偏上、不貼全身腳底基線，避免與全身幀高度差突兀。
 """
 import json
+import sys
 import urllib.request
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import refine_rules as R
 
 try:
     from scipy import ndimage as _ndi
@@ -127,13 +131,17 @@ def main() -> int:
 
         canvas = Image.new("RGBA", (CANVAS_W, CANVAS_H), (0, 0, 0, 0))
         if group == "bust":
-            oy = (CANVAS_H - nh) // 2 - 24
+            # 顶边对齐全身帧头顶中位数，切换时头顶不跳；仍不贴脚底基线
+            oy = R.STAND_TOP_Y
         else:
             oy = BASELINE_Y - nh
         ox = CENTER_X - nw // 2
         canvas.alpha_composite(body, (ox, oy))
 
         arr = np.asarray(canvas)
+        if name in R.TONE_FIX_FRAMES:
+            arr = R.apply_tone(arr)
+            canvas = Image.fromarray(arr, "RGBA")
         corners = [arr[0, 0, 3], arr[0, -1, 3], arr[-1, 0, 3], arr[-1, -1, 3]]
         canvas.save(OUT / name, "PNG")
         fg = float((arr[..., 3] > 8).mean())

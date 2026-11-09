@@ -1,0 +1,65 @@
+{
+  "tone": {
+    "crouch-punch.png": {
+      "before_sha1": "6a5a963a85ebd843412f9b8186ce1e79dc7bc88f",
+      "after_sha1": "d39c66376e5ae9aab4d575a2c7724efd8564957e"
+    },
+    "crouch.png": {
+      "before_sha1": "91d925154178a6d3f0295be5acd01dd68e351782",
+      "after_sha1": "d1da699448c2125431bbae07d3bf2a22a6633368"
+    },
+    "dash.png": {
+      "before_sha1": "54100354cf500245ba00f4712d62b7bcf4d270c6",
+      "after_sha1": "943b886fe388d3f03cf72f8e47954084ad35bc5b"
+    },
+    "headbutt.png": {
+      "before_sha1": "e4a01ea19427a1c475957e5dfaeeaa31ab0ff08b",
+      "after_sha1": "1d5b14f81bccca721d219d6d897d03dbe30d5d1b"
+    },
+    "hurt-head.png": {
+      "before_sha1": "2929420b5e30bc30c10a953c0a4d516e3fa0358d",
+      "after_sha1": "13fc77d84758f250a4977deda80dbe0fb85b8c15"
+    },
+    "punch-start.png": {
+      "before_sha1": "8da932d714a7efb0a0f8b2db2d772cadbb2f8df8",
+      "after_sha1": "4e1a4f41b21a7f263b7bf8cc618d7c744a1d2622"
+    },
+    "rising-punch.png": {
+      "before_sha1": "b7f8a1dabd05ce045b047bd1b7f1a531376ee9f1",
+      "after_sha1": "407040a613dac9b7399d6839984547e317fdb792"
+    },
+    "uppercut-start.png": {
+      "before_sha1": "0403eee76c852de9e862b8a7d1112752343ec742",
+      "after_sha1": "ab0e1c9167b798850a13f31f02c1df909a7baf6a"
+    }
+  },
+  "bust": {
+    "draw-knife.png": {
+      "before_sha1": "c3dd4b59cec3a323021a23d9f29b406d8b4a28ce",
+      "after_sha1": "efd62e9768b226724fc3751494c975c442d0497d"
+    },
+    "drawknife.png": {
+      "before_sha1": "f4ae8ac467a3d7019928c9f932d9583583517ff2",
+      "after_sha1": "01be633dcad093eca9f269ee2d7fb046d4ee3d80"
+    },
+    "drink-finish.png": {
+      "before_sha1": "db7eee8afc7112311216d165fddff6290a235d1f",
+      "after_sha1": "2b512ef45c352fd3591e19c6e12a1a8608be73b1"
+    },
+    "drink-prep.png": {
+      "before_sha1": "2d5857241a2949cea7f6c85fd3e6d306b6b54965",
+      "after_sha1": "b86c4bdc4b34b70adfeb2a164de676a3a64f8a73"
+    },
+    "drink-tilt.png": {
+      "before_sha1": "ddfc31de35931be4cb8f03afe733f9aaa9712e08",
+      "after_sha1": "288696a4e201b070e6513ba2254f418d92e6b194"
+    },
+    "drink.png": {
+      "before_sha1": "31459216467ccd96202dc4a37d9bd55047753bbc",
+      "after_sha1": "c50db5fc6f1841bee8d9ad3543e63544b6eb4408"
+    }
+  },
+  "stand_top": 132,
+  "tone_gain": 0.78,
+  "tone_pivot": 0.6
+}
