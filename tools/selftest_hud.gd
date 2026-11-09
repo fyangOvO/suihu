@@ -50,6 +50,21 @@ func _on_frame() -> void:
 	main._process(0.016)
 	_check("wine drained hint hidden again", hint.visible == false)
 
+	# ---- 醉打（RB/U）冷卻提示 ----
+	var drunk_hint: Label = main.get_node_or_null("HUD/P1DrunkHint")
+	_check("HUD/P1DrunkHint node exists", drunk_hint != null)
+
+	p1._drunk_cd = 4.0
+	main._process(0.016)
+	_check("drunk cooling shows countdown", drunk_hint.text.contains("冷卻"))
+	_check("drunk cooling text has seconds", drunk_hint.text.contains("4.0s"))
+	_check("drunk cooling is greyed", drunk_hint.modulate.r < 0.6 and drunk_hint.modulate.g < 0.6)
+
+	p1._drunk_cd = 0.0
+	main._process(0.016)
+	_check("drunk ready shows ready text", drunk_hint.text.contains("可發"))
+	_check("drunk ready is not greyed", drunk_hint.modulate.r >= 0.6)
+
 	if fails.is_empty():
 		print("HUD_SELFTEST result=PASS")
 		quit(0)

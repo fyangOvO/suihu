@@ -46,6 +46,15 @@ func _process(delta):
 	$HUD/P1Wine.modulate = Color(1.0, 0.85, 0.3) if super_ready else Color(0.8, 0.75, 0.55)
 	$HUD/P1SuperHint.visible = super_ready
 
+	# 醉打（RB/U）冷卻：冷卻中灰化並顯示剩餘秒數，可用時恢復暖色
+	var drunk_cd: float = $P1._drunk_cd
+	if drunk_cd > 0.0:
+		$HUD/P1DrunkHint.text = "醉打冷卻 %.1fs" % drunk_cd
+		$HUD/P1DrunkHint.modulate = Color(0.45, 0.45, 0.5)
+	else:
+		$HUD/P1DrunkHint.text = "醉打可發（RB / U）"
+		$HUD/P1DrunkHint.modulate = Color(0.82, 0.8, 0.7)
+
 	if $P1.current_hp <= 0:
 		_show_result("你敗了…")
 	elif $P2.current_hp <= 0:
