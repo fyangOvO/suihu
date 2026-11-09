@@ -78,8 +78,8 @@ func change_state(new_state: String) -> void:
 	# 覺醒演出結束後清空酒氣
 	if old_state == "Super" and new_state != "Super":
 		wine_gauge = 0.0
-	# 反擊出手後清空指令緩衝
-	if new_state == "Counter":
+	# 指令技出手後清空指令緩衝，避免同一次輸入重複觸發
+	if new_state in ["Counter", "CmdTiger", "CmdUp"]:
 		_dir_history.clear()
 
 func _physics_process(delta: float) -> void:
@@ -127,7 +127,13 @@ func _physics_process(delta: float) -> void:
 	_apply_gravity(delta)
 	move_and_slide()
 	_face_opponent_when_free()
-	$Visual.play_action(_state, DATA.spec(_state), delta)
+	$Visual.play_action(_play_state(), DATA.spec(_play_state()), delta)
+
+## 滿酒氣待機時切換為拔刀覺醒立繪（僅替換播放姿態，狀態機與判定不變）
+func _play_state() -> String:
+	if _state == "Idle" and wine_gauge >= SUPER_REQUIRE_WINE:
+		return "AwakenIdle"
+	return _state
 
 func _read_input() -> void:
 	if is_player1:
@@ -154,41 +160,53 @@ func _read_input() -> void:
 		_dir_history.clear()
 
 ## 記錄本幀相對朝向的方向事件，維持指令緩衝窗口（舊→新）
+## 採數字小鍵盤語義（相對朝向）：5 中 / 2 下 / 1 下後 / 3 下前 / 4 後 / 6 前 / 7 上後 / 8 上 / 9 上前
 func _record_relative_dir() -> void:
 	var raw: float = Input.get_axis("p1_left", "p1_right")
-	var rel: String = "neutral"
+	var up: bool = Input.is_action_pressed("p1_up")
+	var rel: String = "5"
 	if _down:
 		if raw < -0.1:
-			rel = "back"      # 斜下後，併入 214 後段
+			rel = "1"      # 下後
 		elif raw > 0.1:
-			rel = "front"     # 斜下前，併入前段
+			rel = "3"      # 下前
 		else:
-			rel = "down"
-	elif raw < -0.1:
-		rel = "back" if face_direction > 0.0 else "front"
-	elif raw > 0.1:
-		rel = "front" if face_direction > 0.0 else "back"
+			rel = "2"      # 下
+	elif up:
+		if raw < -0.1:
+			rel = "7"
+		elif raw > 0.1:
+			rel = "9"
+		else:
+			rel = "8"
+	elif absf(raw) > 0.1:
+		var toward_forward: bool = (raw > 0.0) == (face_direction > 0.0)
+		rel = "6" if toward_forward else "4"
 	_dir_history.append(rel)
 	if _dir_history.size() > CMD_BUFFER_FRAMES:
 		_dir_history.pop_front()
 
-## 214（後→下→前，相對朝向）指令識別：緩衝窗口內按時間先後出現 back、down、front
-func _has_214() -> bool:
-	var seq: Array = _dir_history
-	var i_back: int = seq.find("back")
-	if i_back < 0:
-		return false
-	var i_down: int = -1
-	for i in range(i_back + 1, seq.size()):
-		if seq[i] == "down":
-			i_down = i
-			break
-	if i_down < 0:
-		return false
-	for i in range(i_down + 1, seq.size()):
-		if seq[i] == "front":
-			return true
+## 在緩衝窗口內按時間先後匹配方向序列（允許中間夾雜中立/其他方向）
+func _has_cmd(order: Array) -> bool:
+	var idx: int = 0
+	for token in _dir_history:
+		if token == order[idx]:
+			idx += 1
+			if idx >= order.size():
+				return true
 	return false
+
+## 214 下→下後→後（↓↙←），防禦反擊
+func _has_214() -> bool:
+	return _has_cmd(["2", "1", "4"])
+
+## 236 下→下前→前（↓↘→），打虎拳
+func _has_236() -> bool:
+	return _has_cmd(["2", "3", "6"])
+
+## 623 前→下→下前（→↓↘），昇龍對空
+func _has_623() -> bool:
+	return _has_cmd(["6", "2", "3"])
 
 func _run_ai(delta: float) -> void:
 	if opponent == null:
@@ -235,10 +253,17 @@ func _decide_free_state(_delta: float) -> void:
 	if _heavy_pressed and _state in ["Block", "CrouchBlock"]:
 		change_state("Counter")
 		return
-	# 完整指令技：214（後→下→前）+重 → 飛雲浦反擊
-	if _heavy_pressed and _has_214():
-		change_state("Counter")
-		return
+	# 完整指令技（共用方向緩衝隊列；重鍵觸發，優先級 214 > 623 > 236）
+	if _heavy_pressed:
+		if _has_214():
+			change_state("Counter")
+			return
+		if _has_623():
+			change_state("CmdUp")
+			return
+		if _has_236():
+			change_state("CmdTiger")
+			return
 	if _light_pressed:
 		change_state("Light1")
 		return
@@ -354,6 +379,10 @@ func _update_super_effect() -> void:
 	if _state == "Super":
 		var pulse: float = 0.5 + 0.5 * sin(float(_frame) * 0.35)
 		vis.modulate = Color(1.0 + 0.35 * pulse, 0.95 + 0.20 * pulse, 0.45 + 0.45 * pulse)
+	elif _state == "Idle" and wine_gauge >= SUPER_REQUIRE_WINE:
+		# 滿氣待機：柔和金輝呼吸，與 Super 的強脈衝區分
+		var breath: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.003)
+		vis.modulate = Color(1.0, 0.94 + 0.10 * breath, 0.72 + 0.22 * breath)
 	elif vis.modulate != Color(1.0, 1.0, 1.0):
 		vis.modulate = Color(1.0, 1.0, 1.0)
 

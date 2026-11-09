@@ -30,6 +30,47 @@ position = Vector2(600, 820)
 position = Vector2(1320, 820)
 is_player1 = false
 
+[node name="BattleCam" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="Cinematic" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Dim" type="ColorRect" parent="Cinematic"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.03, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="Slash" type="ColorRect" parent="Cinematic"]
+offset_left = 260.0
+offset_top = 520.0
+offset_right = 1660.0
+offset_bottom = 548.0
+pivot_offset = Vector2(700, 14)
+rotation = -0.32
+color = Color(1, 0.93, 0.68, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="Flash" type="ColorRect" parent="Cinematic"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0.97, 0.86, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
 [node name="HUD" type="CanvasLayer" parent="."]
 
 [node name="P1HP" type="ProgressBar" parent="HUD"]

@@ -193,19 +193,26 @@ const SPECS: Dictionary = {
 	},
 
 	# ---------- 指令技 / 覺醒（數據先就位，輸入接線後續迭代） ----------
+	"AwakenIdle": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 30, "frames": ["draw-knife.png"]},
+		"note": "滿酒氣待機立繪：拔刀覺醒姿態，僅替換視覺，不進入狀態機、不影響判定"
+	},
 	"CmdTiger": {
 		"loop": false,
 		"logic": {"startup": 10, "active": 6, "recovery": 22},
 		"damage": 110, "cancel_frame": -1, "hit_range": 220.0, "knockback": 320.0,
 		"visual": {"fps": 45, "frames": ["punch.png"]},
-		"note": "打虎拳 236+Y，38 幀=633ms（06 §3.3）；指令技 45fps"
+		"note": "打虎拳 236+重（↓↘→），38 幀=633ms（06 §3.3）；指令技 45fps"
 	},
 	"CmdUp": {
 		"loop": false,
 		"logic": {"startup": 12, "active": 8, "recovery": 28},
 		"damage": 130, "cancel_frame": -1, "hit_range": 150.0, "knockback": 120.0, "knock_up": 360.0,
 		"visual": {"fps": 50, "frames": ["uppercut.png"]},
-		"note": "鴛鴦樓昇斬 623+Y，對空浮空（06 §3.3）；浮空技 50fps"
+		"note": "鴛鴦樓昇斬 623+重（→↓↘），對空浮空（06 §3.3）；浮空技 50fps"
 	},
 	"CmdDrunk": {
 		"loop": false,
@@ -222,7 +229,7 @@ const SPECS: Dictionary = {
 		"knock_up": 260.0,
 		"invuln": {"start": 0, "end": 6},
 		"visual": {"fps": 30, "frames": ["punch-start.png", "punch.png"]},
-		"note": "飞云浦反击：站/蹲防中或HurtStand前4帧按重触发；前6帧招架无敌，命中120浮空；完整214方向输入缓冲为后续迭代"
+		"note": "飞云浦反击：214（↓↙←）+重、站/蹲防中按重、或HurtStand前4帧按重触发；前6帧招架无敌，命中120浮空"
 	},
 	"Super": {
 		"loop": false,
