@@ -35,6 +35,7 @@
 6. **8 张飞白偏亮帧压暗**：`tools/refine_rules.py` 高光肩部压缩（`TONE_PIVOT=0.60`、`TONE_HI_GAIN=0.78`），只动 0.60 以上高光，alpha 与暗部不变。亮像素（L>200）占前景比（%）：crouch-punch 2.09→1.46、crouch 1.78→1.07、dash 2.71→1.26、headbutt 1.02→0.60、hurt-head 3.21→2.61、punch-start 1.74→1.06、rising-punch 1.83→1.33、uppercut-start 1.64→0.96；8 帧中位 1.80→1.16，对齐全身组中位 1.24。主体亮度（alpha>128 均值）61→61 基本不变，五官/刀锋高光不受损。档位对比见 `docs/preview/art-tone-variants.png`（0.78 与 0.62 并列，0.62 已发浊故未采用）。
 7. **bust 与全身帧衔接**：6 帧 bust 顶边此前在 108/109，比全身 stand 组顶边中位数 132 高 27px，仰头饮酒/拔刀切换时头顶会跳。现以 `paste_at_top` 只平移不缩放对齐到 132，高度仍 378–380、水平中心 256（顶边差 0px）。`docs/preview/art-bust-vs-fullbody.png` 可见全身与半身头顶连成一线。
 8. **逐帧离群断言**：`tools/check_frame_outliers.py` 把 diff 升级为带阈值判据——fg 0.05–0.42、主体亮度 42–78、主色距 ≤42、亮像素 ≤3.0%、水平中心 ±4px、bust 高度 368–386 与顶边 ±6px 判 FAIL；灰边占比 >3.5% 只作 INFO（水墨飞白与去背白边数值重叠，必须目视）。46 帧 0 FAIL。同时修正度量口径：bbox 取 alpha>0，与管线 `getbbox` 一致（旧口径 alpha>8 会因淡边像素误报 wakeup 偏移 6px）。
+9. **脚位（落地基线）**：新增 `tools/refine_baseline_report.py` 与断言项——stand/air/ground 组底边必须落在 611±2（基线 612 的最后一像素行）。实测 46 帧底边范围 −2~−1px，浮空 0、压线 0；`docs/preview/art-all-frames.png` 为 46 帧总览（按 stand/air/ground/bust 排序并画出基线）。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 

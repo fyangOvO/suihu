@@ -97,6 +97,11 @@ def main() -> int:
             flags.append(f"cx={cx:.1f}")
         if g != "air" and g != "ground" and not (m["y0"] <= BASELINE_Y):
             flags.append("below-baseline")
+        # 脚位：stand/air/ground 组底边必须落在基线（612 的最后一像素行=611），浮空或压线即 FAIL
+        if g in ("stand", "air", "ground"):
+            bottom = m["y0"] + m["bh"] - 1
+            if abs(bottom - (BASELINE_Y - 1)) > 2:
+                flags.append(f"feet={bottom}({bottom - BASELINE_Y:+d})")
         if g == "bust":
             if not (BUST_H[0] <= m["bh"] <= BUST_H[1]):
                 flags.append(f"bust-h={m['bh']}")
