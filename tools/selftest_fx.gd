@@ -55,7 +55,12 @@ func _on_frame() -> void:
 	# ---- B. 刀光幾何：朝右輕拳 ----
 	a.face_direction = 1.0
 	a.change_state("Light1")
+	# startup 6 幀（0.1s）內不應出刀：刀光要等進入 active 命中窗口才亮
+	_check("slash waits for startup", core.visible == false and halo.visible == false)
+	_check("strike delay equals startup", is_equal_approx(fx.pending_delay(), 0.1))
+	_advance(0.12)
 	_check("strike makes slash visible", core.visible == true and halo.visible == true)
+	_check("strike delay cleared", is_equal_approx(fx.pending_delay(), 0.0))
 	_check("arc has 26 samples", core.points.size() == 26)
 	var all_forward: bool = true
 	var nan_free: bool = true
@@ -80,6 +85,7 @@ func _on_frame() -> void:
 	a.change_state("Idle")
 	a.face_direction = -1.0
 	a.change_state("Light1")
+	_advance(0.12)
 	var all_left: bool = true
 	for p in core.points:
 		if p.x >= 0.0:
@@ -90,6 +96,7 @@ func _on_frame() -> void:
 	a.change_state("Idle")
 	a.face_direction = 1.0
 	a.change_state("CmdUp")
+	_advance(0.22)
 	var first: Vector2 = core.points[0]
 	var last: Vector2 = core.points[core.points.size() - 1]
 	_check("rising arc sweeps upward (last y above first)", last.y < first.y - 40.0)
@@ -128,6 +135,7 @@ func _on_frame() -> void:
 	_check("drunk aura visible", aura.visible == true)
 	_check("drunk aura is wine red", aura.modulate.r > aura.modulate.g and aura.modulate.r > aura.modulate.b)
 	_check("drunk vapor emitting", vapor.emitting == true)
+	_advance(0.16)   # 等 startup 8 幀出刀
 	_check("drunk strike uses wider arc", core.width > light_width * 1.4)
 
 	a.change_state("Idle")

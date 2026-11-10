@@ -37,6 +37,7 @@
 8. **逐帧离群断言**：`tools/check_frame_outliers.py` 把 diff 升级为带阈值判据——fg 0.05–0.42、主体亮度 42–78、主色距 ≤42、亮像素 ≤3.0%、水平中心 ±4px、bust 高度 368–386 与顶边 ±6px 判 FAIL；灰边占比 >3.5% 只作 INFO（水墨飞白与去背白边数值重叠，必须目视）。46 帧 0 FAIL。同时修正度量口径：bbox 取 alpha>0，与管线 `getbbox` 一致（旧口径 alpha>8 会因淡边像素误报 wakeup 偏移 6px）。
 9. **脚位（落地基线）**：新增 `tools/refine_baseline_report.py` 与断言项——stand/air/ground 组底边必须落在 611±2（基线 612 的最后一像素行）。实测 46 帧底边范围 −2~−1px，浮空 0、压线 0；`docs/preview/art-all-frames.png` 为 46 帧总览（按 stand/air/ground/bust 排序并画出基线）。
 10. **刀光／酒气独立图层（V0.2.6，非美术帧，纯程序）**：`scripts/fighter_fx.gd` 四层（SlashCore／SlashHalo／Aura／DrunkVapor）挂在 `RiggedFighter.tscn` 的 `Fx` 下，不依赖任何新贴图。踩坑两条已固化为断言/文档：① 主场景 `Background` 与角色同层 z=0，会把 z=−1 的 aura 全遮（截图曾因此“酒气不可见”），已把 Background 压到 z=−2 并加 `aura z<0`、`刀光 z>0` 两条断言；② 截图脚本只关 `set_physics_process` 不足以冻结角色，仍会自由落体（y 614→888），必须 `process_mode=DISABLED` 并手动推 `visual.play_action`／`fx._physics_process`。离屏渲染走 1280×720 SubViewport，主窗口 16×16 并移到屏幕外（`--display-driver headless` 是 dummy 渲染器，取纹理必 null）。对照图 `docs/preview/fx-sheet.png`（六态拼图）。
+11. **刀光时序对齐 active 帧（V0.2.7）**：原先一 `change_state` 就亮刀，亮起时攻击盒还没开（Light1 startup 6 帧=0.1s，刀光 0.18s 提前烧掉一半）。现 `strike()` 接受 `delay = startup/60`，`Fx` 自行计时到点才建弧；切入非攻击状态 `cancel()` 收回。自测 3 项（startup 内不可见、`pending_delay()==0.1`、到点清零），截图脚本也改成“startup+4 帧”再截，六张对照无一空帧。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 

@@ -86,8 +86,9 @@
 - [x] **V0.2.6 刀光／酒氣獨立圖層（`tools/selftest_fx.gd` 30 項斷言 PASS）**：純程序繪製，不引入額外貼圖。`scripts/fighter_fx.gd` 掛在 `RiggedFighter.tscn` 新增的 `Fx`（Node2D）下，四層各管一件事——`SlashCore`（Line2D，26 點弧＋兩端收尖 `width_curve`）／`SlashHalo`（Line2D，更寬、`blend_mode=1` 疊加、alpha 0.55）／`Aura`（Sprite2D，128×128 徑向漸變輝光，z=−1 落在身體之後）／`DrunkVapor`（CPUParticles2D 酒霧，僅醉打期間 emitting）。
   - 六種刀光預設 `ARC_KINDS`：light 112 / heavy 128 / rising 126 / low 100 / air 114 / drunk 140，核心寬度 5–9，生命 0.18–0.32s；朝向右時弧在右側，`face=−1` 整弧鏡像；`CmdUp` 弧向上掃（自測斷言 last.y < first.y）。
   - 酒氣三態：Super 金脈衝（alpha 0.40–0.70、scale 脈動）／滿氣待機柔和呼吸（0.14–0.30）／醉打酒紅（0.24–0.48）；退出即熄。
-  - 接線：`change_state()` 末行 `_fx_state()` 一次性觸發（Light1·2·Counter→light、Light3·Heavy·CmdTiger→heavy、CrouchLight→low、AirLight·AirHeavy→air、CmdUp→rising、Super→drunk 且 `CmdDrunk` 額外補一刀），`_physics_process()` 首部 `_fx_sync()` 每邏輯幀同步 aura 模式與酒霧開關；特效只讀 `_state/_frame/wine_gauge/face_direction`，不回寫戰鬥數值、不碰判定盒。
-  - **層級修正**：主場景 `Background` 原與角色同層 z=0，會把 z=−1 的 aura 整塊蓋掉（截圖一度全黑無輝光）；已把 Background 壓到 z=−2，並在自測加兩條層級断言（aura<0、刀光>0）。
+  - 接線：`change_state()` 末行 `_fx_state()` 觸發（Light1·2·Counter→light、Light3·Heavy·CmdTiger→heavy、CrouchLight→low、AirLight·AirHeavy→air、CmdUp→rising、CmdDrunk·Super→drunk），**刀光延遲到 startup 走完（= 進入 active 命中窗口）才亮**，與攻擊盒開盒同步；切入非攻擊狀態即 `fx.cancel()` 收回未出鞘的刀。`_physics_process()` 首部 `_fx_sync()` 每邏輯幀同步 aura 模式與酒霧開關；特效只讀 `_state/_frame/wine_gauge/face_direction`，不回寫戰鬥數值、不碰判定盒。
+   - 層級修正：主場景 `Background` 原與角色同層 z=0，會把 z=−1 的 aura 整塊蓋掉（截圖一度全黑無輝光）；已把 Background 壓到 z=−2，並在自測加兩條層級断言（aura<0、刀光>0）。
+  - **時序修正（V0.2.7）**：刀光不再於「進入招式」瞬間亮、而是等 `startup` 幀走完（`delay = startup / 60`，由 `DATA.spec(...).logic.startup` 讀取）才出刀，落到 active 第一幀，和攻擊盒開盒對齊；`CmdDrunk`/`Super` 各一刀（原本醉打誤觸發兩次已改單次）；中途被受擊或待機打斷則 `cancel()` 收回。自測新增 3 項（startup 內不出刀、延遲值＝startup/60、到點清零）。
   - 截圖工具改為 **SubViewport 離屏**：`tools/capture_fx_preview.gd` 用 1280×720 SubViewport 渲染、主視窗 16×16 並移到螢幕外，角色 `process_mode=DISABLED` 凍結（先前只關 physics 仍會自由落體，導致畫面逐張下沉放大）；六張對照拼圖 `tools/fx_sheet.py` 出 `docs/preview/fx-sheet.png`（Light／Heavy／CmdUp／Awaken／Super／CmdDrunk）。
   - 觀感取捨：刀光由「寬月牙」收成細筆鋒（核心寬 5–9、halo 只 +4 且疊加混合），避免糊成實心色帶；酒氣輝光半徑放到 3.0×3.3 並提亮，暗背景下一眼可辨。
 

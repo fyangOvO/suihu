@@ -418,10 +418,13 @@ func _fx_state(state_name: String) -> void:
 	if fx == null:
 		return
 	var kind := _fx_kind(state_name)
-	if kind != "":
-		fx.strike(kind, face_direction)
-	if state_name == "CmdDrunk":
-		fx.strike("drunk", face_direction)
+	if kind == "":
+		fx.cancel()          # 切入非攻擊狀態（受擊/待機等）＝上一刀被打斷
+		return
+	# 刀光等 startup 走完（進入 active 命中窗口）才亮，與判定盒開盒同步
+	var lg: Dictionary = DATA.spec(state_name).get("logic", {})
+	var startup: int = int(lg.get("startup", 0))
+	fx.strike(kind, face_direction, float(startup) / 60.0)
 
 ## 招式 → 刀光種類（弧度/寬度/色溫不同，rise 由下往上、air 由上往下）
 func _fx_kind(state_name: String) -> String:
@@ -436,7 +439,7 @@ func _fx_kind(state_name: String) -> String:
 			return "air"
 		"CmdUp":
 			return "rising"
-		"Super":
+		"CmdDrunk", "Super":
 			return "drunk"
 	return ""
 

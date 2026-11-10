@@ -9,12 +9,23 @@ extends SceneTree
 const DEST := "D:/水滸g/docs/preview/"
 const RES := Vector2i(1280, 720)
 const DATA := preload("res://data/action_frame_data.gd")
+const PLAN := [
+	{"state": "Light1", "file": "fx-light.png"},
+	{"state": "Heavy", "file": "fx-heavy.png"},
+	{"state": "CmdUp", "file": "fx-rising.png"},
+	{"state": "Awaken", "file": "fx-awaken.png"},
+	{"state": "Super", "file": "fx-super.png"},
+	{"state": "CmdDrunk", "file": "fx-drunk.png"},
+]
 
 var vp: SubViewport
 var fighter: CharacterBody2D
 var visual: Sprite2D
 var fx: Node2D
-var n: int = 0
+var idx: int = 0
+var wait: int = 0
+var captured: bool = false
+var started: bool = false
 
 func _initialize() -> void:
 	# 主視窗縮到 1x1 並推到螢幕外，避免任何可見視窗干擾
@@ -43,50 +54,47 @@ func _initialize() -> void:
 	fx = fighter.get_node("Fx")
 
 func _process(_delta: float) -> bool:
-	n += 1
-	# 控制器與 Fx 都被凍結，這裡手動推進姿態序列與特效時鐘
+	if not started:
+		# 首幀才 stage：節點 _ready 會把狀態重置成 Idle，初始化階段切的狀態會被吞掉
+		started = true
+		_stage(PLAN[0]["state"])
+		return false
+	# 控制器與 Fx 都被凍結，這裡手動推進姿態序列與特效時鐘（每幀 = 1 邏輯幀）
 	var st: String = fighter._play_state()
 	visual.play_action(st, DATA.spec(st), 1.0 / 60.0)
 	fx._physics_process(1.0 / 60.0)
-	match n:
-		4:
-			fighter.change_state("Light1")
-		12:
-			_capture("fx-light.png")
-		16:
-			fighter.change_state("Idle")
-		18:
-			fighter.change_state("Heavy")
-		26:
-			_capture("fx-heavy.png")
-		30:
-			fighter.change_state("Idle")
-		32:
-			fighter.change_state("CmdUp")
-		40:
-			_capture("fx-rising.png")
-		44:
-			fighter.change_state("Idle")
-			fighter.wine_gauge = 100.0
-			fighter._fx_sync()
-		52:
-			_capture("fx-awaken.png")
-		56:
-			fighter.change_state("Super")
-			fighter.wine_gauge = 100.0
-			fighter._fx_sync()
-		64:
-			_capture("fx-super.png")
-		68:
-			fighter.change_state("Idle")
-			fighter.wine_gauge = 50.0
-			fighter.change_state("CmdDrunk")
-			fighter._fx_sync()
-		78:
-			_capture("fx-drunk.png")
-		84:
-			quit(0)
+	if wait > 0:
+		wait -= 1
+		return false
+	if not captured:
+		_capture(PLAN[idx]["file"])
+		captured = true
+		wait = 6                # 兩張之間留幾幀，避免上一張殘影
+		return false
+	idx += 1
+	if idx >= PLAN.size():
+		quit(0)
+		return true
+	_stage(PLAN[idx]["state"])
 	return false
+
+## 切到目標狀態，並把等待時間設成「startup 幀數 + 4」——刀光在 active 第一幀之後才截
+func _stage(state_name: String) -> void:
+	fighter.change_state("Idle")
+	if state_name == "Awaken":
+		fighter.wine_gauge = 100.0
+		fighter._fx_sync()
+		wait = 6
+	else:
+		if state_name == "CmdDrunk":
+			fighter.wine_gauge = 50.0
+		fighter.change_state(state_name)
+		if state_name == "Super":
+			fighter.wine_gauge = 100.0
+		fighter._fx_sync()
+		var lg: Dictionary = DATA.spec(state_name).get("logic", {})
+		wait = int(lg.get("startup", 0)) + 4
+	captured = false
 
 func _capture(file_name: String) -> void:
 	print("DBG ", file_name, " vp=", vp.size, " canvas_xf=", vp.canvas_transform,

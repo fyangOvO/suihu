@@ -32,6 +32,9 @@ var _t: float = 0.0
 var _logic_frame: int = 0
 var _aura_mode: String = "none"
 var _aura_scale: Vector2 = Vector2.ONE
+var _pending_kind: String = ""
+var _pending_face: float = 1.0
+var _delay: float = 0.0        # 待發延遲（= 招式 startup 幀數 / 60），到點才真正出刀
 
 
 func _ready() -> void:
@@ -60,6 +63,8 @@ func _ensure_width_curve(node_name: String) -> void:
 func reset() -> void:
 	_life = 0.0
 	_total = 0.0
+	_pending_kind = ""
+	_delay = 0.0
 	for n in ["SlashCore", "SlashHalo"]:
 		var ln := get_node_or_null(n) as Line2D
 		if ln != null:
@@ -75,7 +80,42 @@ func reset() -> void:
 
 
 ## 觸發一刀刀光；face 為朝向（1 右 / -1 左）
-func strike(kind: String, face: float) -> void:
+## delay > 0 時先掛起，等 startup 走完（= 進入 active 命中窗口）才亮，讓刀光與判定盒同步
+func strike(kind: String, face: float, delay: float = 0.0) -> void:
+	if delay > 0.0:
+		_pending_kind = kind
+		_pending_face = face
+		_delay = delay
+		_total = 0.0
+		_life = 0.0
+		for n in ["SlashCore", "SlashHalo"]:
+			var ln := get_node_or_null(n) as Line2D
+			if ln != null:
+				ln.visible = false
+				ln.modulate = Color(1, 1, 1, 0)
+		return
+	_arm(kind, face)
+
+
+## 招式被打斷（切到非攻擊狀態）時，取消尚未出鞘的刀光與殘留弧
+func cancel() -> void:
+	_pending_kind = ""
+	_delay = 0.0
+	_total = 0.0
+	_life = 0.0
+	for n in ["SlashCore", "SlashHalo"]:
+		var ln := get_node_or_null(n) as Line2D
+		if ln != null:
+			ln.visible = false
+			ln.modulate = Color(1, 1, 1, 0)
+
+
+## 尚未出刀的剩餘延遲（秒），0 表示已出刀或無待發
+func pending_delay() -> float:
+	return _delay
+
+
+func _arm(kind: String, face: float) -> void:
 	var cfg: Dictionary = ARC_KINDS.get(kind, ARC_KINDS["light"])
 	var core := get_node_or_null("SlashCore") as Line2D
 	var halo := get_node_or_null("SlashHalo") as Line2D
@@ -116,6 +156,13 @@ func _apply_alpha(a: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	_t += delta
+	if _delay > 0.0:
+		_delay = maxf(0.0, _delay - delta)
+		if _delay <= 0.0 and _pending_kind != "":
+			var k: String = _pending_kind
+			var f: float = _pending_face
+			_pending_kind = ""
+			_arm(k, f)
 	if _total > 0.0:
 		_life = maxf(0.0, _life - delta)
 		var p: float = clampf(1.0 - _life / _total, 0.0, 1.0)
