@@ -124,6 +124,14 @@
   - 「慢、可閃」的實現口徑：石頭按固定弧線飛、不追蹤，玩家走位或跳起即可躲開；直徑約 68px（1920 畫面寬的 3.5%），離屏截圖 `docs/preview/rock-preview.png` 已核對大小與暗底對比。
   - 自測新增 4 項：遠距擲石決策、冷卻壓制、中距離不擲石、實跑（420px 外扔出命中扣 75 且石頭自行釋放）；`selftest_ai` 共 39 項。
 
+- [x] **V0.2.13 伥鬼死亡化青煙 + 掉落（docs/04 §2；`tools/selftest_death.gd` 16 項 PASS）**：
+  - **死亡演出**：血量歸零（含被牆族加成打死、架招磨死）不再進常規 `HurtStand`，改走 `_begin_death()`——倒地姿態 + 青煙粒子，0.25s 起本體淡出 0.8s，1.05s 收尾（隱藏本體、關碰撞、掉東西）。`_physics_process` 頂端 `_dying` 分支完全接管該幀，不讀輸入、不出招；`take_damage()`／`on_blocked()` 對 `_dying` 直接 return，屍體不會被鞭屍重複結算。
+  - **青煙不引入新貼圖**：`GradientTexture2D` 徑向白→透明 32×32 作粒子貼圖，`CPUParticles2D` 走細煙柱（spread 14、初速 120–260、重力 −40、淡綠 alpha 0.30、2.2s 後自清），不是一團綠球；離屏預覽 `docs/preview/death-mist-preview.png`（960×540，驗煙柱形狀與暗底對比）。
+  - **掉落系統（工程原本沒有）**：新增 `scripts/coin_pickup.gd`——純 Node2D 程序繪製（碎銀不規則銀塊／木牌木片+掛繩）、上下浮動、玩家受擊框（64×180）重疊即拾取並回調主場景。碎銀必掉、木牌按 `drop_chance`（默認 0.1，export 可調）；`main_rigged.gd` 加拾取提示 Label（「拾得：xxx」，2s 淡出）。
+  - **勝負判定**改為 `$P2.current_hp <= 0 and $P2._death_done`——青煙散完才彈「武松勝！」，避免人還沒散就出結果。
+  - **踩坑（自測時序）**：P2 若同時由引擎物理推進、又在物理回調裡手推 `_physics_process`，兩條推進疊加會讓 `_death_t` 兩倍速（n=35 就已 finished、alpha 0），「淡出中」斷言必假；只能選一條——現在 P2 交給引擎自走，只手推 `main._process`。
+  - 全量回歸（10 個自測 + 主場景 `--quit-after 240`）全 RC=0；`selftest_ai` 受擊後退段的假人血量由 1 改成 50（原值會被新死亡演出判死、AI 直接凍住），其餘斷言不變。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）

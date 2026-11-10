@@ -151,7 +151,7 @@ func _on_physics() -> void:
 			_check("AI never jumps", not saw_jump)
 			a.current_hp = a.max_hp
 			x_at_hit = b.position.x
-			b.current_hp = 1        # 壓到低血線，順便驗 panic 節奏
+			b.current_hp = 50       # 壓到低血線（<30%）順便驗 panic 節奏；別壓到 1，否則會觸發死亡演出
 			b.take_damage(10, -1.0, 0.0)   # 從右側被擊中 → 擊退往左，AI 應往右退
 			_check("hit sets retreat timer", b._ai_retreat > 0.0)
 			phase = 1

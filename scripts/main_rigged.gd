@@ -3,6 +3,8 @@ extends Node2D
 var _battle_over: bool = false
 var _result_timer: float = 0.0
 var _result_label: Label
+var _pickup_label: Label
+var _pickup_timer: float = 0.0
 
 # 覺醒過場演出（Super 觸發時：推鏡 + 暗角 + 刀光 + 定格白閃）
 const CINE_DURATION: float = 2.0
@@ -24,6 +26,15 @@ func _ready():
 	_result_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
 	_result_label.visible = false
 	add_child(_result_label)
+	# 拾取提示：走過去撿到碎銀／木牌時彈一行字，2 秒後淡出
+	_pickup_label = Label.new()
+	_pickup_label.position = Vector2(560.0, 96.0)
+	_pickup_label.size = Vector2(800.0, 40.0)
+	_pickup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_pickup_label.add_theme_font_size_override("font_size", 28)
+	_pickup_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.52))
+	_pickup_label.visible = false
+	add_child(_pickup_label)
 	_cam = get_node_or_null("BattleCam")
 	_dim = get_node_or_null("Cinematic/Dim")
 	_slash = get_node_or_null("Cinematic/Slash")
@@ -31,6 +42,7 @@ func _ready():
 
 func _process(delta):
 	_update_cinematic(delta)
+	_tick_pickup_hint(delta)
 	if _battle_over:
 		_result_timer -= delta
 		if _result_timer <= 0:
@@ -60,7 +72,8 @@ func _process(delta):
 
 	if $P1.current_hp <= 0:
 		_show_result("你敗了…")
-	elif $P2.current_hp <= 0:
+	elif $P2.current_hp <= 0 and $P2._death_done:
+		# 等伥鬼化完青煙再判勝，避免人還沒散就彈結果
 		_show_result("武松勝！")
 
 ## 演出推進：只在 P1 進入 Super 時啟動，離開 Super 或超時即復位
@@ -126,3 +139,20 @@ func _show_result(text: String):
 	_result_timer = 2.0
 	_result_label.text = text
 	_result_label.visible = true
+
+## 掉落物拾取回調（coin_pickup 在父節點上找這個方法）
+func _on_pickup_collected(item_name: String) -> void:
+	_pickup_label.text = "拾得：%s" % item_name
+	_pickup_label.modulate = Color(1, 1, 1, 1)
+	_pickup_label.visible = true
+	_pickup_timer = 2.0
+
+## 拾取提示淡出
+func _tick_pickup_hint(delta: float) -> void:
+	if _pickup_timer <= 0.0:
+		return
+	_pickup_timer -= delta
+	if _pickup_timer <= 0.0:
+		_pickup_label.visible = false
+	else:
+		_pickup_label.modulate.a = clampf(_pickup_timer / 0.5, 0.0, 1.0)

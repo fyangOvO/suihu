@@ -44,6 +44,8 @@
 15. **伥鬼伤害列（V0.2.11）**：`ENEMY_STARTUP_BONUS` 升级为 `ENEMY_OVERRIDES = {Light1: {startup:+2, damage:65}, Heavy: {startup:+3, damage:130}}`，`_spec()` 同时覆盖 startup 与 damage，仍只对非 P1 生效。实跑断言：强制伥鬼出 Light1，P1 实际扣 65（而武松自己打 40）。
 16. **伥鬼扔石头（V0.2.12）**：`scripts/rock_projectile.gd` 用纯 Node2D 走弧线＋矩形重叠，不建 Area2D——物理回调里 `add_child` 的 Area2D 拿不到 space 是旧坑，这里彻底绕开。落点由 `flight_time = clamp(dist/430, 0.55, 1.5)` 反算，`vy = -0.5*g*T`，正好压到对面受击框。AI 侧 `dist > 360` 才掷、冷却 2.5s，中近距不掷。**命名坑**：计划串不能叫 `throw`——`_contains_forbidden()` 把 `throw` 当作投技（指令投）列入禁项，改叫 `rock`。离屏预览 `docs/preview/rock-preview.png`（1920 渲染后缩 960）。
 
+17. **伥鬼死亡化青煙 + 掉落（V0.2.13，演出／掉落層）**：血量歸零（含牆族加成、架招磨死）走 `_begin_death()`，`_physics_process` 頂端 `_dying` 分支完全接管（不讀輸入不出招），0.25s 起本體淡出 0.8s、1.05s 收尾隱藏本體＋關碰撞；青煙用 `GradientTexture2D` 徑向漸層（32×32 白→透明）作 `CPUParticles2D` 貼圖，細煙柱（spread 14、初速 120–260、重力 −40、alpha 0.30），不引入新素材。掉落補上工程原本沒有的系統：`scripts/coin_pickup.gd` 純 Node2D 程序繪製＋64×180 重疊判定＋上下浮動，碎銀必掉、木牌 10%（`drop_chance` 可 export 調），主場景加「拾得：xxx」提示並在青煙散完後才判勝（`$P2._death_done`）。**踩坑**：自測同時讓引擎與手動各推一次 P2 的 `_physics_process`，死亡計時兩倍速（n=35 就 finished、alpha=0），淡出斷言必假——引擎推進與手動推進只能留一條；另 `selftest_ai` 受擊後退段原本把假人血量壓到 1，現在會直接判死凍住 AI，已改成 50。預覽 `docs/preview/death-mist-preview.png`。
+
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 
 - 全部帧脚位/缩放/重心与动态连贯性，需在 Godot 2D 视图实跑各动作序列目视；bust 顶边已数值对齐（0px 差），若观感仍跳可微调 `refine_rules.STAND_TOP_Y`。

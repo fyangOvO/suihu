@@ -84,6 +84,18 @@ const AI_THROW_RATE: float = 0.3         # 遠距時選擇扔石頭的概率
 const AI_THROW_CD: float = 2.5           # 扔石頭冷卻（秒）
 const ROCK_DAMAGE: int = 75              # 石頭傷害（介於站輕 65 與站重 130 之間）
 const ROCK_SCENE := preload("res://scripts/rock_projectile.gd")
+const PICKUP_SCENE := preload("res://scripts/coin_pickup.gd")
+# 死亡演出（docs/04 §2：伥鬼沒有身體，死後化為一縷青煙）
+const DEATH_FADE_START: float = 0.25   # 青煙先起，本體延後淡出
+const DEATH_FADE_TIME: float = 0.80
+const DEATH_TOTAL: float = 1.05        # 到此刻收尾（隱藏本體、掉東西）
+
+## 死亡狀態 / 掉落
+var _dying: bool = false
+var _death_done: bool = false
+var _death_t: float = 0.0
+var _rng := RandomNumberGenerator.new()
+@export var drop_chance: float = 0.1    # 「伥鬼的木牌」掉率（docs/04 §2）
 # 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀），傷害另給一列——
 # 只加在非 P1 的實例上，不动全局數據表，武松手感維持 6／12 幀、40／90 傷害。
 const ENEMY_OVERRIDES: Dictionary = {
@@ -109,6 +121,7 @@ func _spec(state_name: String) -> Dictionary:
 	return copy
 
 func _ready() -> void:
+	_rng.randomize()
 	current_hp = max_hp
 	face_direction = 1.0 if is_player1 else -1.0
 	change_state("Idle")
@@ -148,6 +161,10 @@ func change_state(new_state: String) -> void:
 	_fx_state(new_state)
 
 func _physics_process(delta: float) -> void:
+	# 死亡演出：完全接管本幀，不再讀輸入、不再出招
+	if _dying:
+		_tick_death(delta)
+		return
 	_read_input()
 	_tick_cooldowns(delta)
 	_update_super_effect()
@@ -558,6 +575,8 @@ func _set_attack_shape(enabled: bool) -> void:
 		n.set_disabled(not enabled)
 
 func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
+	if _dying:
+		return
 	var spec: Dictionary = _spec(_state)
 	if DATA.is_invulnerable(spec, _frame):
 		return
@@ -575,8 +594,95 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		velocity = Vector2.ZERO
 		change_state("WallStick")
 		return
+	# 血量歸零：伥鬼化青煙（docs/04 §2），不進常規受擊
+	current_hp = maxi(current_hp, 0)
+	if not is_player1 and current_hp <= 0:
+		_begin_death()
+		return
 	velocity = Vector2(from_dir * 200.0, -100.0 if knock_up <= 0.0 else -knock_up)
 	change_state("HurtStand")
+
+## 死亡演出開始：倒地姿態 + 青煙粒子，本體隨後淡出
+func _begin_death() -> void:
+	if _dying:
+		return
+	_dying = true
+	_death_done = false
+	_death_t = 0.0
+	_ai_cd = 999.0
+	_ai_retreat = 0.0
+	velocity = Vector2.ZERO
+	change_state("Knockdown")
+	_spawn_death_mist()
+
+## 死亡演出推進：不讀輸入、不出招；青煙先起，本體 0.25s 後淡出 0.8s
+func _tick_death(delta: float) -> void:
+	_death_t += delta
+	_frame += 1
+	velocity = Vector2.ZERO
+	$Visual.play_action("Knockdown", _spec("Knockdown"), delta)
+	if _death_t >= DEATH_FADE_START:
+		var k: float = clampf((_death_t - DEATH_FADE_START) / DEATH_FADE_TIME, 0.0, 1.0)
+		$Visual.modulate.a = 1.0 - k
+	if _death_t >= DEATH_TOTAL and not _death_done:
+		_finish_death()
+
+## 演出收尾：隱藏本體、關碰撞（可穿過青煙）、按 10% 掉木牌
+func _finish_death() -> void:
+	_death_done = true
+	$Visual.visible = false
+	$Collision.set_deferred("disabled", true)
+	$HurtBox.set_deferred("monitorable", false)
+	$HurtBox.set_deferred("monitoring", false)
+	_spawn_drop(false)
+
+## 掉落：碎銀必掉；木牌按 drop_chance（docs/04 §2「碎銀 ×10% 概率掉伥鬼的木牌」）
+func _spawn_drop(force_tag: bool) -> void:
+	var parent_node: Node = get_parent()
+	if parent_node == null:
+		return
+	var silver: Node2D = PICKUP_SCENE.new()
+	parent_node.add_child(silver)
+	silver.setup(opponent, "碎銀", Vector2(global_position.x - 30.0, global_position.y - 30.0))
+	if force_tag or _rng.randf() < drop_chance:
+		var tag: Node2D = PICKUP_SCENE.new()
+		parent_node.add_child(tag)
+		tag.setup(opponent, "伥鬼的木牌", Vector2(global_position.x + 30.0, global_position.y - 30.0))
+
+## 青煙粒子：程序生成的徑向漸層貼圖，柔邊不方塊，不引入外部素材
+func _spawn_death_mist() -> void:
+	var mist := CPUParticles2D.new()
+	mist.amount = 50
+	mist.lifetime = 1.8
+	mist.one_shot = true
+	mist.explosiveness = 0.1      # 慢慢吐，形成一縷上升的煙柱而不是一團
+	mist.direction = Vector2(0.0, -1.0)
+	mist.spread = 14.0
+	mist.gravity = Vector2(0.0, -40.0)
+	mist.initial_velocity_min = 120.0
+	mist.initial_velocity_max = 260.0
+	mist.scale_amount_min = 0.9
+	mist.scale_amount_max = 1.8
+	mist.color = Color(0.42, 0.78, 0.55, 0.30)
+	mist.position = Vector2(0.0, -80.0)
+	mist.z_index = 1
+	mist.texture = _mist_texture()
+	mist.emitting = true
+	add_child(mist)
+	get_tree().create_timer(2.2).timeout.connect(mist.queue_free)
+
+func _mist_texture() -> GradientTexture2D:
+	var g := Gradient.new()
+	g.set_color(0, Color(1, 1, 1, 1))
+	g.set_color(1, Color(1, 1, 1, 0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = g
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(0.5, 0.0)
+	tex.width = 32
+	tex.height = 32
+	return tex
 
 ## 擊退方向上 20px 內是否有靜態牆；對手身體不算牆（貼身對打不能誤判成牆族）
 func _wall_on_side(dir: float) -> bool:
@@ -590,6 +696,8 @@ func _wall_on_side(dir: float) -> bool:
 
 func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	# 依防禦姿態折減傷害與擊退；空防不被向上挑空
+	if _dying:
+		return
 	var ratio: float = float(GUARD_RATIO.get(_defense, 0.5))
 	var push: float = 80.0
 	if _defense == "crouch":
@@ -597,6 +705,11 @@ func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	elif _defense == "air":
 		push = 60.0
 	current_hp -= int(round(float(dmg) * ratio))
+	# 架招也會被打死（邊緣情況）：同樣走青煙演出
+	current_hp = maxi(current_hp, 0)
+	if not is_player1 and current_hp <= 0:
+		_begin_death()
+		return
 	velocity.x = from_dir * push
 	if _defense == "air":
 		velocity.y = minf(velocity.y, 0.0)
