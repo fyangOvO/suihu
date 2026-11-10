@@ -45,6 +45,7 @@ position = Vector2(600, 820)
 [node name="P2" parent="." instance=ExtResource("1_fighter")]
 position = Vector2(1320, 820)
 is_player1 = false
+max_hp = 180
 
 [node name="BattleCam" type="Camera2D" parent="."]
 position = Vector2(960, 540)
@@ -131,8 +132,8 @@ offset_left = 1360.0
 offset_top = 30.0
 offset_right = 1860.0
 offset_bottom = 50.0
-max_value = 800.0
-value = 800.0
+max_value = 180.0
+value = 180.0
 
 [node name="P1Name" type="Label" parent="HUD"]
 offset_left = 60.0

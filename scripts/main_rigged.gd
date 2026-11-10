@@ -37,7 +37,10 @@ func _process(delta):
 			get_tree().change_scene_to_file("res://scenes/NodeMap.tscn")
 		return
 
+	# 血條上限跟隨角色 max_hp（伥鬼 180／武松 800，數值集中在角色節點上）
+	$HUD/P1HP.max_value = $P1.max_hp
 	$HUD/P1HP.value = $P1.current_hp
+	$HUD/P2HP.max_value = $P2.max_hp
 	$HUD/P2HP.value = $P2.current_hp
 
 	# 酒氣條：滿氣 100 高亮並顯示覺醒提示（P2 為占位 AI，不繪製氣條）

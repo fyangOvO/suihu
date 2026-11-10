@@ -78,6 +78,23 @@ const AI_HEAVY_RATE: float = 0.25        # 貼身時改出重招的概率
 const AI_DASH_RATE: float = 0.25         # 中距離前衝棍擊的概率
 const AI_WALK: float = 0.55              # 移速倍率（沿用原 AI 手感）
 const AI_RETREAT_TIME: float = 0.5       # 被打後退持續（秒）
+# 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀）——只加在非 P1 的實例上，
+# 不动全局數據表，武松手感維持 6／12。
+const ENEMY_STARTUP_BONUS: Dictionary = {"Light1": 2, "Heavy": 3}
+
+## 動作規格：敵方實例在共用數據表上疊 startup 補償；回傳的字典已複製，改動不會污染 SPECS
+func _spec(state_name: String) -> Dictionary:
+	var base: Dictionary = DATA.spec(state_name)
+	if is_player1:
+		return base
+	var bonus: int = int(ENEMY_STARTUP_BONUS.get(state_name, 0))
+	if bonus <= 0:
+		return base
+	var lg: Dictionary = (base["logic"] as Dictionary).duplicate()
+	lg["startup"] = int(lg.get("startup", 0)) + bonus
+	var copy: Dictionary = base.duplicate(false)
+	copy["logic"] = lg
+	return copy
 
 func _ready() -> void:
 	current_hp = max_hp
@@ -126,7 +143,7 @@ func _physics_process(delta: float) -> void:
 	if not is_player1:
 		_run_ai(delta)
 
-	var spec: Dictionary = DATA.spec(_state)
+	var spec: Dictionary = _spec(_state)
 
 	# 牆族：黏牆期間完全定身（不計重力），時長走完後彈回空中，可被浮空追打
 	if _state == "WallStick":
@@ -178,7 +195,7 @@ func _physics_process(delta: float) -> void:
 	_apply_gravity(delta)
 	move_and_slide()
 	_face_opponent_when_free()
-	$Visual.play_action(_play_state(), DATA.spec(_play_state()), delta)
+	$Visual.play_action(_play_state(), _spec(_play_state()), delta)
 
 ## 滿酒氣待機時切換為拔刀覺醒立繪（僅替換播放姿態，狀態機與判定不變）
 func _play_state() -> String:
@@ -282,7 +299,7 @@ func _ai_ctx(dist: float) -> Dictionary:
 	var opp_spec: Dictionary = {}
 	if opponent != null and is_instance_valid(opponent):
 		opp_state = opponent._state
-		opp_spec = DATA.spec(opp_state)
+		opp_spec = opponent._spec(opp_state)
 	var lg: Dictionary = opp_spec.get("logic", {})
 	var startup: int = int(lg.get("startup", 0))
 	var active_end: int = startup + int(lg.get("active", 0))
@@ -449,7 +466,7 @@ func _decide_free_state(_delta: float) -> void:
 
 ## 取消鏈：僅在取消幀之後、且招式允許時切入（對齊 06 §3.6）
 func _try_cancel() -> bool:
-	var spec: Dictionary = DATA.spec(_state)
+	var spec: Dictionary = _spec(_state)
 	var cancel_frame: int = int(spec.get("cancel_frame", -1))
 	if cancel_frame < 0 or _frame < cancel_frame:
 		return false
@@ -505,7 +522,7 @@ func _set_attack_shape(enabled: bool) -> void:
 		n.set_disabled(not enabled)
 
 func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
-	var spec: Dictionary = DATA.spec(_state)
+	var spec: Dictionary = _spec(_state)
 	if DATA.is_invulnerable(spec, _frame):
 		return
 	current_hp -= dmg
@@ -575,7 +592,7 @@ func _fx_state(state_name: String) -> void:
 		fx.cancel()          # 切入非攻擊狀態（受擊/待機等）＝上一刀被打斷
 		return
 	# 刀光等 startup 走完（進入 active 命中窗口）才亮，與判定盒開盒同步
-	var lg: Dictionary = DATA.spec(state_name).get("logic", {})
+	var lg: Dictionary = _spec(state_name).get("logic", {})
 	var startup: int = int(lg.get("startup", 0))
 	fx.strike(kind, face_direction, float(startup) / 60.0)
 

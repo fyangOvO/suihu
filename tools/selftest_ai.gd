@@ -60,6 +60,13 @@ func _initialize() -> void:
 	a.set_physics_process(false)   # 假人完全靜止，不干擾 AI 判定
 	b.is_player1 = false           # 伥鬼 AI
 
+	# ---- 伥鬼数值：HP 由主场景给 180；出手 startup 比操作角色慢 2／3 帧 ----
+	_check("enemy Light1 startup 8", int(b._spec("Light1").get("logic", {}).get("startup", 0)) == 8)
+	_check("enemy Heavy startup 15", int(b._spec("Heavy").get("logic", {}).get("startup", 0)) == 15)
+	_check("enemy Light1 total 24 frames", int(DATA.total_frames(b._spec("Light1"))) == 24)
+	_check("player Light1 stays 6", int(a._spec("Light1").get("logic", {}).get("startup", 0)) == 6)
+	_check("global table untouched", int(DATA.spec("Light1").get("logic", {}).get("startup", 0)) == 6)
+
 	# ---- A. 純決策：距離分檔 ----
 	_check("far (>300) -> approach", b.ai_plan(_ctx(420.0)) == "approach")
 	_check("mid (150..300) rolls dash", b.ai_plan(_ctx(200.0, {"roll": 0.1})) == "dash_attack")
