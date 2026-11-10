@@ -99,13 +99,13 @@
   - 踩坑：`change_state()` 內會 `velocity.x = 0.0`，彈回速度必須在切狀態「之後」賦值，否則只有上拋沒有水平分量（自測 `bounce away from wall (vx<0)` 抓到）。
   - 踩坑：物理幀回調裡 `add_child` 整張主場景，角色的 `body->get_space()` 恆為 null（`test_move`／`move_and_collide` 直接報錯）；端到端牆體檢查必須在 `_initialize` 掛場景。另 `process_mode = DISABLED` 也會讓物理查詢失效，自測改用 `set_physics_process(false)`。
 
-- [x] **V0.2.9 伥鬼 AI（docs/04 §2 第一個教學對手；`tools/selftest_ai.gd` 19 項 PASS）**：把原本「一直走近＋每 1.4s 戳一下」的 `_run_ai` 換成帶規格的決策機，行為全部落在 `ai_plan(ctx)` 這個純函數裡（只吃距離／血量／對手狀態與幀／冷卻／roll，不碰節點），`_ai_apply` 再映射成 P1 同一套虛擬輸入旗標——不另開 AI 專屬狀態機，所有招式仍走既有的 startup／active／cancel 鏈。
+- [x] **V0.2.9 伥鬼 AI（docs/04 §2 第一個教學對手；`tools/selftest_ai.gd` 24 項 PASS）**：把原本「一直走近＋每 1.4s 戳一下」的 `_run_ai` 換成帶規格的決策機，行為全部落在 `ai_plan(ctx)` 這個純函數裡（只吃距離／血量／對手狀態與幀／冷卻／roll，不碰節點），`_ai_apply` 再映射成 P1 同一套虛擬輸入旗標——不另開 AI 專屬狀態機，所有招式仍走既有的 startup／active／cancel 鏈。
   - **距離四檔**：>300 先接近；150–300 走路為主、25% 前衝棍擊（Dash）；≤150 出手（輕攻為主，25% 改重招「下砸」）；冷卻中站著等（不空揮）。
   - **架招（會站防）**：對手在 startup／active 且距離 ≤220 → `Block`；只在對手收招硬直（frame ≥ startup+active）且貼身時用重招懲罰。防禦中不出重招，避免被 `_decide_free_state` 判成飛雲浦反擊。
   - **被打會後退**：`take_damage()` 對非 P1 角色寫入 0.5s 後退計時，期間往遠離對手的方向退——給玩家追打窗口。
   - **30% 血線慌亂**：出手間隔 1.2s → 0.5s，且不再守距離（貼身就揮）。
   - **不會跳／不會蹲防／不會投擲**：決策輸出是白名單（retreat/block/heavy/light/dash_attack/approach/wait），空中與蹲防姿態根本無法由 AI 產生；自測掃 100 個 roll 驗證合法性，實跑 420 幀驗證從未進入 AirUp／AirLight／AirHeavy。
-  - **確定性**：roll 用黃金比例步進（`fmod(t + 0.618, 1)`），沒有隨機源也能重現同一串決策，自測可復現；純決策段 14 項 + 實跑段 5 項。
+  - **確定性**：roll 用黃金比例步進（`fmod(t + 0.618, 1)`），沒有隨機源也能重現同一串決策，自測可復現；純決策段 16 項 + 實跑段 8 項（接近／命中／不跳／受擊後退／站防）。
   - 尚未納入（需另開工單）：遠距扔石頭（工程沒有投射物系統）、伥鬼 HP 180（P2 仍是 800，屬平衡調整，需同步 HUD 條上限）、死亡化青煙演出。
 
 ## 待實現
