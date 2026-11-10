@@ -63,6 +63,7 @@ def build_frame(rgb: np.ndarray, box: tuple[int, int, int, int]) -> Image.Image:
 
 def main() -> None:
     src = Path(sys.argv[1])
+    out_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else OUT_DIR
     rgb = np.asarray(Image.open(src).convert("RGB"))
     lum = rgb.max(axis=2).astype(np.uint8)
     panels = find_panels(lum)
@@ -72,14 +73,14 @@ def main() -> None:
         w = rgb.shape[1] // 6
         panels = [(i * w, (i + 1) * w) for i in range(6)]
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
     for idx, (x0, x1) in enumerate(panels, start=1):
         sub = lum[:, x0:x1]
         rows = np.where(sub.max(axis=1) > THRESH)[0]
         y0 = max(0, int(rows.min()) - 6)
         y1 = min(rgb.shape[0], int(rows.max()) + 7)
         img = build_frame(rgb, (x0, x1, y0, y1))
-        path = OUT_DIR / f"mist_{idx:02d}.png"
+        path = out_dir / f"mist_{idx:02d}.png"
         img.save(path)
         print("saved", path, img.size)
 
