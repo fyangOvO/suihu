@@ -43,6 +43,8 @@ var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 2
 
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
+var _ai_retreat: float = 0.0    # 被打後退計時（秒）
+var _ai_roll: float = 0.0       # 決策用確定性序列（低差異，無隨機源也能重現）
 
 # 牆族：黏牆期間牆所在方向（+1 右 / -1 左）、最近一次額外傷害（供自測讀取）
 var _wall_side: float = 0.0
@@ -63,6 +65,19 @@ const WALL_BOUNCE_X: float = 320.0
 const WALL_BOUNCE_Y: float = 280.0
 const CMD_BUFFER_FRAMES: int = 18   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
 const DRUNK_CD: float = 4.0         # 醉打蔣門神冷卻（06 §3.3）
+
+# 伥鬼 AI（docs/04 §2：會站防、會輕攻、偶爾前衝棍擊；不會跳/不會蹲防；被打會後退；低血慌亂）
+const AI_RANGE_HIT: float = 150.0        # 貼身出手距離
+const AI_RANGE_THREAT: float = 220.0      # 對手出招時願意起防的距離
+const AI_RANGE_PREFER: float = 300.0     # 超過此距離一律先接近
+const AI_ATK_CD: float = 1.2             # 輕攻間隔
+const AI_HEAVY_CD: float = 1.8           # 重攻間隔
+const AI_PANIC_CD: float = 0.5           # 低血亂揮間隔
+const AI_PANIC_HP: float = 0.3           # 30% 血線
+const AI_HEAVY_RATE: float = 0.25        # 貼身時改出重招的概率
+const AI_DASH_RATE: float = 0.25         # 中距離前衝棍擊的概率
+const AI_WALK: float = 0.55              # 移速倍率（沿用原 AI 手感）
+const AI_RETREAT_TIME: float = 0.5       # 被打後退持續（秒）
 
 func _ready() -> void:
 	current_hp = max_hp
@@ -254,13 +269,108 @@ func _run_ai(delta: float) -> void:
 	if opponent == null:
 		return
 	var dx: float = opponent.global_position.x - global_position.x
-	_move_x = signf(dx) * 0.55
-	_ai_cd -= delta
-	if absf(dx) < 150.0 and _ai_cd <= 0.0 and _state == "Idle":
-		_light_pressed = true
-		_ai_cd = 1.4
-	elif absf(dx) >= 150.0:
-		_ai_cd = maxf(_ai_cd, 0.2)
+	var dist: float = absf(dx)
+	_ai_cd = maxf(0.0, _ai_cd - delta)
+	_ai_retreat = maxf(0.0, _ai_retreat - delta)
+	# 確定性低差異序列（黃金比例步進）：同一串 ctx 每次跑出來的決策一致，自測可重現
+	_ai_roll = fmod(_ai_roll + 0.6180339887, 1.0)
+	_ai_apply(ai_plan(_ai_ctx(dist)), dx)
+
+## 組 AI 決策上下文（欄位口徑固定，自測直接用合成 ctx 驗證純函數）
+func _ai_ctx(dist: float) -> Dictionary:
+	var opp_state: String = "Idle"
+	var opp_spec: Dictionary = {}
+	if opponent != null and is_instance_valid(opponent):
+		opp_state = opponent._state
+		opp_spec = DATA.spec(opp_state)
+	var lg: Dictionary = opp_spec.get("logic", {})
+	var startup: int = int(lg.get("startup", 0))
+	var active_end: int = startup + int(lg.get("active", 0))
+	var opp_frame: int = int(opponent._frame) if opponent != null and is_instance_valid(opponent) else 0
+	return {
+		"dist": dist,
+		"hp_ratio": float(current_hp) / float(max_hp) if max_hp > 0 else 1.0,
+		"opp_state": opp_state,
+		"opp_frame": opp_frame,
+		"opp_startup": startup,
+		"opp_active_end": active_end,
+		"atk_cd": _ai_cd,
+		"retreat": _ai_retreat,
+		"roll": _ai_roll,
+	}
+
+## 伥鬼決策（純函數：只讀 ctx，不碰節點狀態，便於無頭斷言）
+## 回傳：retreat / block / heavy / light / dash_attack / approach / wait
+func ai_plan(ctx: Dictionary) -> String:
+	var dist: float = float(ctx.get("dist", 9999.0))
+	var hp_ratio: float = float(ctx.get("hp_ratio", 1.0))
+	var roll: float = float(ctx.get("roll", 0.0))
+	var atk_cd: float = float(ctx.get("atk_cd", 0.0))
+	var retreat: float = float(ctx.get("retreat", 0.0))
+	var opp_state: String = String(ctx.get("opp_state", "Idle"))
+	var opp_frame: int = int(ctx.get("opp_frame", 0))
+	var opp_active_end: int = int(ctx.get("opp_active_end", 0))
+	# 0. 剛被打：先退一步重組（docs/04「被打會後退」）
+	if retreat > 0.0:
+		return "retreat"
+	# 1. 對手正在出招：起防；對手收招硬直才懲罰（教玩家架招與連段）
+	if opp_state in ATTACKS:
+		if opp_frame < opp_active_end:
+			if dist <= AI_RANGE_THREAT:
+				return "block"
+		else:
+			if dist <= AI_RANGE_HIT + 40.0:
+				return "heavy"
+	# 2. 低血線：貼身亂揮（間隔縮短），遠了照樣先靠近
+	if hp_ratio < AI_PANIC_HP:
+		if dist <= AI_RANGE_HIT and atk_cd <= 0.0:
+			return "light"
+		return "approach"
+	# 3. 太遠：先接近
+	if dist > AI_RANGE_PREFER:
+		return "approach"
+	# 4. 中距離：偶爾前衝棍擊，其餘走過去
+	if dist > AI_RANGE_HIT:
+		if atk_cd <= 0.0 and roll < AI_DASH_RATE:
+			return "dash_attack"
+		return "approach"
+	# 5. 貼身：輕攻為主，四分之一改重招；冷卻中站著等
+	if atk_cd > 0.0:
+		return "wait"
+	return "heavy" if roll < AI_HEAVY_RATE else "light"
+
+## 把決策映射成虛擬輸入（沿用 P1 的同一套輸入旗標，不另開 AI 專用狀態機）
+func _ai_apply(plan: String, dx: float) -> void:
+	var toward: float = signf(dx) if absf(dx) > 0.01 else face_direction
+	_move_x = 0.0
+	_block_held = false
+	match plan:
+		"approach":
+			_move_x = toward * AI_WALK
+		"retreat":
+			_move_x = -toward * AI_WALK
+		"block":
+			_block_held = true
+		"light":
+			if _state == "Idle" and is_on_floor():
+				_light_pressed = true
+				_ai_cd = _ai_cd_for_next(AI_ATK_CD)
+		"heavy":
+			# 防禦中按重會被判成飛雲浦反擊，懲罰重招只在完全空閒時出
+			if _state == "Idle" and is_on_floor():
+				_heavy_pressed = true
+				_ai_cd = _ai_cd_for_next(AI_HEAVY_CD)
+		"dash_attack":
+			if _state == "Idle" and is_on_floor():
+				_dash_pressed = true
+				_ai_cd = _ai_cd_for_next(AI_HEAVY_CD)
+		"wait":
+			pass
+
+## 依血量決定下一次出手間隔（低血慌亂時明顯更密集；重招本就更慢）
+func _ai_cd_for_next(base_cd: float) -> float:
+	var hp_ratio: float = float(current_hp) / float(max_hp) if max_hp > 0 else 1.0
+	return AI_PANIC_CD if hp_ratio < AI_PANIC_HP else base_cd
 
 func _decide_free_state(_delta: float) -> void:
 	# 空中姿態派生：空防優先於空中攻擊
@@ -400,6 +510,9 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		return
 	current_hp -= dmg
 	wine_gauge = minf(100.0, wine_gauge + 5.0)
+	# 伥鬼被打會後退一步重組（docs/04 §2）
+	if not is_player1:
+		_ai_retreat = AI_RETREAT_TIME
 	# 牆族：擊退方向就是牆的方向 → 額外傷害 + 黏牆 30 幀（01 §牆族「額外傷害＋彈回」）
 	if _state != "WallStick" and _wall_on_side(from_dir):
 		var bonus: int = maxi(WALL_BONUS_MIN, int(round(float(dmg) * WALL_BONUS_RATIO)))
