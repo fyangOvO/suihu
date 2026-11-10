@@ -51,6 +51,9 @@ func _on_physics() -> void:
 	if n == 8:
 		_check("death plays knockdown", p2._state == "Knockdown")
 		_check("body still visible early", p2.get_node("Visual").visible)
+		var mist = p2._mist_node
+		_check("hand-drawn mist plays 6 frames",
+			mist != null and mist.sprite_frames.get_frame_count("mist") == 6 and mist.is_playing())
 	elif n == 35:
 		var vis = p2.get_node("Visual")
 		_check("body fading into mist", vis.visible and vis.modulate.a < 0.95)

@@ -89,11 +89,22 @@ const PICKUP_SCENE := preload("res://scripts/coin_pickup.gd")
 const DEATH_FADE_START: float = 0.25   # 青煙先起，本體延後淡出
 const DEATH_FADE_TIME: float = 0.80
 const DEATH_TOTAL: float = 1.05        # 到此刻收尾（隱藏本體、掉東西）
+## 青煙序列幀（六格手繪水墨，512×640，底邊對齊 612），由 tools/build_death_mist_frames.py 從序列原畫拆出
+const MIST_FRAMES: Array = [
+	preload("res://assets/fx/death_mist/mist_01.png"),
+	preload("res://assets/fx/death_mist/mist_02.png"),
+	preload("res://assets/fx/death_mist/mist_03.png"),
+	preload("res://assets/fx/death_mist/mist_04.png"),
+	preload("res://assets/fx/death_mist/mist_05.png"),
+	preload("res://assets/fx/death_mist/mist_06.png"),
+]
+const MIST_FPS: float = 9.0
 
 ## 死亡狀態 / 掉落
 var _dying: bool = false
 var _death_done: bool = false
 var _death_t: float = 0.0
+var _mist_node: AnimatedSprite2D = null
 var _rng := RandomNumberGenerator.new()
 @export var drop_chance: float = 0.1    # 「伥鬼的木牌」掉率（docs/04 §2）
 # 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀），傷害另給一列——
@@ -649,40 +660,29 @@ func _spawn_drop(force_tag: bool) -> void:
 		parent_node.add_child(tag)
 		tag.setup(opponent, "伥鬼的木牌", Vector2(global_position.x + 30.0, global_position.y - 30.0))
 
-## 青煙粒子：程序生成的徑向漸層貼圖，柔邊不方塊，不引入外部素材
+## 青煙：播六幀手繪水墨序列（9fps，不循環），播完停在最淡一幀再自清
 func _spawn_death_mist() -> void:
-	var mist := CPUParticles2D.new()
-	mist.amount = 50
-	mist.lifetime = 1.8
-	mist.one_shot = true
-	mist.explosiveness = 0.1      # 慢慢吐，形成一縷上升的煙柱而不是一團
-	mist.direction = Vector2(0.0, -1.0)
-	mist.spread = 14.0
-	mist.gravity = Vector2(0.0, -40.0)
-	mist.initial_velocity_min = 120.0
-	mist.initial_velocity_max = 260.0
-	mist.scale_amount_min = 0.9
-	mist.scale_amount_max = 1.8
-	mist.color = Color(0.42, 0.78, 0.55, 0.30)
-	mist.position = Vector2(0.0, -80.0)
+	var mist := AnimatedSprite2D.new()
+	var frames := SpriteFrames.new()
+	frames.add_animation("mist")
+	frames.set_animation_speed("mist", MIST_FPS)
+	frames.set_animation_loop("mist", false)
+	for tex in MIST_FRAMES:
+		frames.add_frame("mist", tex)
+	mist.sprite_frames = frames
+	mist.animation = "mist"
+	mist.position = Vector2(0.0, -288.0)   # 512×640 幀底邊 612 → 縮放後腳底約在原點
+	mist.scale = Vector2(0.9, 0.9)
 	mist.z_index = 1
-	mist.texture = _mist_texture()
-	mist.emitting = true
+	mist.play("mist")
+	_mist_node = mist
 	add_child(mist)
-	get_tree().create_timer(2.2).timeout.connect(mist.queue_free)
+	get_tree().create_timer(1.8).timeout.connect(_free_mist)
 
-func _mist_texture() -> GradientTexture2D:
-	var g := Gradient.new()
-	g.set_color(0, Color(1, 1, 1, 1))
-	g.set_color(1, Color(1, 1, 1, 0))
-	var tex := GradientTexture2D.new()
-	tex.gradient = g
-	tex.fill = GradientTexture2D.FILL_RADIAL
-	tex.fill_from = Vector2(0.5, 0.5)
-	tex.fill_to = Vector2(0.5, 0.0)
-	tex.width = 32
-	tex.height = 32
-	return tex
+func _free_mist() -> void:
+	if is_instance_valid(_mist_node):
+		_mist_node.queue_free()
+	_mist_node = null
 
 ## 擊退方向上 20px 內是否有靜態牆；對手身體不算牆（貼身對打不能誤判成牆族）
 func _wall_on_side(dir: float) -> bool:

@@ -126,7 +126,7 @@
 
 - [x] **V0.2.13 伥鬼死亡化青煙 + 掉落（docs/04 §2；`tools/selftest_death.gd` 16 項 PASS）**：
   - **死亡演出**：血量歸零（含被牆族加成打死、架招磨死）不再進常規 `HurtStand`，改走 `_begin_death()`——倒地姿態 + 青煙粒子，0.25s 起本體淡出 0.8s，1.05s 收尾（隱藏本體、關碰撞、掉東西）。`_physics_process` 頂端 `_dying` 分支完全接管該幀，不讀輸入、不出招；`take_damage()`／`on_blocked()` 對 `_dying` 直接 return，屍體不會被鞭屍重複結算。
-  - **青煙不引入新貼圖**：`GradientTexture2D` 徑向白→透明 32×32 作粒子貼圖，`CPUParticles2D` 走細煙柱（spread 14、初速 120–260、重力 −40、淡綠 alpha 0.30、2.2s 後自清），不是一團綠球；離屏預覽 `docs/preview/death-mist-preview.png`（960×540，驗煙柱形狀與暗底對比）。
+  - **青煙是手繪六幀序列**：`assets/fx/death_mist/mist_01–06.png`（512×640，底邊對齊 612）。原畫是一張六格橫向序列圖（`docs/preview/death-mist-sheet-src.png`），`tools/build_death_mist_frames.py` 用純黑底亮度反推 Alpha、再按亮度映射灰綠墨色（濃 #2E4A3C → 亮處乳白），裁到 300×560 上限等比貼進畫布——因此沒有灰底、沒有方塊粒子邊。遊戲內 `AnimatedSprite2D` + 運行時 `SpriteFrames`（9fps、不循環、scale 0.9、位置 y=−288），播完停在最淡一幀，1.8s 後自清；本體淡出照舊，煙比人晚散。
   - **掉落系統（工程原本沒有）**：新增 `scripts/coin_pickup.gd`——純 Node2D 程序繪製（碎銀不規則銀塊／木牌木片+掛繩）、上下浮動、玩家受擊框（64×180）重疊即拾取並回調主場景。碎銀必掉、木牌按 `drop_chance`（默認 0.1，export 可調）；`main_rigged.gd` 加拾取提示 Label（「拾得：xxx」，2s 淡出）。
   - **勝負判定**改為 `$P2.current_hp <= 0 and $P2._death_done`——青煙散完才彈「武松勝！」，避免人還沒散就出結果。
   - **踩坑（自測時序）**：P2 若同時由引擎物理推進、又在物理回調裡手推 `_physics_process`，兩條推進疊加會讓 `_death_t` 兩倍速（n=35 就已 finished、alpha 0），「淡出中」斷言必假；只能選一條——現在 P2 交給引擎自走，只手推 `main._process`。
