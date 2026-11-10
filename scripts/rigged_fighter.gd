@@ -78,22 +78,28 @@ const AI_HEAVY_RATE: float = 0.25        # 貼身時改出重招的概率
 const AI_DASH_RATE: float = 0.25         # 中距離前衝棍擊的概率
 const AI_WALK: float = 0.55              # 移速倍率（沿用原 AI 手感）
 const AI_RETREAT_TIME: float = 0.5       # 被打後退持續（秒）
-# 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀）——只加在非 P1 的實例上，
-# 不动全局數據表，武松手感維持 6／12。
-const ENEMY_STARTUP_BONUS: Dictionary = {"Light1": 2, "Heavy": 3}
+# 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀），傷害另給一列——
+# 只加在非 P1 的實例上，不动全局數據表，武松手感維持 6／12 幀、40／90 傷害。
+const ENEMY_OVERRIDES: Dictionary = {
+	"Light1": {"startup": 2, "damage": 65},
+	"Heavy": {"startup": 3, "damage": 130},
+}
 
-## 動作規格：敵方實例在共用數據表上疊 startup 補償；回傳的字典已複製，改動不會污染 SPECS
+## 動作規格：敵方實例在共用數據表上疊 startup 補償與傷害列；回傳的字典已複製，改動不會污染 SPECS
 func _spec(state_name: String) -> Dictionary:
 	var base: Dictionary = DATA.spec(state_name)
 	if is_player1:
 		return base
-	var bonus: int = int(ENEMY_STARTUP_BONUS.get(state_name, 0))
-	if bonus <= 0:
+	var ov: Dictionary = ENEMY_OVERRIDES.get(state_name, {})
+	if ov.is_empty():
 		return base
-	var lg: Dictionary = (base["logic"] as Dictionary).duplicate()
-	lg["startup"] = int(lg.get("startup", 0)) + bonus
 	var copy: Dictionary = base.duplicate(false)
-	copy["logic"] = lg
+	if ov.has("startup"):
+		var lg: Dictionary = (base["logic"] as Dictionary).duplicate()
+		lg["startup"] = int(lg.get("startup", 0)) + int(ov["startup"])
+		copy["logic"] = lg
+	if ov.has("damage"):
+		copy["damage"] = int(ov["damage"])
 	return copy
 
 func _ready() -> void:

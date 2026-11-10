@@ -22,6 +22,7 @@ var hp_before: int = 0
 var retreat_dx: float = 0.0
 var x_at_hit: float = 0.0
 var saw_crouch_block: bool = false
+var dmg_start: int = 0
 
 func _check(name: String, ok: bool) -> void:
 	if not ok:
@@ -64,8 +65,14 @@ func _initialize() -> void:
 	_check("enemy Light1 startup 8", int(b._spec("Light1").get("logic", {}).get("startup", 0)) == 8)
 	_check("enemy Heavy startup 15", int(b._spec("Heavy").get("logic", {}).get("startup", 0)) == 15)
 	_check("enemy Light1 total 24 frames", int(DATA.total_frames(b._spec("Light1"))) == 24)
+	_check("enemy Light1 damage 65", int(b._spec("Light1").get("damage", 0)) == 65)
+	_check("enemy Heavy damage 130", int(b._spec("Heavy").get("damage", 0)) == 130)
 	_check("player Light1 stays 6", int(a._spec("Light1").get("logic", {}).get("startup", 0)) == 6)
-	_check("global table untouched", int(DATA.spec("Light1").get("logic", {}).get("startup", 0)) == 6)
+	_check("player Light1 damage stays 40", int(a._spec("Light1").get("damage", 0)) == 40)
+	_check("global table untouched",
+		int(DATA.spec("Light1").get("logic", {}).get("startup", 0)) == 6
+		and int(DATA.spec("Light1").get("damage", 0)) == 40
+		and int(DATA.spec("Heavy").get("damage", 0)) == 90)
 
 	# ---- A. 純決策：距離分檔 ----
 	_check("far (>300) -> approach", b.ai_plan(_ctx(420.0)) == "approach")
@@ -160,6 +167,20 @@ func _on_physics() -> void:
 			_check("blocks player startup (stand block)", b._state == "Block")
 			_check("block flag + stand defense", b.is_blocking and b._defense == "stand")
 			_check("never crouch-blocks", not saw_crouch_block)
+			# 第四段：伥鬼輕攻命中，傷害應為單列的 65（而不是武松的 40）
+			b._ai_cd = 9.0      # 凍結 AI 自主出手，只驗這一刀
+			b.change_state("Idle")
+			b.face_direction = -1.0
+			a.position = Vector2(b.position.x - 120.0, b.position.y)
+			a.face_direction = 1.0
+			a.current_hp = 800
+			dmg_start = a.current_hp
+			b.change_state("Light1")
+			phase = 3
+			n = 0
+	elif phase == 3:
+		if n == 20:
+			_check("enemy light deals 65 dmg", dmg_start - a.current_hp == 65)
 			print("SELFTEST ai min_dist=", min_dist, " retreat_dx=", b.position.x - x_at_hit,
-				" fails=", fails.size())
+				" hit_dmg=", dmg_start - a.current_hp, " fails=", fails.size())
 			quit(0 if fails.is_empty() else 1)
