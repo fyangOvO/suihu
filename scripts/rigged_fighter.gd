@@ -44,6 +44,10 @@ var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 2
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
 
+# 牆族：黏牆期間牆所在方向（+1 右 / -1 左）、最近一次額外傷害（供自測讀取）
+var _wall_side: float = 0.0
+var _wall_bonus_last: int = 0
+
 # 狀態分組（與 data spec 對應）
 const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "AirLight", "AirHeavy", "CmdTiger", "CmdUp", "Counter", "CmdDrunk", "Super"]
 const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
@@ -51,6 +55,12 @@ const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
 const SUPER_REQUIRE_WINE: float = 100.0
+# 牆族（牆邊連段獎勵）：被擊退時背已貼牆 → 額外傷害 + 黏牆 30 幀 + 彈回可追打（docs/01 §牆族）
+const WALL_BONUS_RATIO: float = 0.25
+const WALL_BONUS_MIN: int = 10
+const WALL_PROBE: float = 20.0      # 牆面偵測探針長度（px）
+const WALL_BOUNCE_X: float = 320.0
+const WALL_BOUNCE_Y: float = 280.0
 const CMD_BUFFER_FRAMES: int = 18   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
 const DRUNK_CD: float = 4.0         # 醉打蔣門神冷卻（06 §3.3）
 
@@ -102,6 +112,17 @@ func _physics_process(delta: float) -> void:
 		_run_ai(delta)
 
 	var spec: Dictionary = DATA.spec(_state)
+
+	# 牆族：黏牆期間完全定身（不計重力），時長走完後彈回空中，可被浮空追打
+	if _state == "WallStick":
+		_frame += 1
+		velocity = Vector2.ZERO
+		$Visual.play_action(_state, spec, delta)
+		if _frame >= DATA.total_frames(spec):
+			# 先切狀態再賦速度：change_state 會清零 velocity.x，倒過來寫彈回就沒有水平分量
+			change_state("HurtAir")
+			velocity = Vector2(-_wall_side * WALL_BOUNCE_X, -WALL_BOUNCE_Y)
+		return
 
 	# Reaction 層最高優先級：受擊/倒地/起身只推進時鐘與物理，不接受攻擊輸入
 	if _state in REACTION:
@@ -379,8 +400,27 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		return
 	current_hp -= dmg
 	wine_gauge = minf(100.0, wine_gauge + 5.0)
+	# 牆族：擊退方向就是牆的方向 → 額外傷害 + 黏牆 30 幀（01 §牆族「額外傷害＋彈回」）
+	if _state != "WallStick" and _wall_on_side(from_dir):
+		var bonus: int = maxi(WALL_BONUS_MIN, int(round(float(dmg) * WALL_BONUS_RATIO)))
+		current_hp -= bonus
+		_wall_bonus_last = bonus
+		_wall_side = signf(from_dir)
+		velocity = Vector2.ZERO
+		change_state("WallStick")
+		return
 	velocity = Vector2(from_dir * 200.0, -100.0 if knock_up <= 0.0 else -knock_up)
 	change_state("HurtStand")
+
+## 擊退方向上 20px 內是否有靜態牆；對手身體不算牆（貼身對打不能誤判成牆族）
+func _wall_on_side(dir: float) -> bool:
+	if absf(dir) < 0.01:
+		return false
+	var col := KinematicCollision2D.new()
+	var hit: bool = test_move(global_transform, Vector2(signf(dir) * WALL_PROBE, 0.0), col)
+	if not hit:
+		return false
+	return col.get_collider() is StaticBody2D
 
 func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	# 依防禦姿態折減傷害與擊退；空防不被向上挑空

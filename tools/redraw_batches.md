@@ -38,6 +38,7 @@
 9. **脚位（落地基线）**：新增 `tools/refine_baseline_report.py` 与断言项——stand/air/ground 组底边必须落在 611±2（基线 612 的最后一像素行）。实测 46 帧底边范围 −2~−1px，浮空 0、压线 0；`docs/preview/art-all-frames.png` 为 46 帧总览（按 stand/air/ground/bust 排序并画出基线）。
 10. **刀光／酒气独立图层（V0.2.6，非美术帧，纯程序）**：`scripts/fighter_fx.gd` 四层（SlashCore／SlashHalo／Aura／DrunkVapor）挂在 `RiggedFighter.tscn` 的 `Fx` 下，不依赖任何新贴图。踩坑两条已固化为断言/文档：① 主场景 `Background` 与角色同层 z=0，会把 z=−1 的 aura 全遮（截图曾因此“酒气不可见”），已把 Background 压到 z=−2 并加 `aura z<0`、`刀光 z>0` 两条断言；② 截图脚本只关 `set_physics_process` 不足以冻结角色，仍会自由落体（y 614→888），必须 `process_mode=DISABLED` 并手动推 `visual.play_action`／`fx._physics_process`。离屏渲染走 1280×720 SubViewport，主窗口 16×16 并移到屏幕外（`--display-driver headless` 是 dummy 渲染器，取纹理必 null）。对照图 `docs/preview/fx-sheet.png`（六态拼图）。
 11. **刀光时序对齐 active 帧（V0.2.7）**：原先一 `change_state` 就亮刀，亮起时攻击盒还没开（Light1 startup 6 帧=0.1s，刀光 0.18s 提前烧掉一半）。现 `strike()` 接受 `delay = startup/60`，`Fx` 自行计时到点才建弧；切入非攻击状态 `cancel()` 收回。自测 3 项（startup 内不可见、`pending_delay()==0.1`、到点清零），截图脚本也改成“startup+4 帧”再截，六张对照无一空帧。
+12. **牆族／牆邊連段獎勵（V0.2.8，玩法）**：舞台补左右边界墙（StaticBody2D，40×1200，layer 1，墙面 x=0/1920）；`take_damage()` 沿击退方向 `test_move` 探 20px，只有 `StaticBody2D` 才算墙（对手身体不算）；命中即 +25% 额外伤害、粘墙 30 帧定身、再以 (−wall*320, −280) 弹回转 `HurtAir`。踩坑两条已固化：① `change_state()` 会清 `velocity.x`，弹回速度必须在切状态之后赋；② 物理帧回调里 add_child 整张主场景，角色 `body->get_space()` 恒 null，端到端墙检必须放在 `_initialize`，且不能用 `process_mode=DISABLED`（物理查询会失效）。自测 `selftest_wall.gd` 21 项 + `selftest_wall_stage.gd` 6 项。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 

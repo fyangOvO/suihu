@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/RiggedFighter.tscn" id="1_fighter"]
 [ext_resource type="Texture2D" path="res://assets/stage-jingyang.png" id="2_stage"]
@@ -6,6 +6,9 @@
 
 [sub_resource type="RectangleShape2D" id="ground_shape"]
 size = Vector2(2000, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 1200)
 
 [node name="Main" type="Node2D"]
 script = ExtResource("3_main")
@@ -23,6 +26,18 @@ position = Vector2(960, 870)
 
 [node name="GroundCol" type="CollisionShape2D" parent="Ground"]
 shape = SubResource("ground_shape")
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(-20, 480)
+
+[node name="WallLeftCol" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("wall_shape")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1940, 480)
+
+[node name="WallRightCol" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("wall_shape")
 
 [node name="P1" parent="." instance=ExtResource("1_fighter")]
 position = Vector2(600, 820)

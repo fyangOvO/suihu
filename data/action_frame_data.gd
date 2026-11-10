@@ -168,6 +168,13 @@ const SPECS: Dictionary = {
 		"visual": {"fps": 30, "frames": ["knockdown.png"]},
 		"note": "倒地 0.6s=36 幀；倒地中按跳可受身（06 §2.1 #14）"
 	},
+	"WallStick": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 30},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 30, "frames": ["hurt.png"]},
+		"note": "牆族：被擊退且背已貼牆＝額外傷害＋黏牆 30 幀（01 §牆族），結束彈回轉 HurtAir 可再追打"
+	},
 	"WakeUp": {
 		"loop": false,
 		"logic": {"startup": 0, "active": 0, "recovery": 18},

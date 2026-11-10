@@ -92,6 +92,13 @@
   - 截圖工具改為 **SubViewport 離屏**：`tools/capture_fx_preview.gd` 用 1280×720 SubViewport 渲染、主視窗 16×16 並移到螢幕外，角色 `process_mode=DISABLED` 凍結（先前只關 physics 仍會自由落體，導致畫面逐張下沉放大）；六張對照拼圖 `tools/fx_sheet.py` 出 `docs/preview/fx-sheet.png`（Light／Heavy／CmdUp／Awaken／Super／CmdDrunk）。
   - 觀感取捨：刀光由「寬月牙」收成細筆鋒（核心寬 5–9、halo 只 +4 且疊加混合），避免糊成實心色帶；酒氣輝光半徑放到 3.0×3.3 並提亮，暗背景下一眼可辨。
 
+- [x] **V0.2.8 牆族／牆邊連段獎勵（`tools/selftest_wall.gd` 21 項 + `tools/selftest_wall_stage.gd` 6 項 PASS）**：
+  - 舞台加左右邊界牆：`MainRigged.tscn` 新增 `WallLeft`(x=-20)／`WallRight`(x=1940) 兩個 `StaticBody2D`，40×1200 矩形、collision_layer=1（與角色同層），牆面正好落在畫面 x=0／1920——補上 docs/01「不能走出邊界」這條。
+  - 判定：`DATA` 新增 `WallStick` 狀態（0/0/30 邏輯幀，recovery 30 幀＝黏牆時長，貼圖沿用 `hurt.png`，不新增素材）；`take_damage()` 受擊前用 `test_move` 沿擊退方向探 20px，命中 `StaticBody2D` 才成立——對手身體不算牆，貼身對打不會誤觸發。
+  - 效果：額外傷害 +25%（下限 10，例：100 傷害 → 125）、黏牆 30 幀完全定身（零速度、不計重力）、結束後以 (−wall_side×320, −280) 彈回並轉 `HurtAir`，可直接接浮空追打；黏牆期間 `_wall_bonus_last` 記錄加成供自測讀取。
+  - 踩坑：`change_state()` 內會 `velocity.x = 0.0`，彈回速度必須在切狀態「之後」賦值，否則只有上拋沒有水平分量（自測 `bounce away from wall (vx<0)` 抓到）。
+  - 踩坑：物理幀回調裡 `add_child` 整張主場景，角色的 `body->get_space()` 恆為 null（`test_move`／`move_and_collide` 直接報錯）；端到端牆體檢查必須在 `_initialize` 掛場景。另 `process_mode = DISABLED` 也會讓物理查詢失效，自測改用 `set_physics_process(false)`。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）
@@ -103,7 +110,7 @@
 - [x] CPU AI（P2自動靠近+攻擊+防禦+喝酒）
 - [x] 覺醒必殺基礎版（RT/O 滿氣觸發、全程無敵、320 傷害、金黃脈衝；完整過場鏡頭演出後續）
 - [x] 飛雲浦反擊：簡化觸發（防中/受擊前 4 幀按重）＋完整 214（後→下→前）+重；招架無敵 + 120 浮空
-- [ ] 牆邊連段獎勵
+- [x] 牆邊連段獎勵／牆族（撞牆＝額外傷害＋黏牆 30 幀＋彈回可追打；見 V0.2.8）
 - [ ] CPU 對手（先做最簡單的AI）
 
 ## 如何運行
