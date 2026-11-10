@@ -42,6 +42,7 @@
 13. **伥鬼 AI（V0.2.9，AI 层）**：`_run_ai` 从「一直走近 + 定时轻攻」改为 `ai_plan(ctx)` 纯决策 + `_ai_apply` 虚拟输入。距离四档（>300 接近 / 150–300 走或 25% 前冲 / ≤150 轻攻或 25% 重砸 / 冷却等待）；对手 startup/active 且 ≤220 站防，收招硬直才重招惩罚；受击写 0.5s 后退计时；<30% 血出手间隔 1.2s→0.5s；决策输出白名单里没有跳/蹲防/投掷。踩坑：① GDScript 没有具名参数，测试里 `_ctx(200, roll: 0.1)` 直接 Parse Error，改用重载字典；② `add_child` 触发的 `_ready`/`_physics_process` 在首个物理帧才生效，首帧 `set_physics_process(false)` 才真的冻得住假人，血量基准也要在首帧取（否则基准是 0，`hp < before` 恒假）；③ 防中按重会走飞云浦反击，AI 的惩罚重招只在 `_state == "Idle"` 时出手。`selftest_ai.gd` 24 项。
 14. **伥鬼数值落地（V0.2.10）**：P2 实例 `max_hp = 180`，HUD `P2HP` 上限同步、且每帧由 `main_rigged.gd` 从角色 `max_hp` 回写（不再场景写死 800）；出手 startup 用 `ENEMY_STARTUP_BONUS = {Light1:+2, Heavy:+3}` + `_spec()` 做实例级补偿（伥鬼 8/15 帧，武松 6/12 不动），`_spec()` 复制 `logic` 再改，绝不写回 `SPECS`。**坑**：`DATA.spec()` 返回的是全局字典引用，直接改会污染整张表（自测加 “global table untouched” 断言）；AI 读对手规格必须用 `opponent._spec()`，否则架招/惩罚的时序和真实出招错位。
 15. **伥鬼伤害列（V0.2.11）**：`ENEMY_STARTUP_BONUS` 升级为 `ENEMY_OVERRIDES = {Light1: {startup:+2, damage:65}, Heavy: {startup:+3, damage:130}}`，`_spec()` 同时覆盖 startup 与 damage，仍只对非 P1 生效。实跑断言：强制伥鬼出 Light1，P1 实际扣 65（而武松自己打 40）。
+16. **伥鬼扔石头（V0.2.12）**：`scripts/rock_projectile.gd` 用纯 Node2D 走弧线＋矩形重叠，不建 Area2D——物理回调里 `add_child` 的 Area2D 拿不到 space 是旧坑，这里彻底绕开。落点由 `flight_time = clamp(dist/430, 0.55, 1.5)` 反算，`vy = -0.5*g*T`，正好压到对面受击框。AI 侧 `dist > 360` 才掷、冷却 2.5s，中近距不掷。**命名坑**：计划串不能叫 `throw`——`_contains_forbidden()` 把 `throw` 当作投技（指令投）列入禁项，改叫 `rock`。离屏预览 `docs/preview/rock-preview.png`（1920 渲染后缩 960）。
 
 ### 待编辑器目视（人工项，headless 不可替代，docs/07 §6.4）
 

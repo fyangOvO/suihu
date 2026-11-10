@@ -45,6 +45,7 @@ var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 2
 var _ai_cd: float = 0.8
 var _ai_retreat: float = 0.0    # 被打後退計時（秒）
 var _ai_roll: float = 0.0       # 決策用確定性序列（低差異，無隨機源也能重現）
+var _ai_throw_cd: float = 0.0   # 扔石頭冷卻（秒）
 
 # 牆族：黏牆期間牆所在方向（+1 右 / -1 左）、最近一次額外傷害（供自測讀取）
 var _wall_side: float = 0.0
@@ -78,6 +79,11 @@ const AI_HEAVY_RATE: float = 0.25        # 貼身時改出重招的概率
 const AI_DASH_RATE: float = 0.25         # 中距離前衝棍擊的概率
 const AI_WALK: float = 0.55              # 移速倍率（沿用原 AI 手感）
 const AI_RETREAT_TIME: float = 0.5       # 被打後退持續（秒）
+const AI_THROW_MIN: float = 360.0        # 超過此距離才考慮扔石頭
+const AI_THROW_RATE: float = 0.3         # 遠距時選擇扔石頭的概率
+const AI_THROW_CD: float = 2.5           # 扔石頭冷卻（秒）
+const ROCK_DAMAGE: int = 75              # 石頭傷害（介於站輕 65 與站重 130 之間）
+const ROCK_SCENE := preload("res://scripts/rock_projectile.gd")
 # 伥鬼出手比操作角色慢（docs/04 §2：站輕啟動 8 幀、站重 15 幀），傷害另給一列——
 # 只加在非 P1 的實例上，不动全局數據表，武松手感維持 6／12 幀、40／90 傷害。
 const ENEMY_OVERRIDES: Dictionary = {
@@ -295,6 +301,7 @@ func _run_ai(delta: float) -> void:
 	var dist: float = absf(dx)
 	_ai_cd = maxf(0.0, _ai_cd - delta)
 	_ai_retreat = maxf(0.0, _ai_retreat - delta)
+	_ai_throw_cd = maxf(0.0, _ai_throw_cd - delta)
 	# 確定性低差異序列（黃金比例步進）：同一串 ctx 每次跑出來的決策一致，自測可重現
 	_ai_roll = fmod(_ai_roll + 0.6180339887, 1.0)
 	_ai_apply(ai_plan(_ai_ctx(dist)), dx)
@@ -319,6 +326,7 @@ func _ai_ctx(dist: float) -> Dictionary:
 		"opp_active_end": active_end,
 		"atk_cd": _ai_cd,
 		"retreat": _ai_retreat,
+		"throw_cd": _ai_throw_cd,
 		"roll": _ai_roll,
 	}
 
@@ -349,7 +357,9 @@ func ai_plan(ctx: Dictionary) -> String:
 		if dist <= AI_RANGE_HIT and atk_cd <= 0.0:
 			return "light"
 		return "approach"
-	# 3. 太遠：先接近
+	# 3. 遠距：偶爾扔石頭（docs/04 特殊技，慢弧可閃），其餘先接近
+	if dist > AI_THROW_MIN and atk_cd <= 0.0 and float(ctx.get("throw_cd", 0.0)) <= 0.0 and roll < AI_THROW_RATE:
+		return "rock"
 	if dist > AI_RANGE_PREFER:
 		return "approach"
 	# 4. 中距離：偶爾前衝棍擊，其餘走過去
@@ -387,8 +397,28 @@ func _ai_apply(plan: String, dx: float) -> void:
 			if _state == "Idle" and is_on_floor():
 				_dash_pressed = true
 				_ai_cd = _ai_cd_for_next(AI_HEAVY_CD)
+		"rock":
+			if _state == "Idle" and is_on_floor():
+				_ai_spawn_rock()
+				_ai_throw_cd = AI_THROW_CD
+				_ai_cd = _ai_cd_for_next(AI_ATK_CD)
 		"wait":
 			pass
+
+## 生成石頭：純 Node2D + 腳本弧線，不進物理空間，物理幀裡 add_child 也安全
+func _ai_spawn_rock() -> void:
+	if opponent == null or not is_instance_valid(opponent):
+		return
+	var parent_node: Node = get_parent()
+	if parent_node == null:
+		return
+	var dir: float = signf(opponent.global_position.x - global_position.x)
+	if is_zero_approx(dir):
+		dir = face_direction
+	var rock: Node2D = ROCK_SCENE.new()
+	parent_node.add_child(rock)
+	rock.setup(opponent, dir, ROCK_DAMAGE,
+		Vector2(global_position.x + dir * 46.0, global_position.y - 120.0))
 
 ## 依血量決定下一次出手間隔（低血慌亂時明顯更密集；重招本就更慢）
 func _ai_cd_for_next(base_cd: float) -> float:

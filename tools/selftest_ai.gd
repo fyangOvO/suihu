@@ -7,7 +7,8 @@ extends SceneTree
 ## PASS 退出 0；FAIL 退出 1。
 
 const DATA := preload("res://data/action_frame_data.gd")
-const AI_PLANS: Array = ["retreat", "block", "heavy", "light", "dash_attack", "approach", "wait"]
+const ROCK := preload("res://scripts/rock_projectile.gd")
+const AI_PLANS: Array = ["retreat", "block", "heavy", "light", "dash_attack", "rock", "approach", "wait"]
 
 var fails: Array = []
 var a: CharacterBody2D      # P1 假人
@@ -23,6 +24,7 @@ var retreat_dx: float = 0.0
 var x_at_hit: float = 0.0
 var saw_crouch_block: bool = false
 var dmg_start: int = 0
+var hit_dmg: int = 0
 
 func _check(name: String, ok: bool) -> void:
 	if not ok:
@@ -32,7 +34,8 @@ func _check(name: String, ok: bool) -> void:
 func _ctx(dist: float, over: Dictionary = {}) -> Dictionary:
 	var ctx: Dictionary = {
 		"dist": dist, "hp_ratio": 1.0, "opp_state": "Idle", "opp_frame": 0,
-		"opp_startup": 0, "opp_active_end": 0, "atk_cd": 0.0, "retreat": 0.0, "roll": 0.5,
+		"opp_startup": 0, "opp_active_end": 0, "atk_cd": 0.0, "retreat": 0.0,
+		"throw_cd": 0.0, "roll": 0.5,
 	}
 	for k in over.keys():
 		ctx[k] = over[k]
@@ -76,6 +79,10 @@ func _initialize() -> void:
 
 	# ---- A. 純決策：距離分檔 ----
 	_check("far (>300) -> approach", b.ai_plan(_ctx(420.0)) == "approach")
+	_check("far (>360) rolls rock throw", b.ai_plan(_ctx(420.0, {"roll": 0.1})) == "rock")
+	_check("rock throw respects cooldown",
+		b.ai_plan(_ctx(420.0, {"roll": 0.1, "throw_cd": 1.5})) == "approach")
+	_check("mid distance never throws", b.ai_plan(_ctx(200.0, {"roll": 0.1})) == "dash_attack")
 	_check("mid (150..300) rolls dash", b.ai_plan(_ctx(200.0, {"roll": 0.1})) == "dash_attack")
 	_check("mid (150..300) otherwise walks", b.ai_plan(_ctx(200.0, {"roll": 0.9})) == "approach")
 	_check("close rolls light", b.ai_plan(_ctx(120.0, {"roll": 0.9})) == "light")
@@ -181,6 +188,27 @@ func _on_physics() -> void:
 	elif phase == 3:
 		if n == 20:
 			_check("enemy light deals 65 dmg", dmg_start - a.current_hp == 65)
+			hit_dmg = dmg_start - a.current_hp
+			# 第五段：扔石頭弧線命中，扣 75 且石頭自行清理
+			a.current_hp = 800
+			a.position = Vector2(b.position.x + 420.0, b.position.y)
+			b.set_physics_process(false)   # 凍住投擲者，只讓石頭飛
+			b._ai_spawn_rock()
+			phase = 4
+			n = 0
+	elif phase == 4:
+		if n == 90:
+			_check("rock hits for 75", a.current_hp == 725)
+			_check("rock cleans itself up", _rock_count() == 0)
 			print("SELFTEST ai min_dist=", min_dist, " retreat_dx=", b.position.x - x_at_hit,
-				" hit_dmg=", dmg_start - a.current_hp, " fails=", fails.size())
+				" hit_dmg=", hit_dmg, " rock_hp=", a.current_hp,
+				" fails=", fails.size())
 			quit(0 if fails.is_empty() else 1)
+
+func _rock_count() -> int:
+	var c: int = 0
+	var parent_node: Node = b.get_parent()
+	for ch in parent_node.get_children():
+		if ch.get_script() == ROCK:
+			c += 1
+	return c
