@@ -1,0 +1,161 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/RiggedFighter.tscn" id="1_fighter"]
+[ext_resource type="Texture2D" path="res://assets/stage-jingyang.png" id="2_stage"]
+[ext_resource type="Script" path="res://scripts/main_rigged.gd" id="3_main"]
+[ext_resource type="PackedScene" path="res://scenes/Boss.tscn" id="4_boss"]
+
+[sub_resource type="RectangleShape2D" id="ground_shape"]
+size = Vector2(2000, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 1200)
+
+[node name="BossArena" type="Node2D"]
+script = ExtResource("3_main")
+
+[node name="Background" type="TextureRect" parent="."]
+z_index = -2
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("2_stage")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(960, 870)
+
+[node name="GroundCol" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("ground_shape")
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(-20, 480)
+
+[node name="WallLeftCol" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("wall_shape")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1940, 480)
+
+[node name="WallRightCol" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("wall_shape")
+
+[node name="P1" parent="." instance=ExtResource("1_fighter")]
+position = Vector2(600, 820)
+
+[node name="P2" parent="." instance=ExtResource("4_boss")]
+position = Vector2(1320, 820)
+
+[node name="BattleCam" type="Camera2D" parent="."]
+position = Vector2(960, 540)
+
+[node name="Cinematic" type="CanvasLayer" parent="."]
+layer = 2
+
+[node name="Dim" type="ColorRect" parent="Cinematic"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.02, 0.03, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="Slash" type="ColorRect" parent="Cinematic"]
+offset_left = 260.0
+offset_top = 520.0
+offset_right = 1660.0
+offset_bottom = 548.0
+pivot_offset = Vector2(700, 14)
+rotation = -0.32
+color = Color(1, 0.93, 0.68, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="Flash" type="ColorRect" parent="Cinematic"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 0.97, 0.86, 1)
+modulate = Color(1, 1, 1, 0)
+mouse_filter = 2
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="P1HP" type="ProgressBar" parent="HUD"]
+offset_left = 60.0
+offset_top = 30.0
+offset_right = 560.0
+offset_bottom = 50.0
+max_value = 800.0
+value = 800.0
+
+[node name="P1Wine" type="ProgressBar" parent="HUD"]
+offset_left = 60.0
+offset_top = 56.0
+offset_right = 380.0
+offset_bottom = 68.0
+max_value = 100.0
+value = 0.0
+show_percentage = false
+modulate = Color(0.8, 0.75, 0.55, 1)
+
+[node name="P1SuperHint" type="Label" parent="HUD"]
+offset_left = 386.0
+offset_top = 54.0
+offset_right = 560.0
+offset_bottom = 70.0
+text = "覺醒可發（O / RT）"
+theme_override_font_sizes/font_size = 13
+modulate = Color(1.0, 0.85, 0.3, 1)
+visible = false
+
+[node name="P1DrunkHint" type="Label" parent="HUD"]
+offset_left = 60.0
+offset_top = 74.0
+offset_right = 300.0
+offset_bottom = 92.0
+text = "醉打可發（RB / U）"
+theme_override_font_sizes/font_size = 13
+modulate = Color(0.82, 0.8, 0.7, 1)
+
+[node name="LootLabel" type="Label" parent="HUD"]
+offset_left = 60.0
+offset_top = 98.0
+offset_right = 560.0
+offset_bottom = 118.0
+text = "碎銀 0　小虎爪 0　木牌 0"
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.78, 0.72, 0.55, 1)
+
+[node name="P2HP" type="ProgressBar" parent="HUD"]
+offset_left = 1360.0
+offset_top = 30.0
+offset_right = 1860.0
+offset_bottom = 50.0
+max_value = 1200.0
+value = 1200.0
+
+[node name="P1Name" type="Label" parent="HUD"]
+offset_left = 60.0
+offset_top = 5.0
+offset_right = 300.0
+offset_bottom = 25.0
+text = "武松"
+theme_override_font_sizes/font_size = 18
+
+[node name="P2Name" type="Label" parent="HUD"]
+offset_left = 1560.0
+offset_top = 5.0
+offset_right = 1860.0
+offset_bottom = 25.0
+text = "景陽岡猛虎"
+horizontal_alignment = 2
+theme_override_font_sizes/font_size = 18
