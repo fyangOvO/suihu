@@ -132,7 +132,7 @@
   - **踩坑（自測時序）**：P2 若同時由引擎物理推進、又在物理回調裡手推 `_physics_process`，兩條推進疊加會讓 `_death_t` 兩倍速（n=35 就已 finished、alpha 0），「淡出中」斷言必假；只能選一條——現在 P2 交給引擎自走，只手推 `main._process`。
   - 全量回歸（10 個自測 + 主場景 `--quit-after 240`）全 RC=0；`selftest_ai` 受擊後退段的假人血量由 1 改成 50（原值會被新死亡演出判死、AI 直接凍住），其餘斷言不變。
 
-- [x] **V0.3.0 線性章節流程（FLOW-01／02／03／06；`tools/selftest_flow.gd` 50 項 PASS）**：
+- [x] **V0.3.0 線性章節流程（FLOW-01／02／03／06；`tools/selftest_flow.gd` 55 項 PASS）**：
   - **FLOW-01 章節管理器**：`data/story_beats.gd` 定義 B1–B9 與 D-01–D-10（單句 ≤40 字、每拍 ≤3 行），`scripts/chapter_manager.gd` 以 autoload `ChapterManager` 保存當前節拍、旗標、戰利品與玩家血量；`goto_beat()` 按 `SCENE_PATHS` 載入六場景。
   - **FLOW-02 對話系統**：`scripts/ui/dialogue_ui.gd` + `scenes/ui/DialogueUI.tscn`，34 字／秒打字機、按攻擊鍵先補滿再下一句、對話期間凍結雙方、結束回調。
   - **FLOW-03 檢查點**：單槽 `user://checkpoint.json`，先寫 `.tmp` 再 rename，rename 失敗回退直寫；讀檔驗證 JSON／節拍／flags／loot 型別，損壞檔拒絕載入；山神廟 SCN-04 自動存檔。
