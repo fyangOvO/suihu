@@ -51,6 +51,19 @@ func _initialize() -> void:
 	# ---- A. 數據 ----
 	_check("boss max_hp 1200 / current 1200", boss.max_hp == 1200 and boss.current_hp == 1200)
 	_check("boss starts BossIdle", boss._state == "BossIdle")
+	# BOS-10 觀感：Visual 必須蓋過 110×240 受擊盒，且腳底落在原點附近。
+	var visual: Sprite2D = boss.get_node("Visual")
+	var body_col: CollisionShape2D = boss.get_node("Collision")
+	var body_rect: RectangleShape2D = body_col.shape
+	var idle_img := Image.new()
+	var idle_ok := idle_img.load("res://assets/anim/boss/boss-idle.png") == OK
+	var used := idle_img.get_used_rect()
+	var visible_h: float = float(used.size.y) * visual.scale.y if idle_ok else 0.0
+	var feet_y: float = visual.position.y + (720.0 - 768.0 * 0.5) * visual.scale.y
+	_check("Boss collision 110x240", body_rect.size == Vector2(110, 240))
+	_check("Boss visual scale 0.72", absf(visual.scale.x - 0.72) < 0.001 and absf(visual.scale.y - 0.72) < 0.001)
+	_check("Boss visual feet at ground", absf(feet_y) <= 2.0)
+	_check("Boss visual covers hurtbox height", visible_h >= 240.0 * 1.15)
 	_check("BossPounce 200/82f", int(boss._spec("BossPounce").get("damage", 0)) == 200
 		and DATA.total_frames(boss._spec("BossPounce")) == 82)
 	_check("BossTail 140/48f", int(boss._spec("BossTail").get("damage", 0)) == 140

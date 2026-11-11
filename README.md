@@ -186,6 +186,11 @@
   - **SCN-04**：新增徑向 `GradientTexture2D` 暖光（`_add_glow`＋`BLEND_MODE_ADD`），兩支燭移到山神像外側；供桌、地面、香爐與神像臉面各有暖光，後牆／地面／神像改成暖石灰，燭火不再只是一塊均勻色斑。
   - **SCN-06**：虎屍加 `TigerSpine` 脊線、`TigerBelly` 腹線、`TigerHaunch` 胯線、耳朵／吻部／閉眼，四條腿重畫成帶膝節與腳掌的多邊形，石台加接觸陰影。
   - **驗收**：`selftest_scn03_forest`／`selftest_scn04_temple`／`selftest_scn06_pool` 全 PASS；`selftest_flow` `fails=0`；三張截圖已重出。
+- [x] **V0.3.8 戰鬥層驗收：SCN-02 真打自測＋Boss Visual 對齊受擊盒**：
+  - **SCN-02 不再秒殺**：新增 `tools/selftest_scn02_fight.gd`，不呼叫 `take_damage`；用 `Input.action_press("p1_light")` 模擬玩家每 24 幀出輕擊、伥鬼起手時按 `p1_block` 防禦，讓 AI 與玩家都走完整狀態機。7 項斷言全 PASS：AI 會接近並出 `CorpseLight`／`CorpseHeavy`／`CorpseDash`、會打到玩家、玩家輕擊能扣血、伥鬼在 767 幀內被打死、B3 寫完成並排隊 B4。
+  - **Boss 尺寸對齊**：實測 `boss-idle.png`（768×768）可視 bbox 300×460、基線 y=720；`Boss.tscn` 的 `Visual` 由繼承的 0.55／-185 改為 `scale 0.72`／`position (0,-242)`，可視高約 331px、腳底落回原點，明顯蓋過 110×240 的 `Collision`／`HurtShape`，不再出現「老虎比受擊盒小」。
+  - **自測擴充**：`selftest_boss.gd` 新增 4 項（碰撞盒 110×240、Visual 0.72、腳底 ±2px、可視高 ≥ 240×1.15），Boss 自測 `fails=0`；`selftest_corpse_ghost` RC=0、`selftest_flow` `fails=0`。
+  - **截圖**：`docs/preview/boss-preview.png` 與 `flow-scn05-ridge.png` 已重出，崗頂老虎現在比玩家高半個頭、與 Boss 條比例正常。
 
 ## 待實現
 

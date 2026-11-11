@@ -26,8 +26,10 @@ drop_chance = 0.0
 script = ExtResource("2_boss")
 
 ; Boss 素材畫布 768×768（基線 720），Sprite 原點要下移讓腳底落在 (0,0)
+; 可視高度約 460，放大到 0.72 後約 331px，覆蓋 110×240 受擊盒；position 依 336*scale 對齊腳底
 [node name="Visual" parent="."]
-position = Vector2(0, -185)
+position = Vector2(0, -242)
+scale = Vector2(0.72, 0.72)
 
 ; 身體碰撞 110×240 @ (0,-120)
 [node name="Collision" parent="."]
