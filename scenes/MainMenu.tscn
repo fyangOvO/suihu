@@ -21,71 +21,113 @@ stretch_mode = 6
 layout_mode = 0
 offset_right = 1920.0
 offset_bottom = 1080.0
-color = Color(0.02, 0.025, 0.03, 0.72)
+color = Color(0.012, 0.014, 0.018, 0.78)
+
+[node name="LeftShade" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 0.0
+offset_right = 760.0
+offset_bottom = 1080.0
+color = Color(0.008, 0.009, 0.011, 0.38)
+
+[node name="VerticalRule" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 196.0
+offset_top = 148.0
+offset_right = 197.0
+offset_bottom = 890.0
+color = Color(0.72, 0.56, 0.32, 0.38)
 
 [node name="Title" type="Label" parent="."]
 layout_mode = 0
-offset_left = 460.0
-offset_top = 150.0
-offset_right = 1460.0
-offset_bottom = 250.0
-theme_override_colors/font_color = Color(0.93, 0.86, 0.66, 1)
-theme_override_font_sizes/font_size = 64
+offset_left = 220.0
+offset_top = 124.0
+offset_right = 1120.0
+offset_bottom = 252.0
+theme_override_colors/font_color = Color(0.855, 0.800, 0.690, 1)
+theme_override_font_sizes/font_size = 96
 text = "水滸：妖魔劫"
-horizontal_alignment = 1
+horizontal_alignment = 0
 
 [node name="Subtitle" type="Label" parent="."]
 layout_mode = 0
-offset_left = 460.0
-offset_top = 255.0
-offset_right = 1460.0
+offset_left = 232.0
+offset_top = 266.0
+offset_right = 1030.0
 offset_bottom = 300.0
-theme_override_colors/font_color = Color(0.66, 0.62, 0.52, 1)
-theme_override_font_sizes/font_size = 22
-text = "1.0 Lite　景陽岡 · 線性章節"
-horizontal_alignment = 1
+theme_override_colors/font_color = Color(0.560, 0.510, 0.420, 1)
+theme_override_font_sizes/font_size = 18
+text = "景陽岡 · 線性章節 · 1.0 LITE"
 
-[node name="Panel" type="ColorRect" parent="."]
+[node name="TitleSeal" type="ColorRect" parent="."]
 layout_mode = 0
-offset_left = 660.0
+offset_left = 1160.0
+offset_top = 150.0
+offset_right = 1250.0
+offset_bottom = 240.0
+color = Color(0.55, 0.13, 0.10, 0.88)
+
+[node name="TitleSealText" type="Label" parent="TitleSeal"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 82.0
+offset_bottom = 80.0
+theme_override_colors/font_color = Color(0.855, 0.800, 0.690, 1)
+theme_override_font_sizes/font_size = 48
+text = "劫"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 220.0
 offset_top = 390.0
-offset_right = 1260.0
-offset_bottom = 830.0
-color = Color(0.04, 0.045, 0.05, 0.86)
+offset_right = 780.0
+offset_bottom = 800.0
 
 [node name="VBox" type="VBoxContainer" parent="Panel"]
 layout_mode = 0
-offset_left = 40.0
-offset_top = 45.0
-offset_right = 560.0
-offset_bottom = 345.0
-theme_override_constants/separation = 18
+offset_left = 28.0
+offset_top = 30.0
+offset_right = 508.0
+offset_bottom = 270.0
+theme_override_constants/separation = 10
 
 [node name="BtnNew" type="Button" parent="Panel/VBox"]
-custom_minimum_size = Vector2(520, 64)
+custom_minimum_size = Vector2(480, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "開始新局"
 
 [node name="BtnContinue" type="Button" parent="Panel/VBox"]
-custom_minimum_size = Vector2(520, 64)
+custom_minimum_size = Vector2(480, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "從山神廟續玩"
 
 [node name="BtnQuit" type="Button" parent="Panel/VBox"]
-custom_minimum_size = Vector2(520, 64)
+custom_minimum_size = Vector2(480, 60)
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 24
 text = "離開"
 
 [node name="SaveHint" type="Label" parent="Panel"]
 layout_mode = 0
-offset_left = 40.0
-offset_top = 375.0
-offset_right = 560.0
-offset_bottom = 405.0
-theme_override_colors/font_color = Color(0.6, 0.58, 0.5, 1)
-theme_override_font_sizes/font_size = 16
+offset_left = 28.0
+offset_top = 300.0
+offset_right = 508.0
+offset_bottom = 330.0
+theme_override_colors/font_color = Color(0.560, 0.510, 0.420, 1)
+theme_override_font_sizes/font_size = 14
 text = "尚無檢查點"
-horizontal_alignment = 1
+
+[node name="Footer" type="Label" parent="."]
+layout_mode = 0
+offset_left = 220.0
+offset_top = 940.0
+offset_right = 1100.0
+offset_bottom = 970.0
+theme_override_colors/font_color = Color(0.480, 0.390, 0.250, 1)
+theme_override_font_sizes/font_size = 13
+text = "景陽岡 · 酒肆 · 山道 · 亂林 · 山神廟 · 崗頂 · 水潭"

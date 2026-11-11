@@ -5,6 +5,7 @@ extends Node2D
 const FIGHTER := preload("res://scenes/RiggedFighter.tscn")
 const DIALOGUE_SCENE := preload("res://scenes/ui/DialogueUI.tscn")
 const STORY := preload("res://data/story_beats.gd")
+const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -15,9 +16,12 @@ var p2: CharacterBody2D = null
 var camera: Camera2D
 var dialogue: CanvasLayer
 var hud: CanvasLayer
+var _p1_panel: Panel
 var _p1hp: ProgressBar
 var _p1wine: ProgressBar
 var _p2hp: ProgressBar
+var _p2_panel: Panel
+var _banner_panel: Panel
 var _p2name: Label
 var _p1name: Label
 var _loot: Label
@@ -159,50 +163,100 @@ func _build_hud() -> void:
 	hud.layer = 1
 	add_child(hud)
 
-	_p1name = _label("P1Name", Vector2(60, 5), Vector2(300, 20), 18, Color(0.9, 0.88, 0.8))
+	_p1_panel = Panel.new()
+	_p1_panel.name = "P1Panel"
+	_p1_panel.position = Vector2(34, 26)
+	_p1_panel.size = Vector2(430, 112)
+	_p1_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.84))
+	hud.add_child(_p1_panel)
+
+	_p1name = _label("P1Name", Vector2(54, 34), Vector2(260, 34), 24, UI_STYLE.PAPER, true)
 	_p1name.text = "武松"
-	_p1hp = _bar("P1HP", Vector2(60, 30), Vector2(500, 20), 800.0, Color(0.55, 0.24, 0.2))
+
+	_p1hp = _bar("P1HP", Vector2(54, 72), Vector2(372, 14), 800.0, UI_STYLE.BLOOD)
 	_p1hp.value = 800.0
-	_p1wine = _bar("P1Wine", Vector2(60, 56), Vector2(320, 12), 100.0, Color(0.75, 0.66, 0.35))
+
+	_p1wine = _bar("P1Wine", Vector2(54, 94), Vector2(250, 8), 100.0, UI_STYLE.GOLD)
 	_p1wine.value = 0.0
 	_p1wine.show_percentage = false
-	_hint = _label("Hint", Vector2(60, 74), Vector2(420, 18), 13, Color(0.78, 0.76, 0.66))
+
+	var wine_tag := _label("P1WineTag", Vector2(312, 88), Vector2(30, 18), 12, UI_STYLE.PAPER_DIM, true)
+	wine_tag.text = "酒"
+
+	_hint = _label("Hint", Vector2(52, 956), Vector2(620, 20), 14, UI_STYLE.PAPER_DIM)
 	_hint.text = "J 輕 / K 重 / L 防 / Space 跳 / U 醉打 / O 覺醒"
 
-	_loot = _label("LootLabel", Vector2(60, 98), Vector2(500, 20), 14, Color(0.78, 0.72, 0.55))
-	_title = _label("StageTitle", Vector2(760, 10), Vector2(400, 28), 22, Color(0.85, 0.78, 0.62))
+	_loot = _label("LootLabel", Vector2(52, 930), Vector2(620, 20), 15, UI_STYLE.GOLD_DIM)
+	_loot.text = ""
+
+	_title = _label("StageTitle", Vector2(660, 12), Vector2(600, 42), 32, UI_STYLE.PAPER, true)
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title.text = scene_title()
 
-	_p2hp = _bar("P2HP", Vector2(1360, 30), Vector2(500, 20), 350.0, Color(0.38, 0.44, 0.5))
-	_p2name = _label("P2Name", Vector2(1560, 5), Vector2(300, 20), 18, Color(0.85, 0.82, 0.75))
+	var title_rule := ColorRect.new()
+	title_rule.name = "TitleRule"
+	title_rule.position = Vector2(820, 56)
+	title_rule.size = Vector2(280, 1)
+	title_rule.color = Color(UI_STYLE.GOLD_DIM.r, UI_STYLE.GOLD_DIM.g, UI_STYLE.GOLD_DIM.b, 0.45)
+	hud.add_child(title_rule)
+
+	_p2_panel = Panel.new()
+	_p2_panel.name = "P2Panel"
+	_p2_panel.position = Vector2(1456, 26)
+	_p2_panel.size = Vector2(430, 100)
+	_p2_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.80, UI_STYLE.STEEL))
+	hud.add_child(_p2_panel)
+
+	_p2hp = _bar("P2HP", Vector2(1474, 72), Vector2(372, 14), 350.0, UI_STYLE.STEEL)
+	_p2name = _label("P2Name", Vector2(1494, 34), Vector2(352, 34), 24, UI_STYLE.PAPER, true)
 	_p2name.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 	if p2 == null:
 		_p2hp.visible = false
 		_p2name.visible = false
+		_p2_panel.visible = false
 	else:
 		_p2name.text = opponent_display_name()
 		_p2hp.max_value = p2.max_hp
 		_p2hp.value = p2.current_hp
 
-	_banner = _label("Banner", Vector2(460, 200), Vector2(1000, 44), 30, Color(0.95, 0.86, 0.55))
+	_banner_panel = Panel.new()
+	_banner_panel.name = "BannerPanel"
+	_banner_panel.position = Vector2(360, 168)
+	_banner_panel.size = Vector2(1200, 64)
+	_banner_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.82))
+	_banner_panel.visible = false
+	hud.add_child(_banner_panel)
+
+	var banner_top := ColorRect.new()
+	banner_top.name = "BannerRuleTop"
+	banner_top.position = Vector2(0, 0)
+	banner_top.size = Vector2(1200, 1)
+	banner_top.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.55)
+	_banner_panel.add_child(banner_top)
+	var banner_bottom := ColorRect.new()
+	banner_bottom.name = "BannerRuleBottom"
+	banner_bottom.position = Vector2(0, 63)
+	banner_bottom.size = Vector2(1200, 1)
+	banner_bottom.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.45)
+	_banner_panel.add_child(banner_bottom)
+
+	_banner = _label("Banner", Vector2(380, 176), Vector2(1160, 48), 34, UI_STYLE.GOLD, true)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.visible = false
 
-	_result = _label("Result", Vector2(460, 470), Vector2(1000, 64), 48, Color(1, 0.9, 0.3))
+	_result = _label("Result", Vector2(360, 452), Vector2(1200, 80), 56, UI_STYLE.GOLD, true)
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_result.visible = false
 
 	_refresh_loot()
 
-func _label(node_name: String, pos: Vector2, size: Vector2, font_size: int, color: Color) -> Label:
+func _label(node_name: String, pos: Vector2, size: Vector2, font_size: int, color: Color, title: bool = false) -> Label:
 	var l := Label.new()
 	l.name = node_name
 	l.position = pos
 	l.size = size
-	l.add_theme_font_size_override("font_size", font_size)
-	l.add_theme_color_override("font_color", color)
+	UI_STYLE.apply_label(l, font_size, color, title)
 	hud.add_child(l)
 	return l
 
@@ -214,7 +268,7 @@ func _bar(node_name: String, pos: Vector2, size: Vector2, max_v: float, color: C
 	b.max_value = max_v
 	b.value = max_v
 	b.show_percentage = false
-	b.modulate = color
+	UI_STYLE.apply_bar(b, color)
 	hud.add_child(b)
 	return b
 
@@ -242,7 +296,10 @@ func _tick_overlay(delta: float) -> void:
 	if _banner_timer > 0.0:
 		_banner_timer -= delta
 		if _banner_timer <= 0.0:
-			_banner.visible = false
+			if _banner != null:
+				_banner.visible = false
+			if _banner_panel != null:
+				_banner_panel.visible = false
 	if _pickup_timer > 0.0:
 		_pickup_timer -= delta
 		if _pickup_timer <= 0.0 and _hint != null:
@@ -279,8 +336,14 @@ func _freeze_fighters(frozen: bool) -> void:
 		p2.set_physics_process(not frozen)
 
 func show_banner(text: String, seconds: float = 2.0) -> void:
+	if text.strip_edges() == "" or seconds <= 0.0:
+		_banner.visible = false
+		_banner_panel.visible = false
+		_banner_timer = 0.0
+		return
 	_banner.text = text
 	_banner.visible = true
+	_banner_panel.visible = true
 	_banner_timer = seconds
 
 func _finish_to(next_beat: String, delay: float = 1.2, banner_text: String = "前路已清") -> void:

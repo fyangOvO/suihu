@@ -161,6 +161,15 @@
   - **自测**：`tools/selftest_inn_cutscene.gd` 26 项——布景节点、三碗数量、落座下移、P1 物理冻结、第一碗淡出、灯灭三参数归零、CanvasModulate 压暗、尾影出现、三碗全空、B1 clear→B2。
   - **离屏验收**：`docs/preview/flow-scn01-drink.png`（油灯暖光、三碗酒、武松举碗）与 `flow-scn01-tail.png`（灯灭冷灰、剪影＋尾影＋金色横幅）。工具 `tools/capture_scn01_cutscene.gd` 用 `SubViewport(1920×1080)`＋条件触发双帧，`16×16` 窗口移出屏幕，无可见窗口。
 
+- [x] **V0.3.4 UI 觀感基線（字體＋HUD＋主菜單＋對話框；全量 14 個自測 RC=0）**：
+  - **字體入庫**：`assets/fonts/MaShanZheng-Regular.ttf`（馬善政毛筆楷書，OFL）作標題／人名／橫幅；`assets/fonts/LXGWWenKaiLite-Regular.ttf`（霞鶩文楷 Lite，OFL）作正文與按鈕；許可證隨字體放在 `assets/fonts/OFL-*.txt`。`project.godot` 增 `gui/theme/custom_font`，全局先吃正文楷體。
+  - **統一 UI 樣式**：新增 `scripts/ui/ui_style.gd`，集中暗墨底／殘金線／朱砂血條／紙色文字與 `StyleBoxFlat` 面板、血條、按鈕三態；場景不再各自硬寫一套色值。
+  - **HUD 重排**：左上改「名札」面板——毛筆「武松」＋細血條＋酒氣條＋「酒」字；右上 P2 同結構；中央「酒肆」標題加短金線；提示與戰利品移到左下，不再堆在頭頂；橫幅改為暗墨長條＋上下金線，避免大字裸浮。
+  - **主菜單重排**：左欄大標題＋朱砂「劫」印＋豎金線；按鈕改窄金邊、左對齊、hover 朱砂填充；底部加場景路徑小字，移開原本正中的大灰塊。
+  - **對話框改版**：加朱砂豎印、上下金線與更寬的正文區，發言人用毛筆字，正文用文楷，提示右下弱化。
+  - **參考站取捨**：爱给网 `game2d/lib/` 的素材以日系 RPG Maker 為主，直接搬會撞本作暗黑水墨調性；本批只借鑒其「九宮格面板／血條框／按鈕三態」的結構，UI 仍自繪，未下載其角色圖入庫。
+  - **離屏驗收**：`docs/preview/flow-main-menu.png` 與 `flow-scn01-dialogue.png` 已重出；SCN-01 喝酒／尾影兩張同步帶新 HUD。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）

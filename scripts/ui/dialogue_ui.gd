@@ -5,6 +5,7 @@ extends CanvasLayer
 signal finished
 
 const CHARS_PER_SECOND: float = 34.0
+const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 
 var _lines: Array = []
 var _index: int = -1
@@ -20,6 +21,9 @@ var _callback: Callable = Callable()
 func _ready() -> void:
 	visible = false
 	set_process(false)
+	UI_STYLE.apply_label(_name, 30, UI_STYLE.GOLD, true)
+	UI_STYLE.apply_label(_text, 28, UI_STYLE.PAPER)
+	UI_STYLE.apply_label(_hint, 14, UI_STYLE.PAPER_DIM)
 
 func play(lines: Array, on_finished: Callable = Callable()) -> void:
 	_lines = lines.duplicate(true)

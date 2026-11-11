@@ -3,7 +3,13 @@ extends Control
 
 const STORY := preload("res://data/story_beats.gd")
 const FIRST_SCENE := "res://scenes/chapters/SCN_01_Inn.tscn"
+const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 
+@onready var _title: Label = $Title
+@onready var _subtitle: Label = $Subtitle
+@onready var _panel: Panel = $Panel
+@onready var _seal_text: Label = $TitleSeal/TitleSealText
+@onready var _footer: Label = $Footer
 @onready var _btn_new: Button = $Panel/VBox/BtnNew
 @onready var _btn_continue: Button = $Panel/VBox/BtnContinue
 @onready var _btn_quit: Button = $Panel/VBox/BtnQuit
@@ -16,6 +22,20 @@ func _ready() -> void:
 	_btn_new.pressed.connect(_start_new)
 	_btn_continue.pressed.connect(_continue_game)
 	_btn_quit.pressed.connect(func(): get_tree().quit())
+
+	UI_STYLE.apply_label(_title, 96, UI_STYLE.PAPER, true)
+	UI_STYLE.apply_label(_subtitle, 18, UI_STYLE.PAPER_DIM)
+	UI_STYLE.apply_label(_seal_text, 48, UI_STYLE.PAPER, true)
+	UI_STYLE.apply_label(_footer, 13, UI_STYLE.GOLD_DIM)
+	UI_STYLE.apply_label(_save_hint, 14, UI_STYLE.PAPER_DIM)
+	var panel_style: StyleBoxFlat = UI_STYLE.panel_style(0.88)
+	panel_style.border_width_left = 3
+	panel_style.border_color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.68)
+	_panel.add_theme_stylebox_override("panel", panel_style)
+	for btn in _buttons:
+		UI_STYLE.menu_button_styles(btn)
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+
 	var cm = get_node_or_null("/root/ChapterManager")
 	var has_save: bool = cm != null and cm.has_checkpoint()
 	_btn_continue.disabled = not has_save

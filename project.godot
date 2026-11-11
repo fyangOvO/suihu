@@ -32,6 +32,10 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="Shuihu"
 
+[gui]
+
+theme/custom_font="res://assets/fonts/LXGWWenKaiLite-Regular.ttf"
+
 [input]
 
 p1_left={
