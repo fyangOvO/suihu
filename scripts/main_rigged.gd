@@ -5,6 +5,9 @@ var _result_timer: float = 0.0
 var _result_label: Label
 var _pickup_label: Label
 var _pickup_timer: float = 0.0
+var _loot_label: Label = null
+## TIG-05：本場戰利品計數（碎銀／小虎爪／木牌）
+var loot_counts: Dictionary = {"碎銀": 0, "小虎爪": 0, "伥鬼的木牌": 0}
 
 # 覺醒過場演出（Super 觸發時：推鏡 + 暗角 + 刀光 + 定格白閃）
 const CINE_DURATION: float = 2.0
@@ -35,6 +38,9 @@ func _ready():
 	_pickup_label.add_theme_color_override("font_color", Color(0.95, 0.86, 0.52))
 	_pickup_label.visible = false
 	add_child(_pickup_label)
+	# TIG-05：戰利品計數顯示（碎銀／小虎爪／木牌）
+	_loot_label = get_node_or_null("HUD/LootLabel")
+	_refresh_loot_label()
 	_cam = get_node_or_null("BattleCam")
 	_dim = get_node_or_null("Cinematic/Dim")
 	_slash = get_node_or_null("Cinematic/Slash")
@@ -142,10 +148,20 @@ func _show_result(text: String):
 
 ## 掉落物拾取回調（coin_pickup 在父節點上找這個方法）
 func _on_pickup_collected(item_name: String) -> void:
+	if loot_counts.has(item_name):
+		loot_counts[item_name] += 1
+		_refresh_loot_label()
 	_pickup_label.text = "拾得：%s" % item_name
 	_pickup_label.modulate = Color(1, 1, 1, 1)
 	_pickup_label.visible = true
 	_pickup_timer = 2.0
+
+func _refresh_loot_label() -> void:
+	if _loot_label == null:
+		return
+	_loot_label.text = "碎銀 %d　小虎爪 %d　木牌 %d" % [
+		loot_counts["碎銀"], loot_counts["小虎爪"], loot_counts["伥鬼的木牌"]
+	]
 
 ## 拾取提示淡出
 func _tick_pickup_hint(delta: float) -> void:

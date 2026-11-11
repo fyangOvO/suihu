@@ -44,8 +44,8 @@ func _on_physics() -> void:
 		_check("no victory before smoke", not main._battle_over)
 		return
 
-	# n=3..90 手動推進主場景判定（P2 的死亡計時由引擎物理幀自走）
-	if n >= 3 and n <= 90:
+	# n=3..94 手動推進主場景判定（P2 的死亡計時由引擎物理幀自走）
+	if n >= 3 and n <= 94:
 		main._process(DT)
 
 	if n == 8:
@@ -78,9 +78,21 @@ func _on_physics() -> void:
 		p1.position = Vector2(silver.position.x, 820.0)
 	elif n == 84:
 		var drops2: Array = _pickups()
-		_check("pickup collected on touch", drops2.size() == 1 and drops2[0].item_name == "小虎爪")
+		_check("pickup collected on touch", drops2.size() <= 2)
+		_check("silver pickup counted", main.loot_counts["碎銀"] >= 1)
 		_check("pickup toast shown", main._pickup_label.visible and main._pickup_label.text.contains("碎銀"))
+		_check("loot label shows silver", main._loot_label.text.contains("碎銀"))
+		var has_claw: bool = false
+		for d in drops2:
+			if d.item_name == "小虎爪":
+				has_claw = true
+				p1.position = Vector2(d.position.x, 820.0)
+		_check("claw remains for pickup", has_claw)
 	elif n == 90:
+		_check("claw pickup counted", main.loot_counts["小虎爪"] == 1)
+		_check("loot label shows claw", main._loot_label.text.contains("小虎爪 1"))
+		_check("all drops collected", _pickups().is_empty())
+	elif n == 94:
 		print("SELFTEST death fails=", fails.size(), " drops_left=", _pickups().size(),
 			" billboard=", p2._death_done)
 		quit(0 if fails.is_empty() else 1)

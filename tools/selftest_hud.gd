@@ -77,6 +77,14 @@ func _on_frame() -> void:
 	main._process(0.016)
 	_check("P2HP full at 350", is_equal_approx(p2bar.value, 350.0))
 
+	# ---- TIG-05 戰利品計數 ----
+	var loot: Label = main.get_node_or_null("HUD/LootLabel")
+	_check("HUD/LootLabel node exists", loot != null)
+	_check("loot starts at zero", loot.text.contains("碎銀 0") and loot.text.contains("小虎爪 0"))
+	main._on_pickup_collected("小虎爪")
+	_check("claw count increments", main.loot_counts["小虎爪"] == 1)
+	_check("loot label updates claw count", loot.text.contains("小虎爪 1"))
+
 	if fails.is_empty():
 		print("HUD_SELFTEST result=PASS")
 		quit(0)

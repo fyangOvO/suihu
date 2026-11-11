@@ -126,6 +126,15 @@ text = "醉打可發（RB / U）"
 theme_override_font_sizes/font_size = 13
 modulate = Color(0.82, 0.8, 0.7, 1)
 
+[node name="LootLabel" type="Label" parent="HUD"]
+offset_left = 60.0
+offset_top = 98.0
+offset_right = 560.0
+offset_bottom = 118.0
+text = "碎銀 0　小虎爪 0　木牌 0"
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.78, 0.72, 0.55, 1)
+
 [node name="P2HP" type="ProgressBar" parent="HUD"]
 offset_left = 1360.0
 offset_top = 30.0
