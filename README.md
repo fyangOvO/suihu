@@ -138,7 +138,7 @@
   - **FLOW-03 檢查點**：單槽 `user://checkpoint.json`，先寫 `.tmp` 再 rename，rename 失敗回退直寫；讀檔驗證 JSON／節拍／flags／loot 型別，損壞檔拒絕載入；山神廟 SCN-04 自動存檔。
   - **六場景骨架**：`scenes/chapters/SCN_01_Inn`／`02_Trail`／`03_Forest`／`04_Temple`／`05_Ridge`／`06_Pool`，共用 `scripts/chapters/stage_base.gd`（背景／地面／牆／P1／可選敵人／HUD／對話／勝敗切換）。SCN-03 接吊睛小虎、SCN-05 接猛虎 Boss、SCN-06 以水面月亮＋字幕收尾回主菜單。
   - **入口**：`scenes/MainMenu.tscn` 取代舊 NodeMap 作為 `run/main_scene`，開始新局→SCN-01，續玩→讀檢查點回山神廟。
-  - 已知留白：SCN-02 在 V0.3.2 已接老虎伥鬼实体战；SCN-06 倒影、BOS-10 虎屍／黑霧畫面仍待 SC-06。
+  - 已知留白：SCN-01 在 V0.3.3 已补三镜演出；SCN-02 已接老虎伥鬼实体战；SCN-06 倒影、BOS-10 虎屍／黑霧畫面仍待 SC-06。
 
 - [x] **V0.3.1 老虎伥鬼六帧素材（`tools/check_corpse_ghost_spec.py` 6/6 PASS）**：
   - 母图 `docs/preview/corpse-ghost-pose-sheet-src.png`（六格：站立／走 A／走 B／木棍直戳／木棍下砸／受击后仰）。
@@ -152,6 +152,14 @@
   - **`scripts/chapters/scn_02_trail.gd`**：SCN-02 覆写 `opponent_scene_path()` 接 `CorpseGhost.tscn`；B2 先播 D-04 再写 B3，B3 直接把伥鬼放到 x=1120 开战；2.2／5.2／8.2s 三条 HUD 教学提示（不再用 9.6s 计时器自动过关）；只有伥鬼青煙散完才 `mark_clear("B3")` 并 `_finish_to("B4", 1.6, "山道通了。")`。
   - **流程断言同步**：`tools/selftest_flow.gd` 的 SCN-02 分支从「no opponent」改为「CorpseGhost 180hp + profile」；现 56 项全 PASS。
   - 离屏验收 `docs/preview/flow-scn02-corpse.png`：山道背景、双侧血条、P2「老虎伥鬼」、伥鬼实机帧与教学横幅同时可见。
+
+- [x] **V0.3.3 SCN-01 酒肆三镜演出（`tools/selftest_inn_cutscene.gd` 26 项 PASS；全量 14 个自测 RC=0）**：
+  - **`scripts/chapters/scn_01_inn.gd` 全文重写**：不新增素材，酒肆布景全部程序化——`InnBack`（墙／地板／梁柱／窗／后架）、`InnFront`（前桌／三酒碗／酒壶／油灯／店家剪影／尾影）、`InnCanvasModulate`；武松饮酒复用现有 `Drink` 四帧（`drink-prep`／`drink-tilt`／`drink`／`drink-finish`，48 逻辑帧）。
+  - **第一镜·喝酒**：B1 三段对话结束后 `_begin_inn_cutscene()`；`Visual` 位置 0.45s 由 `(0,-160)` 下移到 `(0,-108)` 模拟落座，P1 物理关闭、面向店家；三碗各 0.82s 播 `InnDrink1/2/3`，每碗结束 0.25s 淡出，第三碗后进灯灭。无新增战斗、无 HP 结算。
+  - **第二镜·灯灭**：0.55s 并行 tween 把 `PointLight2D.energy`／径向光晕 `modulate:a`／火苗 `modulate:a` 归零，`CanvasModulate` 压到 `Color(0.27,0.26,0.24)`；顶部接「燈滅了。店家的影子，多了一條尾巴。」
+  - **第三镜·尾影**：`TailRoot` 从店家剪影右后侧 0.30s `TRANS_BACK` 弹出、0.35s 停留、0.25s 淡出（总 0.9s），`Line2D` 宽 32＋四控制点锥形收尾；尾影收掉后 `_finish_to("B2", 0.7, "")` 出门。
+  - **自测**：`tools/selftest_inn_cutscene.gd` 26 项——布景节点、三碗数量、落座下移、P1 物理冻结、第一碗淡出、灯灭三参数归零、CanvasModulate 压暗、尾影出现、三碗全空、B1 clear→B2。
+  - **离屏验收**：`docs/preview/flow-scn01-drink.png`（油灯暖光、三碗酒、武松举碗）与 `flow-scn01-tail.png`（灯灭冷灰、剪影＋尾影＋金色横幅）。工具 `tools/capture_scn01_cutscene.gd` 用 `SubViewport(1920×1080)`＋条件触发双帧，`16×16` 窗口移出屏幕，无可见窗口。
 
 ## 待實現
 
