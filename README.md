@@ -176,6 +176,12 @@
   - **觀感層**：`ui_style.gd` 新增 `add_paper`（256 噪聲紙紋）、`add_corner_marks`（四角 L 金線）、`add_nine_patch`（程序生成 32×32 九宮格框）；主菜單、HUD 名札、對話框、Boss 條與殼層面板都吃到紙紋／角線，按鈕加菱形 `MenuMark`。
   - **驗收**：`tools/selftest_ui_shell.gd` 16 項 PASS；新增 `tools/capture_ui_shell.gd` 產 `ui-pause.png`／`ui-settings.png`／`ui-death.png`／`ui-summary.png`／`ui-boss.png`，五張 `err=0`。已知 960×540 下採樣後四角金線偏細，留待下一輪提高對比或改局部預覽。
 
+- [x] **V0.3.6 內容三段：SCN-03 亂林霧、SCN-04 山神廟、SCN-06 水潭倒影（三支新自測 PASS、FLOW fails=0）**：
+  - **SCN-03 亂林**：`scn_03_forest.gd` 在背景下加三層 alpha 漸變霧帶（遠／中／近，各自速度與透明度）＋六根樹幹／六團枝冠剪影；霧貼圖用 `FastNoiseLite` 逐像素寫 `Image`，避免 `NoiseTexture2D` 平鋪成方塊；`_tick_stage` 推視差並在 `FOG_TRAVEL` 回收。
+  - **SCN-04 山神廟**：`scn_04_temple.gd` 程序化搭建廟內地面、後牆、立柱、廟門、供桌、香爐、雙燭焰光、山神像（金片眼、殘金冠、垂帶）；B4 問路結束後山神像眨眼一次（`_blink_once`，只觸發一次），同時保留存檔與上山流程。
+  - **SCN-06 水潭**：`scn_06_pool.gd` 加水面月影／月影寬帶、水岸蘆葦、星點與右岸石台虎屍剪影（含虎斑與冷邊），水下加虎屍倒影；B9 對話結束後留 1.4 秒空鏡再進章末結算，讓倒影與虎屍真的被看見。
+  - **驗收**：`tools/selftest_scn03_forest.gd` 14 項、`tools/selftest_scn04_temple.gd` 10 項、`tools/selftest_scn06_pool.gd` 10 項全部 PASS；新增 `capture_scn03.gd`／`capture_scn04.gd`／`capture_scn06.gd`，三張 `err=0`；`selftest_flow` 仍 `fails=0`。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）
