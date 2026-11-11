@@ -138,7 +138,12 @@
   - **FLOW-03 檢查點**：單槽 `user://checkpoint.json`，先寫 `.tmp` 再 rename，rename 失敗回退直寫；讀檔驗證 JSON／節拍／flags／loot 型別，損壞檔拒絕載入；山神廟 SCN-04 自動存檔。
   - **六場景骨架**：`scenes/chapters/SCN_01_Inn`／`02_Trail`／`03_Forest`／`04_Temple`／`05_Ridge`／`06_Pool`，共用 `scripts/chapters/stage_base.gd`（背景／地面／牆／P1／可選敵人／HUD／對話／勝敗切換）。SCN-03 接吊睛小虎、SCN-05 接猛虎 Boss、SCN-06 以水面月亮＋字幕收尾回主菜單。
   - **入口**：`scenes/MainMenu.tscn` 取代舊 NodeMap 作為 `run/main_scene`，開始新局→SCN-01，續玩→讀檢查點回山神廟。
-  - 已知留白：SCN-02 目前是「山道教學提示」骨架，伥鬼戰待美術／敵人素材；SCN-06 倒影、BOS-10 虎屍／黑霧畫面仍待 SC-06。
+  - 已知留白：SCN-02 目前是「山道教學提示」骨架；伥鬼六格母图与六帧已生成，敌人场景／战斗接入待下一步。SCN-06 倒影、BOS-10 虎屍／黑霧畫面仍待 SC-06。
+
+- [x] **V0.3.1 老虎伥鬼六帧素材（`tools/check_corpse_ghost_spec.py` 6/6 PASS）**：
+  - 母图 `docs/preview/corpse-ghost-pose-sheet-src.png`（六格：站立／走 A／走 B／木棍直戳／木棍下砸／受击后仰）。
+  - 成品 `assets/anim/corpse_ghost/{idle,walk-a,walk-b,thrust,smash,hurt}.png`，`tools/build_corpse_ghost_frames.py` 由母图可重复重建；全部 512×640 RGBA、四角透明、脚底基线 611–612。
+  - 拆帧对照 `docs/preview/corpse-ghost-frames.png`；六格人物身份、破旧短褐、青灰尸脸、腰间木牌与木棍保持一致。
 
 ## 待實現
 
