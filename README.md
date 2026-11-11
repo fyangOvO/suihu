@@ -170,6 +170,12 @@
   - **參考站取捨**：爱给网 `game2d/lib/` 的素材以日系 RPG Maker 為主，直接搬會撞本作暗黑水墨調性；本批只借鑒其「九宮格面板／血條框／按鈕三態」的結構，UI 仍自繪，未下載其角色圖入庫。
   - **離屏驗收**：`docs/preview/flow-main-menu.png` 與 `flow-scn01-dialogue.png` 已重出；SCN-01 喝酒／尾影兩張同步帶新 HUD。
 
+- [x] **V0.3.5 UI 殼層與觀感細節第一批（16 項殼層自測 PASS、全量回歸 fails=0）**：
+  - **暫停／設置／死亡重開／章末結算**：新增 `scripts/ui/game_shell.gd`（CanvasLayer 30、`PROCESS_MODE_ALWAYS`），Esc 呼出暫停；死亡不再自動回檢查點，改由玩家選「重試本段／回山神廟／回主菜單」；SCN-06 的 B9 結尾由 9 秒 credits 改成章末結算面板。
+  - **Boss 條**：`stage_base` 偵測 `_boss_boot` 後隱藏 P2 面板，改用 960×84 的 Boss 條（名札、一／二／三階段、1200 HP、三格刻度與末端高光）。
+  - **觀感層**：`ui_style.gd` 新增 `add_paper`（256 噪聲紙紋）、`add_corner_marks`（四角 L 金線）、`add_nine_patch`（程序生成 32×32 九宮格框）；主菜單、HUD 名札、對話框、Boss 條與殼層面板都吃到紙紋／角線，按鈕加菱形 `MenuMark`。
+  - **驗收**：`tools/selftest_ui_shell.gd` 16 項 PASS；新增 `tools/capture_ui_shell.gd` 產 `ui-pause.png`／`ui-settings.png`／`ui-death.png`／`ui-summary.png`／`ui-boss.png`，五張 `err=0`。已知 960×540 下採樣後四角金線偏細，留待下一輪提高對比或改局部預覽。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）

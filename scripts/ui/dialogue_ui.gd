@@ -14,6 +14,7 @@ var _chars: float = 0.0
 var _active: bool = false
 var _callback: Callable = Callable()
 
+@onready var _box: ColorRect = $Box
 @onready var _name: Label = $Box/Name
 @onready var _text: Label = $Box/Text
 @onready var _hint: Label = $Box/Hint
@@ -24,6 +25,8 @@ func _ready() -> void:
 	UI_STYLE.apply_label(_name, 30, UI_STYLE.GOLD, true)
 	UI_STYLE.apply_label(_text, 28, UI_STYLE.PAPER)
 	UI_STYLE.apply_label(_hint, 14, UI_STYLE.PAPER_DIM)
+	UI_STYLE.add_paper(_box, 0.04)
+	UI_STYLE.add_corner_marks(_box, 26.0, 10.0)
 
 func play(lines: Array, on_finished: Callable = Callable()) -> void:
 	_lines = lines.duplicate(true)

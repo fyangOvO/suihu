@@ -36,16 +36,97 @@ static func clear_panel_style() -> StyleBoxFlat:
 	s.set_border_width_all(1)
 	return s
 
+static func add_paper(parent: Control, alpha: float = 0.055) -> void:
+	var tex := NoiseTexture2D.new()
+	tex.width = 256
+	tex.height = 256
+	tex.seamless = true
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.055
+	noise.fractal_octaves = 3
+	tex.noise = noise
+	var grain := TextureRect.new()
+	grain.name = "PaperGrain"
+	grain.position = Vector2.ZERO
+	grain.size = parent.size
+	grain.texture = tex
+	grain.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	grain.stretch_mode = TextureRect.STRETCH_TILE
+	grain.modulate = Color(1.0, 0.93, 0.78, alpha)
+	grain.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(grain)
+	parent.move_child(grain, 0)
+
+static func add_corner_marks(parent: Control, length: float = 22.0, inset: float = 8.0) -> void:
+	var w: float = parent.size.x
+	var h: float = parent.size.y
+	for corner in [Vector2(inset, inset), Vector2(w - inset - length, inset), Vector2(inset, h - inset - length), Vector2(w - inset - length, h - inset - length)]:
+		var horizontal := ColorRect.new()
+		horizontal.position = Vector2(corner.x, corner.y)
+		horizontal.size = Vector2(length, 1)
+		horizontal.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.52)
+		parent.add_child(horizontal)
+		var vertical := ColorRect.new()
+		vertical.position = Vector2(corner.x, corner.y)
+		vertical.size = Vector2(1, length)
+		vertical.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.52)
+		parent.add_child(vertical)
+
+static func add_nine_patch(parent: Control) -> void:
+	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var gold := Color(0.72, 0.56, 0.32, 0.44)
+	for x in range(32):
+		img.set_pixel(x, 0, gold)
+		img.set_pixel(x, 31, gold)
+		img.set_pixel(x, 3, Color(0.02, 0.018, 0.016, 0.35))
+	for y in range(32):
+		img.set_pixel(0, y, gold)
+		img.set_pixel(31, y, gold)
+		img.set_pixel(3, y, Color(0.02, 0.018, 0.016, 0.35))
+	for corner in [Vector2(0, 0), Vector2(27, 0), Vector2(0, 27), Vector2(27, 27)]:
+		for dx in range(5):
+			for dy in range(5):
+				var p := Vector2(corner.x + dx, corner.y + dy)
+				if dx < 2 or dy < 2:
+					img.set_pixel(int(p.x), int(p.y), Color(GOLD.r, GOLD.g, GOLD.b, 0.62))
+	var tex := ImageTexture.create_from_image(img)
+	var frame := NinePatchRect.new()
+	frame.name = "NinePatchFrame"
+	frame.position = Vector2.ZERO
+	frame.size = parent.size
+	frame.texture = tex
+	frame.patch_margin_left = 8
+	frame.patch_margin_top = 8
+	frame.patch_margin_right = 8
+	frame.patch_margin_bottom = 8
+	frame.axis_stretch_horizontal = NinePatchRect.AXIS_STRETCH_MODE_STRETCH
+	frame.axis_stretch_vertical = NinePatchRect.AXIS_STRETCH_MODE_STRETCH
+	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(frame)
+
 static func bar_background() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
-	s.bg_color = Color(0.075, 0.065, 0.055, 0.95)
-	s.border_color = Color(0.30, 0.25, 0.18, 0.55)
-	s.set_border_width_all(1)
+	s.bg_color = Color(0.045, 0.040, 0.034, 0.96)
+	s.border_color = Color(0.34, 0.28, 0.20, 0.62)
+	s.border_width_left = 1
+	s.border_width_top = 1
+	s.border_width_right = 1
+	s.border_width_bottom = 1
+	s.corner_radius_top_left = 1
+	s.corner_radius_top_right = 1
+	s.corner_radius_bottom_left = 1
+	s.corner_radius_bottom_right = 1
+	s.shadow_color = Color(0, 0, 0, 0.35)
+	s.shadow_size = 2
 	return s
 
 static func bar_fill(color: Color) -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
 	s.bg_color = color
+	s.border_color = Color(1, 0.72, 0.58, 0.34)
+	s.border_width_top = 1
 	s.corner_radius_top_left = 1
 	s.corner_radius_top_right = 1
 	s.corner_radius_bottom_left = 1
@@ -81,7 +162,7 @@ static func menu_button_styles(btn: Button) -> void:
 	normal.border_width_top = 1
 	normal.border_width_right = 1
 	normal.border_width_bottom = 1
-	normal.content_margin_left = 22.0
+	normal.content_margin_left = 26.0
 	normal.content_margin_right = 18.0
 	normal.content_margin_top = 10.0
 	normal.content_margin_bottom = 10.0
@@ -112,3 +193,12 @@ static func menu_button_styles(btn: Button) -> void:
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.93, 0.78))
 	btn.add_theme_color_override("font_focus_color", Color(1.0, 0.93, 0.78))
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	if not btn.has_node("MenuMark"):
+		var mark := ColorRect.new()
+		mark.name = "MenuMark"
+		mark.position = Vector2(12, btn.size.y * 0.5 - 2)
+		mark.size = Vector2(4, 4)
+		mark.rotation = PI * 0.25
+		mark.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.85)
+		mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(mark)
