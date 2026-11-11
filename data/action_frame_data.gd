@@ -261,6 +261,77 @@ const SPECS: Dictionary = {
 		"note": "覺醒必殺 RT/O：酒氣滿100觸發、全程無敵、active窗口320傷害、結束清氣；金黄modulate演出（06 §3.5）"
 	},
 
+	# ---------- 老虎伥鬼（杂兵，docs/04 §2；六帧素材） ----------
+	# 帧名落在 assets/anim/corpse_ghost/，由 CorpseGhost.tscn 的 anim_dir 指定。
+	# 这些状态只引用六张自有帧，避免缺图时回退到武松素材。
+	"CorpseIdle": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 6, "frames": ["idle.png"]},
+		"note": "伥鬼站立拄棍；单帧呼吸，后续可补第二帧"
+	},
+	"CorpseWalk": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 8, "frames": ["walk-a.png", "walk-b.png"]},
+		"note": "伥鬼拖步接近，两帧慢循环"
+	},
+	"CorpseBlock": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 6, "frames": ["thrust.png"]},
+		"note": "站防：横棍护身；只减伤，不产生硬直"
+	},
+	"CorpseLight": {
+		"loop": false,
+		"logic": {"startup": 8, "active": 4, "recovery": 12},
+		"damage": 65, "cancel_frame": -1, "hit_range": 170.0, "knockback": 180.0,
+		"hitbox": {"shape": "rect", "size": [170, 100], "offset": [95, -95]},
+		"visual": {"fps": 20, "frames": ["thrust.png"]},
+		"note": "站轻：木棍直戳 24 帧；起手 8 帧给玩家看清"
+	},
+	"CorpseHeavy": {
+		"loop": false,
+		"logic": {"startup": 15, "active": 4, "recovery": 24},
+		"damage": 130, "cancel_frame": -1, "hit_range": 180.0, "knockback": 260.0,
+		"hitbox": {"shape": "rect", "size": [150, 170], "offset": [80, -115]},
+		"visual": {"fps": 18, "frames": ["smash.png"]},
+		"note": "站重：木棍下砸 43 帧；起手 15 帧，可站防"
+	},
+	"CorpseDash": {
+		"loop": false,
+		"logic": {"startup": 10, "active": 4, "recovery": 14},
+		"damage": 65, "cancel_frame": -1, "hit_range": 200.0, "knockback": 220.0,
+		"hitbox": {"shape": "rect", "size": [160, 100], "offset": [90, -95]},
+		"vx": 280.0, "vx_window": 14,
+		"visual": {"fps": 20, "frames": ["walk-a.png", "thrust.png"]},
+		"note": "中距离前冲棍击 28 帧；只在 vx_window 内前冲"
+	},
+	"CorpseHurt": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 12},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png"]},
+		"note": "站受击 12 帧；只引用伥鬼受击帧"
+	},
+	"CorpseHurtAir": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 18},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png"]},
+		"note": "墙族弹回用空中受击 18 帧；无独立空中帧，保持受击剪影"
+	},
+	"CorpseDeath": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 30},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 18, "frames": ["hurt.png"]},
+		"note": "死亡过渡：受击后仰保持，青烟演出结束后隐藏本体"
+	},
+
 	# ---------- 吊睛小虎（精英，docs/04 §3） ----------
 	# 幀名落在 assets/anim/tiger/，由 Tiger.tscn 的 anim_dir 指定目錄；血量 350 在場景上設定
 	"TigerIdle": {

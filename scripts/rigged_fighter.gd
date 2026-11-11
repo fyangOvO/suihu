@@ -73,6 +73,9 @@ const TIGER_REACTION: Array = ["TigerHurt", "TigerHurtLong", "TigerKnockdown", "
 const BOSS_ATTACKS: Array = ["BossPounce", "BossTail", "BossRearUp", "BossRoar", "BossSummon",
 	"BossIronTail", "BossDeathPounce", "BossPounceP3", "BossRearUpP3"]
 const BOSS_REACTION: Array = ["BossHurt", "BossKnockdown", "BossDeath"]
+## 老虎伥鬼专属状态：只引用 assets/anim/corpse_ghost/ 六帧，避免缺图回退武松
+const CORPSE_ATTACKS: Array = ["CorpseLight", "CorpseHeavy", "CorpseDash"]
+const CORPSE_REACTION: Array = ["CorpseHurt", "CorpseHurtAir", "CorpseDeath"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
@@ -185,7 +188,7 @@ func change_state(new_state: String) -> void:
 	velocity.x = 0.0
 	_set_attack_shape(false)  # 離開招式一律關閉攻擊盒，避免殘留命中判定
 	# 防禦姿態標記 + 派生 blocking 旗標
-	if new_state == "Block":
+	if new_state == "Block" or new_state == "CorpseBlock":
 		_defense = "stand"
 	elif new_state == "CrouchBlock":
 		_defense = "crouch"
@@ -234,12 +237,15 @@ func _physics_process(delta: float) -> void:
 		$Visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
 			# 先切狀態再賦速度：change_state 會清零 velocity.x，倒過來寫彈回就沒有水平分量
-			change_state("HurtAir")
+			if _is_corpse():
+				change_state("CorpseHurtAir")
+			else:
+				change_state("HurtAir")
 			velocity = Vector2(-_wall_side * WALL_BOUNCE_X, -WALL_BOUNCE_Y)
 		return
 
 	# Reaction 層最高優先級：受擊/倒地/起身只推進時鐘與物理，不接受攻擊輸入
-	if _state in REACTION or _state in TIGER_REACTION or _state in BOSS_REACTION:
+	if _state in REACTION or _state in TIGER_REACTION or _state in BOSS_REACTION or _state in CORPSE_REACTION:
 		_frame += 1
 		# 被擊瞬間（前4邏輯幀）按重可搶出飞云浦反击 Counter（僅武松）
 		if not _is_tiger() and _state == "HurtStand" and _frame <= 4 and _heavy_pressed:
@@ -255,7 +261,7 @@ func _physics_process(delta: float) -> void:
 	# 一次性動作（攻擊 / Dash / Drink / Land…）
 	if not bool(spec.loop) and DATA.total_frames(spec) > 0:
 		_frame += 1
-		if _state in ATTACKS or _state in TIGER_ATTACKS or _state in BOSS_ATTACKS:
+		if _state in ATTACKS or _state in TIGER_ATTACKS or _state in BOSS_ATTACKS or _state in CORPSE_ATTACKS:
 			_try_hit(spec)
 			if _try_cancel():
 				return  # 取消切入新狀態，下一幀按新狀態處理
@@ -392,6 +398,9 @@ func _run_ai(delta: float) -> void:
 	_ai_roll = fmod(_ai_roll + 0.6180339887, 1.0)
 	if ai_profile == "tiger":
 		_run_tiger_ai(delta, dx, dist)
+		return
+	if _is_corpse():
+		_ai_apply_corpse(ai_plan(_ai_ctx(dist)), dx)
 		return
 	_ai_apply(ai_plan(_ai_ctx(dist)), dx)
 
@@ -561,6 +570,39 @@ func _ai_apply(plan: String, dx: float) -> void:
 		"wait":
 			pass
 
+## 伥鬼把通用决策映射到专属状态；不再借武松的 Light1/Heavy/Block
+func _ai_apply_corpse(plan: String, dx: float) -> void:
+	var toward: float = signf(dx) if absf(dx) > 0.01 else face_direction
+	_move_x = 0.0
+	_block_held = false
+	face_direction = toward
+	match plan:
+		"approach":
+			_move_x = toward * 1.0
+		"retreat":
+			_move_x = -toward * 1.0
+		"block":
+			_block_held = true
+		"light":
+			if _state in ["CorpseIdle", "CorpseWalk"] and is_on_floor():
+				change_state("CorpseLight")
+				_ai_cd = _ai_cd_for_next(AI_ATK_CD)
+		"heavy":
+			if _state in ["CorpseIdle", "CorpseWalk"] and is_on_floor():
+				change_state("CorpseHeavy")
+				_ai_cd = _ai_cd_for_next(AI_HEAVY_CD)
+		"dash_attack":
+			if _state in ["CorpseIdle", "CorpseWalk"] and is_on_floor():
+				change_state("CorpseDash")
+				_ai_cd = _ai_cd_for_next(AI_HEAVY_CD)
+		"rock":
+			if _state in ["CorpseIdle", "CorpseWalk"] and is_on_floor():
+				_ai_spawn_rock()
+				_ai_throw_cd = AI_THROW_CD
+				_ai_cd = _ai_cd_for_next(AI_ATK_CD)
+		"wait":
+			pass
+
 ## 生成石頭：純 Node2D + 腳本弧線，不進物理空間，物理幀裡 add_child 也安全
 func _ai_spawn_rock() -> void:
 	if opponent == null or not is_instance_valid(opponent):
@@ -584,6 +626,9 @@ func _ai_cd_for_next(base_cd: float) -> float:
 func _decide_free_state(_delta: float) -> void:
 	if _is_tiger():
 		_decide_tiger_free_state()
+		return
+	if _is_corpse():
+		_decide_corpse_free_state()
 		return
 	# 空中姿態派生：空防優先於空中攻擊
 	if not is_on_floor():
@@ -662,21 +707,34 @@ func _decide_free_state(_delta: float) -> void:
 func _is_tiger() -> bool:
 	return ai_profile == "tiger"
 
+func _is_corpse() -> bool:
+	return ai_profile == "corpse_ghost"
+
 func _idle_state() -> String:
-	return "TigerIdle" if _is_tiger() else "Idle"
+	if _is_tiger():
+		return "TigerIdle"
+	if _is_corpse():
+		return "CorpseIdle"
+	return "Idle"
 
 func _death_state() -> String:
-	return "TigerKnockdown" if _is_tiger() else "Knockdown"
+	if _is_tiger():
+		return "TigerKnockdown"
+	if _is_corpse():
+		return "CorpseDeath"
+	return "Knockdown"
 
 ## 小虎受擊姿態映射：武松那套 HurtStand/HurtAir 沒有小虎素材，一律落到 TigerHurt
 func _hurt_state(kind: String) -> String:
-	if not _is_tiger():
-		return kind
-	if kind == "Knockdown":
-		return "TigerKnockdown"
-	if kind == "WakeUp":
-		return "TigerWakeUp"
-	return "TigerHurt"
+	if _is_tiger():
+		if kind == "Knockdown":
+			return "TigerKnockdown"
+		if kind == "WakeUp":
+			return "TigerWakeUp"
+		return "TigerHurt"
+	if _is_corpse():
+		return "CorpseHurtAir" if kind == "HurtAir" else "CorpseHurt"
+	return kind
 
 ## 小虎自由移動：只有 TigerWalk / TigerIdle，沒有站防、蹲防、跳躍
 func _decide_tiger_free_state() -> void:
@@ -689,6 +747,23 @@ func _decide_tiger_free_state() -> void:
 		velocity.x = signf(_move_x) * TIGER_WALK_SPEED
 		return
 	change_state("TigerIdle")
+	velocity.x = 0.0
+
+## 伥鬼自由移动：站防 / 拖步 / 站立，不会蹲防、跳跃、空防
+func _decide_corpse_free_state() -> void:
+	if not is_on_floor():
+		change_state("CorpseHurtAir")
+		velocity.x = 0.0
+		return
+	if _block_held:
+		change_state("CorpseBlock")
+		velocity.x = 0.0
+		return
+	if absf(_move_x) > 0.1:
+		change_state("CorpseWalk")
+		velocity.x = _move_x * walk_speed
+		return
+	change_state("CorpseIdle")
 	velocity.x = 0.0
 
 ## 取消鏈：僅在取消幀之後、且招式允許時切入（對齊 06 §3.6）
@@ -1038,7 +1113,7 @@ func _apply_gravity(delta: float) -> void:
 		velocity.y = 0.0
 
 func _face_opponent_when_free() -> void:
-	if opponent == null or _state not in ["Idle", "Walk", "Crouch", "Block", "CrouchBlock", "TigerIdle", "TigerWalk"]:
+	if opponent == null or _state not in ["Idle", "Walk", "Crouch", "Block", "CrouchBlock", "TigerIdle", "TigerWalk", "CorpseIdle", "CorpseWalk", "CorpseBlock"]:
 		return
 	var target: float = 1.0 if opponent.global_position.x > global_position.x else -1.0
 	if target != face_direction:

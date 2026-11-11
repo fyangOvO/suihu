@@ -97,6 +97,9 @@ func _initialize() -> void:
 			_check("SCN-03 Tiger 350hp", inst.get_node("P2").max_hp == 350)
 		elif id == "SCN-05":
 			_check("SCN-05 Boss 1200hp", inst.get_node("P2").max_hp == 1200)
+		elif id == "SCN-02":
+			_check("SCN-02 CorpseGhost 180hp", inst.get_node("P2").max_hp == 180)
+			_check("SCN-02 CorpseGhost profile", inst.get_node("P2").ai_profile == "corpse_ghost")
 		else:
 			_check("%s no opponent" % id, inst.get_node_or_null("P2") == null)
 		inst.queue_free()

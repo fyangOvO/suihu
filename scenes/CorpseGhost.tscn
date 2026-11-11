@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/RiggedFighter.tscn" id="1_base"]
+
+[node name="CorpseGhost" instance=ExtResource("1_base")]
+is_player1 = false
+max_hp = 180
+anim_dir = "res://assets/anim/corpse_ghost/"
+start_state = "CorpseIdle"
+ai_profile = "corpse_ghost"
+drop_chance = 0.1
