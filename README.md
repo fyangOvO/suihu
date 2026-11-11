@@ -191,6 +191,11 @@
   - **Boss 尺寸對齊**：實測 `boss-idle.png`（768×768）可視 bbox 300×460、基線 y=720；`Boss.tscn` 的 `Visual` 由繼承的 0.55／-185 改為 `scale 0.72`／`position (0,-242)`，可視高約 331px、腳底落回原點，明顯蓋過 110×240 的 `Collision`／`HurtShape`，不再出現「老虎比受擊盒小」。
   - **自測擴充**：`selftest_boss.gd` 新增 4 項（碰撞盒 110×240、Visual 0.72、腳底 ±2px、可視高 ≥ 240×1.15），Boss 自測 `fails=0`；`selftest_corpse_ghost` RC=0、`selftest_flow` `fails=0`。
   - **截圖**：`docs/preview/boss-preview.png` 與 `flow-scn05-ridge.png` 已重出，崗頂老虎現在比玩家高半個頭、與 Boss 條比例正常。
+- [x] **V0.3.9 SCN-05 三階段實戰：Boss 後撤死循環修正＋入場真打自測（`selftest_scn05_boss_fight` 11 項全 PASS、`selftest_boss` fails=0）**：
+  - **Boss AI 兩處修正**：`boss_plan` 的 P1 分支把 `dist > 520` 的 `approach` 提到 `retreat` 之前，避免玩家拉遠時仍一路後退；`_boss_apply` 的 `retreat` 改為**只在下令瞬間**承諾一次 `boss_retreat_t`，不再每幀刷新，終結「退到右牆後仍持續 BossWalk 朝牆外走」的死循環。
+  - **SCN-05 入場實戰**：新增 `tools/selftest_scn05_boss_fight.gd`，從 B7 真實實例化 `SCN_05_Ridge.tscn`，用 `Input.action_press` 模擬玩家：Boss 冷卻窗口貼到 135–150 打 `Light1→2→3` 連段；冷卻結束前 0.8s 退到 350–370；不可格擋撲擊用醉打無敵／Dash 穿過；第一輪先吃一次撲擊驗證 Boss 傷害窗口。不在外部改血量。
+  - **結果**：`frames=1799 p1_hp=493 p1_min=493 boss_hp=0 boss_min=0 attacks=8 phase=3`；Boss 實際走完 P1→P2→P3、死亡演出、B7 clear 並排隊 B8。
+  - **回歸**：`selftest_boss` 既有 39+4 項 `fails=0`，兩處 AI 修正未破壞招式、尺寸與階段斷言。
 
 ## 待實現
 

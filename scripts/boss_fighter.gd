@@ -123,10 +123,10 @@ func boss_plan(dist: float, phase: int, roll: float, atk_cd: float, summon_cd: f
 			return "approach"
 		return "wait"
 	if phase == 1:
-		if retreat > 0.0:
-			return "retreat"
 		if dist > 520.0:
 			return "approach"
+		if retreat > 0.0:
+			return "retreat"
 		if dist > 300.0:
 			if roll < 0.55:
 				return "pounce"
@@ -177,8 +177,9 @@ func _boss_apply(plan: String, dx: float, _dist: float) -> void:
 		"retreat":
 			if _state != BOSS_WALK:
 				change_state(BOSS_WALK)
+			# 只在下令瞬間給一次後撤承諾；不能每幀刷新，否則會永遠退到牆邊。
+			boss_retreat_t = maxf(boss_retreat_t, 0.8) if boss_retreat_t <= 0.0 else boss_retreat_t
 			velocity.x = -toward * BOSS_WALK_SPEED
-			boss_retreat_t = maxf(boss_retreat_t, 0.8)
 		"wait":
 			if _state != BOSS_IDLE:
 				change_state(BOSS_IDLE)
