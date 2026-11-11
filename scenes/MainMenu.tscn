@@ -1,0 +1,91 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_menu"]
+[ext_resource type="Texture2D" path="res://assets/stage-jingyang.png" id="2_bg"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Dim" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+color = Color(0.02, 0.025, 0.03, 0.72)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 150.0
+offset_right = 1460.0
+offset_bottom = 250.0
+theme_override_colors/font_color = Color(0.93, 0.86, 0.66, 1)
+theme_override_font_sizes/font_size = 64
+text = "水滸：妖魔劫"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="."]
+layout_mode = 0
+offset_left = 460.0
+offset_top = 255.0
+offset_right = 1460.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(0.66, 0.62, 0.52, 1)
+theme_override_font_sizes/font_size = 22
+text = "1.0 Lite　景陽岡 · 線性章節"
+horizontal_alignment = 1
+
+[node name="Panel" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 660.0
+offset_top = 390.0
+offset_right = 1260.0
+offset_bottom = 830.0
+color = Color(0.04, 0.045, 0.05, 0.86)
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 45.0
+offset_right = 560.0
+offset_bottom = 345.0
+theme_override_constants/separation = 18
+
+[node name="BtnNew" type="Button" parent="Panel/VBox"]
+custom_minimum_size = Vector2(520, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "開始新局"
+
+[node name="BtnContinue" type="Button" parent="Panel/VBox"]
+custom_minimum_size = Vector2(520, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "從山神廟續玩"
+
+[node name="BtnQuit" type="Button" parent="Panel/VBox"]
+custom_minimum_size = Vector2(520, 64)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "離開"
+
+[node name="SaveHint" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 375.0
+offset_right = 560.0
+offset_bottom = 405.0
+theme_override_colors/font_color = Color(0.6, 0.58, 0.5, 1)
+theme_override_font_sizes/font_size = 16
+text = "尚無檢查點"
+horizontal_alignment = 1

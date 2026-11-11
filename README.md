@@ -132,6 +132,14 @@
   - **踩坑（自測時序）**：P2 若同時由引擎物理推進、又在物理回調裡手推 `_physics_process`，兩條推進疊加會讓 `_death_t` 兩倍速（n=35 就已 finished、alpha 0），「淡出中」斷言必假；只能選一條——現在 P2 交給引擎自走，只手推 `main._process`。
   - 全量回歸（10 個自測 + 主場景 `--quit-after 240`）全 RC=0；`selftest_ai` 受擊後退段的假人血量由 1 改成 50（原值會被新死亡演出判死、AI 直接凍住），其餘斷言不變。
 
+- [x] **V0.3.0 線性章節流程（FLOW-01／02／03／06；`tools/selftest_flow.gd` 50 項 PASS）**：
+  - **FLOW-01 章節管理器**：`data/story_beats.gd` 定義 B1–B9 與 D-01–D-10（單句 ≤40 字、每拍 ≤3 行），`scripts/chapter_manager.gd` 以 autoload `ChapterManager` 保存當前節拍、旗標、戰利品與玩家血量；`goto_beat()` 按 `SCENE_PATHS` 載入六場景。
+  - **FLOW-02 對話系統**：`scripts/ui/dialogue_ui.gd` + `scenes/ui/DialogueUI.tscn`，34 字／秒打字機、按攻擊鍵先補滿再下一句、對話期間凍結雙方、結束回調。
+  - **FLOW-03 檢查點**：單槽 `user://checkpoint.json`，先寫 `.tmp` 再 rename，rename 失敗回退直寫；讀檔驗證 JSON／節拍／flags／loot 型別，損壞檔拒絕載入；山神廟 SCN-04 自動存檔。
+  - **六場景骨架**：`scenes/chapters/SCN_01_Inn`／`02_Trail`／`03_Forest`／`04_Temple`／`05_Ridge`／`06_Pool`，共用 `scripts/chapters/stage_base.gd`（背景／地面／牆／P1／可選敵人／HUD／對話／勝敗切換）。SCN-03 接吊睛小虎、SCN-05 接猛虎 Boss、SCN-06 以水面月亮＋字幕收尾回主菜單。
+  - **入口**：`scenes/MainMenu.tscn` 取代舊 NodeMap 作為 `run/main_scene`，開始新局→SCN-01，續玩→讀檢查點回山神廟。
+  - 已知留白：SCN-02 目前是「山道教學提示」骨架，伥鬼戰待美術／敵人素材；SCN-06 倒影、BOS-10 虎屍／黑霧畫面仍待 SC-06。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）
@@ -150,6 +158,6 @@
 
 1. 用 Godot **4.7.x** 打開 `D:\水滸g\game\project.godot`
 2. 首次打開等待 `assets/anim` 素材導入完成
-3. F5 運行；P1：A/D 移動、S 蹲、Space 跳、J 輕、K 重、L 格擋、Shift 衝、I 喝酒
+3. F5 運行進入主菜單，選「開始新局」→ 酒肆（SCN-01）；P1：A/D 移動、S 蹲、Space 跳、J 輕、K 重、L 格擋、Shift 衝、I 喝酒
 
 > 註：`水滸：妖魔劫-(4.2)/` 為早期 C# 灰盒版，其啟動/活躍/恢復幀設計被本目錄 GDScript 版的 `data/action_frame_data.gd` 繼續採用；實際運行以本目錄為準。

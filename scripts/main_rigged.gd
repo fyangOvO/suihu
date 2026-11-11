@@ -52,7 +52,7 @@ func _process(delta):
 	if _battle_over:
 		_result_timer -= delta
 		if _result_timer <= 0:
-			get_tree().change_scene_to_file("res://scenes/NodeMap.tscn")
+			get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 		return
 
 	# 血條上限跟隨角色 max_hp（小虎 350／武松 800，數值集中在角色節點上）
