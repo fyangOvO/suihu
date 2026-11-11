@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 ## 死亡化青煙 + 掉落自測（無頭，不開視窗）
 ## 手動推進 P2 的 _physics_process 與 Main 的 _process，避免依賴真實時序。
 ##   godot --headless --path 'D:\水滸g\game' --script res://tools/selftest_death.gd
@@ -38,7 +38,7 @@ func _on_physics() -> void:
 	n += 1
 	if n == 2:
 		p2.drop_chance = 0.0          # 先驗「碎銀必掉、木牌不一定」，木牌另外強制掉一次
-		p2.take_damage(200, -1.0)
+		p2.take_damage(400, -1.0)
 		_check("hp clamped to zero", p2.current_hp == 0)
 		_check("death sequence started", p2._dying and not p2._death_done)
 		_check("no victory before smoke", not main._battle_over)
@@ -49,7 +49,7 @@ func _on_physics() -> void:
 		main._process(DT)
 
 	if n == 8:
-		_check("death plays knockdown", p2._state == "Knockdown")
+		_check("death plays knockdown", p2._state == "TigerKnockdown")
 		_check("body still visible early", p2.get_node("Visual").visible)
 		var mist = p2._mist_node
 		_check("hand-drawn mist plays 6 frames",
@@ -70,7 +70,7 @@ func _on_physics() -> void:
 		drops = _pickups()
 		var has_tag: bool = false
 		for d in drops:
-			if d.item_name == "伥鬼的木牌":
+			if d.item_name == "小虎爪":
 				has_tag = true
 		_check("tag drop when forced", drops.size() == 3 and has_tag)
 		# 把武松挪到碎銀上，測拾取與提示
@@ -78,7 +78,7 @@ func _on_physics() -> void:
 		p1.position = Vector2(silver.position.x, 820.0)
 	elif n == 84:
 		var drops2: Array = _pickups()
-		_check("pickup collected on touch", drops2.size() == 1 and drops2[0].item_name == "伥鬼的木牌")
+		_check("pickup collected on touch", drops2.size() == 1 and drops2[0].item_name == "小虎爪")
 		_check("pickup toast shown", main._pickup_label.visible and main._pickup_label.text.contains("碎銀"))
 	elif n == 90:
 		print("SELFTEST death fails=", fails.size(), " drops_left=", _pickups().size(),

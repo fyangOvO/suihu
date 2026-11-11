@@ -281,6 +281,7 @@ const SPECS: Dictionary = {
 		"loop": false,
 		"logic": {"startup": 12, "active": 6, "recovery": 18},
 		"damage": 80, "cancel_frame": -1, "hit_range": 170.0, "knockback": 220.0,
+		"low": true,
 		"visual": {"fps": 20, "frames": ["tail.png", "crouch.png"]},
 		"note": "尾掃（低姿，需跳過）36 幀=600ms；低判定，站防可擋、蹲防擋不住"
 	},
@@ -288,8 +289,13 @@ const SPECS: Dictionary = {
 		"loop": false,
 		"logic": {"startup": 18, "active": 8, "recovery": 22},
 		"damage": 110, "cancel_frame": -1, "hit_range": 200.0, "knockback": 280.0,
+		"multi_hit": [
+			{"frame": 18, "damage": 35, "unblockable": false},
+			{"frame": 28, "damage": 40, "unblockable": true},
+			{"frame": 38, "damage": 35, "unblockable": true},
+		],
 		"visual": {"fps": 22, "frames": ["crouch.png", "pounce.png", "leap.png"]},
-		"note": "三連撲（撲—撤—再撲）48 幀=800ms；第二段起不可格擋，必須閃避"
+		"note": "三連撲（撲—撤—再撲）48 幀=800ms；18/28/38 三段 35/40/35，第二段起不可格擋"
 	},
 	"TigerCross": {
 		"loop": false,
@@ -303,7 +309,14 @@ const SPECS: Dictionary = {
 		"logic": {"startup": 0, "active": 0, "recovery": 14},
 		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
 		"visual": {"fps": 20, "frames": ["hurt.png", "hurt-2.png"]},
-		"note": "小虎站受擊 14 幀；架招成功後 recovery 加長到 38 幀（弱點）"
+		"note": "小虎站受擊 14 幀；架招成功後改用 TigerHurtLong 38 幀（弱點）"
+	},
+	"TigerHurtLong": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 38},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png", "hurt-2.png"]},
+		"note": "架招成功後的小虎長硬直 38 幀=633ms；不參與搶招，走完回 TigerIdle"
 	},
 	"TigerKnockdown": {
 		"loop": false,

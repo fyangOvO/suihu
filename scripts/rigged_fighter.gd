@@ -58,6 +58,7 @@ var _ai_roll: float = 0.0       # 決策用確定性序列（低差異，無隨�
 var _ai_throw_cd: float = 0.0   # 扔石頭冷卻（秒）
 var _ai_hop: float = 0.0        # 小虎出招後後跳計時（秒）
 var _tiger_prev_state: String = "TigerIdle"
+var _chain_segments_done: Array[bool] = [false, false, false]   # 三連撲三段是否已命中/判定完
 
 # 牆族：黏牆期間牆所在方向（+1 右 / -1 左）、最近一次額外傷害（供自測讀取）
 var _wall_side: float = 0.0
@@ -68,7 +69,7 @@ const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "A
 const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
 ## 小虎專用招式與受擊姿態（docs/04 §3：不會蹲防、不會投擲、會後跳）
 const TIGER_ATTACKS: Array = ["TigerPounce", "TigerTail", "TigerPounceChain", "TigerCross"]
-const TIGER_REACTION: Array = ["TigerHurt", "TigerKnockdown", "TigerWakeUp"]
+const TIGER_REACTION: Array = ["TigerHurt", "TigerHurtLong", "TigerKnockdown", "TigerWakeUp"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
@@ -177,6 +178,7 @@ func change_state(new_state: String) -> void:
 	_state = new_state
 	_frame = 0
 	_has_hit = false
+	_chain_segments_done = [false, false, false]
 	velocity.x = 0.0
 	_set_attack_shape(false)  # 離開招式一律關閉攻擊盒，避免殘留命中判定
 	# 防禦姿態標記 + 派生 blocking 旗標
@@ -259,10 +261,16 @@ func _physics_process(delta: float) -> void:
 			velocity.x = face_direction * 480.0
 		elif _state == "CmdDrunk" and _frame <= 13:
 			velocity.x = face_direction * 360.0   # 醉打：僅起手＋活躍段前衝穿身
-		elif _state in ["TigerPounce", "TigerPounceChain"]:
+		elif _state == "TigerPounce":
 			var startup_n: int = int(spec.get("logic", {}).get("startup", 0))
 			var active_n: int = int(spec.get("logic", {}).get("active", 0))
 			velocity.x = face_direction * TIGER_POUNCE_VX if _frame <= startup_n + active_n else 0.0
+		elif _state == "TigerPounceChain":
+			# 三連撲：只在 18/28/38 三個命中段附近前衝，段與段之間收腳
+			var lunging: bool = (_frame >= 18 and _frame <= 22) \
+				or (_frame >= 28 and _frame <= 32) \
+				or (_frame >= 38 and _frame <= 42)
+			velocity.x = face_direction * TIGER_POUNCE_VX if lunging else 0.0
 		elif _state == "TigerCross":
 			velocity.x = face_direction * TIGER_CROSS_VX
 		else:
@@ -695,6 +703,10 @@ func _try_cancel() -> bool:
 
 func _try_hit(spec: Dictionary) -> void:
 	# 出招方無敵（invuln）只在被打方 take_damage 判定；不關閉己方攻擊盒，否則 Super/CmdDrunk 永遠打不中
+	# 三連撲是「一招三判定」：不能用 _has_hit 一次鎖死，走獨立分段流程
+	if _state == "TigerPounceChain":
+		_try_hit_tiger_chain(spec)
+		return
 	if not DATA.is_active_frame(spec, _frame):
 		_set_attack_shape(false)
 		return
@@ -702,23 +714,86 @@ func _try_hit(spec: Dictionary) -> void:
 		_set_attack_shape(false)
 		return
 	# 活躍幀：攻擊盒移到朝向側並啟用，以實體 Area2D 重疊取代舊 dx/dy 距離比較
+	_enable_attack_shape()
+	if _has_hit:
+		return
+	_resolve_hit(
+		int(spec.get("damage", 0)),
+		bool(spec.get("unblockable", false)),
+		bool(spec.get("low", false)),
+		float(spec.get("knock_up", 0.0))
+	)
+
+## 三連撲：18/28/38 三個固定幀各判定一次，第一段可格擋、第二段起不可格擋
+func _try_hit_tiger_chain(spec: Dictionary) -> void:
+	var hits: Array = spec.get("multi_hit", [])
+	var windows: Array = [[18, 22], [28, 32], [38, 42]]
+	for i in range(hits.size()):
+		if i >= windows.size():
+			break
+		var start_f: int = int(windows[i][0])
+		var end_f: int = int(windows[i][1])
+		if _frame < start_f or _frame > end_f:
+			continue
+		if _chain_segments_done[i]:
+			continue
+		# Area2D 重疊在啟用當幀未必已刷新，整個窗口保持攻擊盒開啟，命中後才關
+		_enable_attack_shape()
+		var hit: Dictionary = hits[i]
+		if _resolve_hit(
+			int(hit.get("damage", 0)),
+			bool(hit.get("unblockable", false)),
+			false,
+			float(spec.get("knock_up", 0.0))
+		):
+			_chain_segments_done[i] = true
+			_set_attack_shape(false)
+			return
+		if _frame >= end_f:
+			_chain_segments_done[i] = true
+			_set_attack_shape(false)
+		return
+	_set_attack_shape(false)
+
+## 防禦裁決：不可格擋一律吃滿；低姿尾掃只無視蹲防，站防仍可擋
+static func can_block(low: bool, unblockable: bool, defense: String) -> bool:
+	if unblockable or defense == "none":
+		return false
+	if low and defense == "crouch":
+		return false
+	return true
+
+func _enable_attack_shape() -> void:
 	var shape_node: CollisionShape2D = get_node("HitBox/AttackShape")
 	shape_node.position = Vector2(face_direction * 90.0, -90.0)
 	shape_node.set_disabled(false)
-	if _has_hit:
-		return
-	var dmg: int = int(spec.get("damage", 0))
+
+## 對重疊到的 HurtBox 結算一次傷害；回傳是否命中/被擋
+func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bool:
+	if dmg <= 0:
+		return false
 	for area in get_node("HitBox").get_overlapping_areas():
 		var target = _fighter_of(area)
 		if target == null or target == self:
 			continue
-		if target.is_blocking:
-			target.on_blocked(dmg, face_direction, float(spec.get("knock_up", 0.0)))
-		else:
-			target.take_damage(dmg, face_direction, float(spec.get("knock_up", 0.0)))
+		if target.is_blocking and can_block(low, unblockable, target._defense):
+			target.on_blocked(dmg, face_direction, knock_up)
 			_has_hit = true
-			wine_gauge = minf(100.0, wine_gauge + 3.0)
-			break
+			# 小虎被架招/格擋後進入長硬直 38 幀，這是 docs/04 §3 的弱點
+			if _is_tiger():
+				_tiger_guard_stun()
+			return true
+		target.take_damage(dmg, face_direction, knock_up)
+		_has_hit = true
+		wine_gauge = minf(100.0, wine_gauge + 3.0)
+		return true
+	return false
+
+func _tiger_guard_stun() -> void:
+	if not _is_tiger():
+		return
+	if _state in TIGER_ATTACKS:
+		change_state("TigerHurtLong")
 
 ## 重疊到的 Area2D 若是對手 HurtBox，回傳其所屬角色控制器節點
 func _fighter_of(area: Area2D):

@@ -49,7 +49,7 @@ func _process(delta):
 			get_tree().change_scene_to_file("res://scenes/NodeMap.tscn")
 		return
 
-	# 血條上限跟隨角色 max_hp（伥鬼 180／武松 800，數值集中在角色節點上）
+	# 血條上限跟隨角色 max_hp（小虎 350／武松 800，數值集中在角色節點上）
 	$HUD/P1HP.max_value = $P1.max_hp
 	$HUD/P1HP.value = $P1.current_hp
 	$HUD/P2HP.max_value = $P2.max_hp
@@ -73,7 +73,7 @@ func _process(delta):
 	if $P1.current_hp <= 0:
 		_show_result("你敗了…")
 	elif $P2.current_hp <= 0 and $P2._death_done:
-		# 等伥鬼化完青煙再判勝，避免人還沒散就彈結果
+		# 等敵人化完青煙再判勝，避免人還沒散就彈結果
 		_show_result("武松勝！")
 
 ## 演出推進：只在 P1 進入 Super 時啟動，離開 Super 或超時即復位

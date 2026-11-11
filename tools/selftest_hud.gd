@@ -65,17 +65,17 @@ func _on_frame() -> void:
 	_check("drunk ready shows ready text", drunk_hint.text.contains("可發"))
 	_check("drunk ready is not greyed", drunk_hint.modulate.r >= 0.6)
 
-	# ---- 伥鬼數值：180 HP 且血條上限跟隨 ----
+	# ---- 小虎數值：350 HP 且血條上限跟隨 ----
 	var p2 = main.get_node("P2")
 	var p2bar: ProgressBar = main.get_node_or_null("HUD/P2HP")
-	_check("P2 max_hp is 180", p2.max_hp == 180)
-	_check("P2HP max follows max_hp", is_equal_approx(p2bar.max_value, 180.0))
-	p2.current_hp = 90
+	_check("P2 max_hp is 350", p2.max_hp == 350)
+	_check("P2HP max follows max_hp", is_equal_approx(p2bar.max_value, 350.0))
+	p2.current_hp = 175
 	main._process(0.016)
-	_check("P2HP tracks half hp (90/180)", is_equal_approx(p2bar.value, 90.0))
-	p2.current_hp = 180
+	_check("P2HP tracks half hp (175/350)", is_equal_approx(p2bar.value, 175.0))
+	p2.current_hp = 350
 	main._process(0.016)
-	_check("P2HP full at 180", is_equal_approx(p2bar.value, 180.0))
+	_check("P2HP full at 350", is_equal_approx(p2bar.value, 350.0))
 
 	if fails.is_empty():
 		print("HUD_SELFTEST result=PASS")
