@@ -154,6 +154,20 @@ const SPECS: Dictionary = {
 		"visual": {"fps": 30, "frames": ["hurt-back.png", "hurt.png", "hurt-head.png"]},
 		"note": "站受擊 0.2s=12 幀（06 §2.1 #12）；Reaction 層最高優先級"
 	},
+	"Stun": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 30},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png", "hurt-back.png"]},
+		"note": "Boss 咆哮正面 30 幀硬直（docs/10 BOS-08）；只由 Boss 施加"
+	},
+	"StunShort": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 15},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png", "hurt-back.png"]},
+		"note": "Boss 咆哮背對 15 幀硬直（docs/10 BOS-08）"
+	},
 	"HurtAir": {
 		"loop": false,
 		"logic": {"startup": 0, "active": 0, "recovery": 18},
@@ -331,6 +345,151 @@ const SPECS: Dictionary = {
 		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
 		"visual": {"fps": 20, "frames": ["hurt-2.png", "idle.png"]},
 		"note": "小虎起身 16 幀，起身後才會恢復攻擊"
+	},
+
+	# ---------- 景陽岡猛虎 Boss（docs/10-BOS-01 招式表凍結） ----------
+	# 幀名落在 assets/anim/boss/，由 Boss.tscn 的 anim_dir 指定；血量 1200 在場景上設定
+	"BossIdle": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 6, "frames": ["boss-idle.png"]},
+		"note": "猛虎站立警戒；呼吸可後續補幀"
+	},
+	"BossWalk": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 10, "frames": ["boss-walk-1.png", "boss-walk-2.png"]},
+		"note": "四足行走兩幀循環，Boss 走速 160"
+	},
+	"BossCrouch": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 8, "frames": ["boss-crouch.png"]},
+		"note": "低伏蓄勢；保留狀態枚舉，目前由撲擊起手借用"
+	},
+	"BossHurt": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 24},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["boss-hurt.png"]},
+		"note": "削韌 320 破防硬直 24 幀；霸體時不進此狀態"
+	},
+	"BossKnockdown": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 60},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["boss-knockdown.png"]},
+		"note": "倒地 60 幀；腹部 ×2 弱點僅此窗口開啟"
+	},
+	"BossDeath": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 90},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 12, "frames": ["boss-knockdown.png", "boss-pant.png"]},
+		"note": "死亡演出 90 幀；BOS-10 接管倒地→騎背→水潭→黑霧→字幕"
+	},
+	"BossPhase": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 72, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"invuln": {"start": 0, "end": 72},
+		"visual": {"fps": 20, "frames": ["boss-roar.png"]},
+		"note": "66%/33% 轉場 1.2s（72 幀）無敵、無攻擊判定；轉場後才切階段"
+	},
+
+	# --- P1 撲 ---
+	"BossPounce": {
+		"loop": false,
+		"logic": {"startup": 48, "active": 10, "recovery": 24},
+		"damage": 200, "cancel_frame": -1, "hit_range": 300.0, "knockback": 320.0, "knock_up": 120.0,
+		"unblockable": true,
+		"hitbox": {"shape": "rect", "size": [300, 150], "offset": [150, -100]},
+		"cooldown": 3.0, "vx": 240.0, "vx_window": 58,
+		"visual": {"fps": 18, "frames": ["boss-crouch.png", "boss-pounce-1.png", "boss-pounce-2.png", "boss-pounce-3.png", "boss-pounce-4.png", "boss-pounce-5.png"]},
+		"note": "餓虎撲食 82 幀；不可格擋，P1 權重 45、冷卻 3.0s"
+	},
+	"BossTail": {
+		"loop": false,
+		"logic": {"startup": 18, "active": 8, "recovery": 22},
+		"damage": 140, "cancel_frame": -1, "hit_range": 260.0, "knockback": 180.0, "knock_up": 60.0,
+		"hitbox": {"shape": "rect", "size": [260, 100], "offset": [110, -70]},
+		"cooldown": 1.8,
+		"visual": {"fps": 20, "frames": ["boss-tail-1.png", "boss-crouch.png"]},
+		"note": "剪尾 48 幀；可站防、可蹲防，P1 權重 35、P2 權重 30"
+	},
+	# --- P2 掀 ---
+	"BossRearUp": {
+		"loop": false,
+		"logic": {"startup": 26, "active": 10, "recovery": 30},
+		"damage": 220, "cancel_frame": -1, "hit_range": 280.0, "knockback": 260.0, "knock_up": 360.0,
+		"hitbox": {"shape": "rect", "size": [280, 180], "offset": [130, -120]},
+		"guard_ratio": 0.25, "guard_push": 220.0,
+		"cooldown": 3.2,
+		"visual": {"fps": 20, "frames": ["boss-rear-up.png", "boss-claw-1.png", "boss-claw-2.png"]},
+		"note": "爪子掀天 66 幀；可擋但只減 25% 且推遠 220，命中浮空 360"
+	},
+	"BossRoar": {
+		"loop": false,
+		"logic": {"startup": 18, "active": 12, "recovery": 20},
+		"damage": 0, "cancel_frame": -1, "hit_range": 300.0, "knockback": 0.0,
+		"hitbox": {"shape": "circle", "radius": 300, "offset": [0, -90]},
+		"stun_frames": 30, "back_turn_frames": 15,
+		"cooldown": 6.0,
+		"visual": {"fps": 20, "frames": ["boss-roar.png", "boss-rear-up.png"]},
+		"note": "咆哮 50 幀；半徑 300 內 30 幀硬直，背對減半 15 幀，0 傷害"
+	},
+	"BossSummon": {
+		"loop": false,
+		"logic": {"startup": 20, "active": 30, "recovery": 20},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"summon": 2,
+		"cooldown": 12.0,
+		"visual": {"fps": 20, "frames": ["boss-summon.png", "boss-recover.png"]},
+		"note": "召小虎 70 幀；場上上限 2，P2 權重 15、冷卻 12s"
+	},
+	# --- P3 剪 ---
+	"BossIronTail": {
+		"loop": false,
+		"logic": {"startup": 24, "active": 10, "recovery": 26},
+		"damage": 180, "cancel_frame": -1, "hit_range": 340.0, "knockback": 240.0, "knock_up": 80.0,
+		"unblockable": true, "low": true,
+		"hitbox": {"shape": "rect", "size": [340, 90], "offset": [170, -55]},
+		"cooldown": 2.4,
+		"visual": {"fps": 20, "frames": ["boss-iron-tail-1.png", "boss-iron-tail-2.png", "boss-iron-tail-3.png"]},
+		"note": "鐵尾 60 幀；低判定＋不可格擋，必須跳；P3 權重 40"
+	},
+	"BossDeathPounce": {
+		"loop": false,
+		"logic": {"startup": 30, "active": 8, "recovery": 60},
+		"damage": 800, "cancel_frame": -1, "hit_range": 320.0, "knockback": 400.0, "knock_up": 200.0,
+		"unblockable": true, "once_per_phase": true,
+		"hitbox": {"shape": "rect", "size": [320, 180], "offset": [160, -90]},
+		"cooldown": 8.0, "vx": 260.0, "vx_window": 38,
+		"visual": {"fps": 20, "frames": ["boss-death-pounce-1.png", "boss-death-pounce-2.png", "boss-pounce-4.png", "boss-pant.png"]},
+		"note": "絕命撲 98 幀；800 傷、不可格擋，每階段 1 次，P3 權重 20"
+	},
+	"BossPounceP3": {
+		"loop": false,
+		"logic": {"startup": 36, "active": 10, "recovery": 30},
+		"damage": 240, "cancel_frame": -1, "hit_range": 320.0, "knockback": 360.0, "knock_up": 140.0,
+		"unblockable": true,
+		"hitbox": {"shape": "rect", "size": [320, 150], "offset": [160, -100]},
+		"cooldown": 3.2, "vx": 240.0, "vx_window": 46,
+		"visual": {"fps": 18, "frames": ["boss-death-pounce-1.png", "boss-death-pounce-2.png", "boss-pounce-4.png"]},
+		"note": "P3 撲擊 76 幀；240 傷、不可格擋，P3 權重 25"
+	},
+	"BossRearUpP3": {
+		"loop": false,
+		"logic": {"startup": 30, "active": 10, "recovery": 36},
+		"damage": 260, "cancel_frame": -1, "hit_range": 300.0, "knockback": 280.0, "knock_up": 380.0,
+		"hitbox": {"shape": "rect", "size": [300, 190], "offset": [140, -120]},
+		"guard_ratio": 0.20, "guard_push": 240.0,
+		"cooldown": 3.5,
+		"visual": {"fps": 20, "frames": ["boss-rear-up.png", "boss-claw-1.png", "boss-claw-2.png"]},
+		"note": "P3 掀天 76 幀；260 傷、可擋 20%／推 240，P3 權重 15"
 	},
 }
 

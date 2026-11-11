@@ -66,10 +66,13 @@ var _wall_bonus_last: int = 0
 
 # 狀態分組（與 data spec 對應）
 const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "AirLight", "AirHeavy", "CmdTiger", "CmdUp", "Counter", "CmdDrunk", "Super"]
-const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
+const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp", "Stun", "StunShort"]
 ## 小虎專用招式與受擊姿態（docs/04 §3：不會蹲防、不會投擲、會後跳）
 const TIGER_ATTACKS: Array = ["TigerPounce", "TigerTail", "TigerPounceChain", "TigerCross"]
 const TIGER_REACTION: Array = ["TigerHurt", "TigerHurtLong", "TigerKnockdown", "TigerWakeUp"]
+const BOSS_ATTACKS: Array = ["BossPounce", "BossTail", "BossRearUp", "BossRoar", "BossSummon",
+	"BossIronTail", "BossDeathPounce", "BossPounceP3", "BossRearUpP3"]
+const BOSS_REACTION: Array = ["BossHurt", "BossKnockdown", "BossDeath"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
@@ -236,7 +239,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Reaction 層最高優先級：受擊/倒地/起身只推進時鐘與物理，不接受攻擊輸入
-	if _state in REACTION or _state in TIGER_REACTION:
+	if _state in REACTION or _state in TIGER_REACTION or _state in BOSS_REACTION:
 		_frame += 1
 		# 被擊瞬間（前4邏輯幀）按重可搶出飞云浦反击 Counter（僅武松）
 		if not _is_tiger() and _state == "HurtStand" and _frame <= 4 and _heavy_pressed:
@@ -252,7 +255,7 @@ func _physics_process(delta: float) -> void:
 	# 一次性動作（攻擊 / Dash / Drink / Land…）
 	if not bool(spec.loop) and DATA.total_frames(spec) > 0:
 		_frame += 1
-		if _state in ATTACKS or _state in TIGER_ATTACKS:
+		if _state in ATTACKS or _state in TIGER_ATTACKS or _state in BOSS_ATTACKS:
 			_try_hit(spec)
 			if _try_cancel():
 				return  # 取消切入新狀態，下一幀按新狀態處理
@@ -273,6 +276,10 @@ func _physics_process(delta: float) -> void:
 			velocity.x = face_direction * TIGER_POUNCE_VX if lunging else 0.0
 		elif _state == "TigerCross":
 			velocity.x = face_direction * TIGER_CROSS_VX
+		elif spec.has("vx"):
+			var vx_window: int = int(spec.get("vx_window", 0))
+			velocity.x = face_direction * float(spec.get("vx", 0.0)) \
+				if vx_window <= 0 or _frame <= vx_window else 0.0
 		else:
 			velocity.x = 0.0
 		move_and_slide()
@@ -765,25 +772,50 @@ static func can_block(low: bool, unblockable: bool, defense: String) -> bool:
 
 func _enable_attack_shape() -> void:
 	var shape_node: CollisionShape2D = get_node("HitBox/AttackShape")
-	shape_node.position = Vector2(face_direction * 90.0, -90.0)
+	var attack_spec: Dictionary = _spec(_state)
+	var hb: Dictionary = attack_spec.get("hitbox", {})
+	if hb.is_empty():
+		shape_node.position = Vector2(face_direction * 90.0, -90.0)
+	else:
+		var offset: Array = hb.get("offset", [90, -90])
+		shape_node.position = Vector2(face_direction * float(offset[0]), float(offset[1]))
+		var size: Array = hb.get("size", [180, 120])
+		var target_size := Vector2(float(size[0]), float(size[1]))
+		var rect := shape_node.shape as RectangleShape2D
+		if rect == null or rect.size != target_size:
+			# Boss 與武松共用基底場景的 attack_shape 子資源；改尺寸前先換成本節點獨立資源，
+			# 否則會把 P1 的 180×120 也一起改掉。
+			var own_rect := RectangleShape2D.new()
+			own_rect.size = target_size
+			shape_node.shape = own_rect
 	shape_node.set_disabled(false)
 
 ## 對重疊到的 HurtBox 結算一次傷害；回傳是否命中/被擋
 func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bool:
 	if dmg <= 0:
 		return false
+	# 一個角色可能有多塊 HurtBox（Boss 頭/身/肚）；同一目標只結算一次，取最高倍率。
+	var targets: Dictionary = {}
 	for area in get_node("HitBox").get_overlapping_areas():
 		var target = _fighter_of(area)
 		if target == null or target == self:
 			continue
+		var mult: float = float(area.get_meta("damage_mult", 1.0))
+		targets[target] = maxf(float(targets.get(target, 1.0)), mult)
+	var attack_spec: Dictionary = _spec(_state)
+	var guard_ratio: float = float(attack_spec.get("guard_ratio", -1.0))
+	var guard_push: float = float(attack_spec.get("guard_push", -1.0))
+	for target in targets:
+		var mult: float = float(targets[target])
+		var final_dmg: int = int(round(float(dmg) * mult))
 		if target.is_blocking and can_block(low, unblockable, target._defense):
-			target.on_blocked(dmg, face_direction, knock_up)
+			target.on_blocked(final_dmg, face_direction, knock_up, guard_ratio, guard_push)
 			_has_hit = true
 			# 小虎被架招/格擋後進入長硬直 38 幀，這是 docs/04 §3 的弱點
 			if _is_tiger():
 				_tiger_guard_stun()
 			return true
-		target.take_damage(dmg, face_direction, knock_up)
+		target.take_damage(final_dmg, face_direction, knock_up)
 		_has_hit = true
 		wine_gauge = minf(100.0, wine_gauge + 3.0)
 		return true
@@ -807,6 +839,12 @@ func _set_attack_shape(enabled: bool) -> void:
 	var n := get_node_or_null("HitBox/AttackShape")
 	if n != null:
 		n.set_disabled(not enabled)
+
+## Boss 咆哮施加的純硬直（0 傷害）：30 幀正面、15 幀背對
+func apply_stun(frames: int) -> void:
+	if _dying:
+		return
+	change_state("Stun" if frames >= 30 else "StunShort")
 
 func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	if _dying:
@@ -919,15 +957,15 @@ func _wall_on_side(dir: float) -> bool:
 		return false
 	return col.get_collider() is StaticBody2D
 
-func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
+func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0, guard_ratio: float = -1.0, guard_push: float = -1.0) -> void:
 	# 依防禦姿態折減傷害與擊退；空防不被向上挑空
 	if _dying:
 		return
-	var ratio: float = float(GUARD_RATIO.get(_defense, 0.5))
-	var push: float = 80.0
-	if _defense == "crouch":
+	var ratio: float = float(GUARD_RATIO.get(_defense, 0.5)) if guard_ratio < 0.0 else guard_ratio
+	var push: float = 80.0 if guard_push < 0.0 else guard_push
+	if guard_ratio < 0.0 and _defense == "crouch":
 		push = 50.0
-	elif _defense == "air":
+	elif guard_ratio < 0.0 and _defense == "air":
 		push = 60.0
 	current_hp -= int(round(float(dmg) * ratio))
 	# 架招也會被打死（邊緣情況）：同樣走青煙演出

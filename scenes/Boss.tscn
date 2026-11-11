@@ -1,0 +1,72 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/RiggedFighter.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/boss_fighter.gd" id="2_boss"]
+[ext_resource type="Script" path="res://scripts/boss_death_cine.gd" id="3_cine"]
+
+[sub_resource type="RectangleShape2D" id="boss_body_shape"]
+size = Vector2(110, 240)
+
+[sub_resource type="RectangleShape2D" id="boss_hurt_shape"]
+size = Vector2(110, 240)
+
+[sub_resource type="RectangleShape2D" id="boss_head_shape"]
+size = Vector2(100, 90)
+
+[sub_resource type="RectangleShape2D" id="boss_belly_shape"]
+size = Vector2(150, 100)
+
+[node name="Boss" instance=ExtResource("1_base")]
+is_player1 = false
+max_hp = 1200
+anim_dir = "res://assets/anim/boss/"
+start_state = "BossIdle"
+ai_profile = "boss"
+drop_chance = 0.0
+script = ExtResource("2_boss")
+
+; Boss 素材畫布 768×768（基線 720），Sprite 原點要下移讓腳底落在 (0,0)
+[node name="Visual" parent="."]
+position = Vector2(0, -185)
+
+; 身體碰撞 110×240 @ (0,-120)
+[node name="Collision" parent="."]
+shape = SubResource("boss_body_shape")
+position = Vector2(0, -120)
+
+; 主受擊盒：身體，倍率 ×1
+[node name="HurtBox" parent="."]
+metadata/damage_mult = 1.0
+
+[node name="HurtShape" parent="HurtBox"]
+shape = SubResource("boss_hurt_shape")
+position = Vector2(0, -120)
+
+; 頭部弱點：×1.5；與身體盒重疊時取最高倍率，只結算一次
+[node name="HeadBox" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+monitoring = false
+monitorable = true
+metadata/damage_mult = 1.5
+
+[node name="HeadShape" type="CollisionShape2D" parent="HeadBox"]
+shape = SubResource("boss_head_shape")
+position = Vector2(0, -260)
+
+; 腹部弱點：×2；只有 BossKnockdown 窗口開啟（boss_fighter.gd 控制）
+[node name="BellyBox" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 2
+monitoring = false
+monitorable = true
+metadata/damage_mult = 2.0
+
+[node name="BellyShape" type="CollisionShape2D" parent="BellyBox"]
+shape = SubResource("boss_belly_shape")
+position = Vector2(0, -90)
+disabled = true
+
+[node name="BossDeathCine" type="CanvasLayer" parent="."]
+layer = 3
+script = ExtResource("3_cine")
