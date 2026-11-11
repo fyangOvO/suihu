@@ -246,6 +246,79 @@ const SPECS: Dictionary = {
 		"visual": {"fps": 30, "frames": ["awaken.png"]},
 		"note": "覺醒必殺 RT/O：酒氣滿100觸發、全程無敵、active窗口320傷害、結束清氣；金黄modulate演出（06 §3.5）"
 	},
+
+	# ---------- 吊睛小虎（精英，docs/04 §3） ----------
+	# 幀名落在 assets/anim/tiger/，由 Tiger.tscn 的 anim_dir 指定目錄；血量 350 在場景上設定
+	"TigerIdle": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 6, "frames": ["idle.png"]},
+		"note": "小虎站立警戒；單姿態先夠用，後續可擴呼吸幀"
+	},
+	"TigerWalk": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 10, "frames": ["walk-1.png", "walk-2.png"]},
+		"note": "小虎四足行走兩幀循環 0.2s，接近玩家時壓迫感來源"
+	},
+	"TigerCrouch": {
+		"loop": true,
+		"logic": {"startup": 0, "active": 0, "recovery": 0},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 8, "frames": ["crouch.png"]},
+		"note": "小虎壓低蓄力，前撲前的預備姿態"
+	},
+	"TigerPounce": {
+		"loop": false,
+		"logic": {"startup": 16, "active": 6, "recovery": 16},
+		"damage": 90, "cancel_frame": -1, "hit_range": 190.0, "knockback": 260.0,
+		"visual": {"fps": 18, "frames": ["crouch.png", "pounce.png"]},
+		"note": "前撲（可格擋）38 幀=633ms；啟動 16 幀給玩家架招窗口，命中擊退 260"
+	},
+	"TigerTail": {
+		"loop": false,
+		"logic": {"startup": 12, "active": 6, "recovery": 18},
+		"damage": 80, "cancel_frame": -1, "hit_range": 170.0, "knockback": 220.0,
+		"visual": {"fps": 20, "frames": ["tail.png", "crouch.png"]},
+		"note": "尾掃（低姿，需跳過）36 幀=600ms；低判定，站防可擋、蹲防擋不住"
+	},
+	"TigerPounceChain": {
+		"loop": false,
+		"logic": {"startup": 18, "active": 8, "recovery": 22},
+		"damage": 110, "cancel_frame": -1, "hit_range": 200.0, "knockback": 280.0,
+		"visual": {"fps": 22, "frames": ["crouch.png", "pounce.png", "leap.png"]},
+		"note": "三連撲（撲—撤—再撲）48 幀=800ms；第二段起不可格擋，必須閃避"
+	},
+	"TigerCross": {
+		"loop": false,
+		"logic": {"startup": 14, "active": 4, "recovery": 20},
+		"damage": 70, "cancel_frame": -1, "hit_range": 150.0, "knockback": 200.0,
+		"visual": {"fps": 22, "frames": ["leap.png", "pounce.png"]},
+		"note": "越頂 cross-up 38 幀=633ms；跳過玩家頭頂換邊，落地後接後跳拉距"
+	},
+	"TigerHurt": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 14},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt.png", "hurt-2.png"]},
+		"note": "小虎站受擊 14 幀；架招成功後 recovery 加長到 38 幀（弱點）"
+	},
+	"TigerKnockdown": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 30},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["knockdown.png"]},
+		"note": "小虎倒地 30 幀；空中追打（Air Juggle）主要窗口"
+	},
+	"TigerWakeUp": {
+		"loop": false,
+		"logic": {"startup": 0, "active": 0, "recovery": 16},
+		"damage": 0, "cancel_frame": -1, "hit_range": 0.0, "knockback": 0.0,
+		"visual": {"fps": 20, "frames": ["hurt-2.png", "idle.png"]},
+		"note": "小虎起身 16 幀，起身後才會恢復攻擊"
+	},
 }
 
 ## 取得動作 spec；未知動作回退 Idle，保證播放層永不為空

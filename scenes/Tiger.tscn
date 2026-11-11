@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/RiggedFighter.tscn" id="1_base"]
+
+[node name="Tiger" instance=ExtResource("1_base")]
+is_player1 = false
+max_hp = 350
+anim_dir = "res://assets/anim/tiger/"
+start_state = "TigerIdle"
+ai_profile = "tiger"
+drop_chance = 0.3

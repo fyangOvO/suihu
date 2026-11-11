@@ -9,18 +9,28 @@ extends CharacterBody2D
 const DATA := preload("res://data/action_frame_data.gd")
 
 @export var is_player1: bool = true
+@export var max_hp: int = 800
+@export var anim_dir: String = "":
+	set(value):
+		anim_dir = value
+		if is_node_ready():
+			_apply_anim_dir()
+## 初始狀態：玩家 Idle；有自己素材表的敵人可指定 TigerIdle 等
+@export var start_state: String = "Idle"
+## AI 行為組：brute＝伥鬼（站防/輕重棍/扔石頭），tiger＝吊睛小虎（撲/尾掃/三連撲/cross-up/後跳）
+@export var ai_profile: String = "brute"
 @export var walk_speed: float = 220.0
 @export var jump_velocity: float = -520.0
 @export var gravity: float = 1400.0
 
 # 戰鬥資源
-var max_hp: int = 800
 var current_hp: int
 var wine_gauge: float = 0.0
 var face_direction: float = 1.0
 var opponent = null
 var is_blocking: bool = false
 var _defense: String = "none"   # none / stand / crouch / air（驅動差異化減傷與退卻）
+var _anim_dirs_ready: bool = false
 
 # 狀態機
 var _state: String = "Idle"
@@ -46,6 +56,8 @@ var _ai_cd: float = 0.8
 var _ai_retreat: float = 0.0    # 被打後退計時（秒）
 var _ai_roll: float = 0.0       # 決策用確定性序列（低差異，無隨機源也能重現）
 var _ai_throw_cd: float = 0.0   # 扔石頭冷卻（秒）
+var _ai_hop: float = 0.0        # 小虎出招後後跳計時（秒）
+var _tiger_prev_state: String = "TigerIdle"
 
 # 牆族：黏牆期間牆所在方向（+1 右 / -1 左）、最近一次額外傷害（供自測讀取）
 var _wall_side: float = 0.0
@@ -54,6 +66,9 @@ var _wall_bonus_last: int = 0
 # 狀態分組（與 data spec 對應）
 const ATTACKS: Array = ["Light1", "Light2", "Light3", "Heavy", "CrouchLight", "AirLight", "AirHeavy", "CmdTiger", "CmdUp", "Counter", "CmdDrunk", "Super"]
 const REACTION: Array = ["HurtStand", "HurtAir", "Knockdown", "WakeUp"]
+## 小虎專用招式與受擊姿態（docs/04 §3：不會蹲防、不會投擲、會後跳）
+const TIGER_ATTACKS: Array = ["TigerPounce", "TigerTail", "TigerPounceChain", "TigerCross"]
+const TIGER_REACTION: Array = ["TigerHurt", "TigerKnockdown", "TigerWakeUp"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
@@ -83,6 +98,17 @@ const AI_THROW_MIN: float = 360.0        # 超過此距離才考慮扔石頭
 const AI_THROW_RATE: float = 0.3         # 遠距時選擇扔石頭的概率
 const AI_THROW_CD: float = 2.5           # 扔石頭冷卻（秒）
 const ROCK_DAMAGE: int = 75              # 石頭傷害（介於站輕 65 與站重 130 之間）
+# 小虎 AI（docs/04 §3：前撲可格擋、尾掃要跳、三連撲二段起不可格擋、越頂 cross-up、會後跳拉距）
+const TIGER_WALK_SPEED: float = 170.0   # 小虎四足接近速度（比伥鬼快，壓迫感來源）
+const TIGER_POUNCE_MIN: float = 170.0    # 前撲起手距離下限
+const TIGER_POUNCE_MAX: float = 340.0    # 前撲/越頂的有效距離上限
+const TIGER_TAIL_RANGE: float = 110.0   # 尾掃貼身距離
+const TIGER_POUNCE_VX: float = 240.0     # 前撲前衝速度
+const TIGER_CROSS_VX: float = 380.0      # 越頂水平速度
+const TIGER_CROSS_VY: float = -420.0     # 越頂起跳速度
+const TIGER_ATK_CD: float = 1.1          # 普通招間隔
+const TIGER_CHAIN_CD: float = 1.9        # 三連撲後多緩一拍
+const TIGER_HOP_TIME: float = 0.32       # 出招後後跳拉距時長
 const ROCK_SCENE := preload("res://scripts/rock_projectile.gd")
 const PICKUP_SCENE := preload("res://scripts/coin_pickup.gd")
 # 死亡演出（docs/04 §2：伥鬼沒有身體，死後化為一縷青煙）
@@ -135,7 +161,14 @@ func _ready() -> void:
 	_rng.randomize()
 	current_hp = max_hp
 	face_direction = 1.0 if is_player1 else -1.0
-	change_state("Idle")
+	_apply_anim_dir.call_deferred()
+	change_state(start_state)
+
+## 敵人有自己的素材目錄時插到查找鏈最前；空字串＝沿用武松那三層
+func _apply_anim_dir() -> void:
+	if anim_dir == "":
+		return
+	$Visual.set_search_dirs([anim_dir, "res://assets/anim/redraw_clean/", "res://assets/anim/clean/", "res://assets/anim/"])
 
 func change_state(new_state: String) -> void:
 	if _state == new_state:
@@ -172,6 +205,10 @@ func change_state(new_state: String) -> void:
 	_fx_state(new_state)
 
 func _physics_process(delta: float) -> void:
+	# 首幀補套素材目錄：繼承場景的 export 覆寫可能晚於 _ready，延後到這裡最穩
+	if not _anim_dirs_ready:
+		_apply_anim_dir()
+		_anim_dirs_ready = true
 	# 死亡演出：完全接管本幀，不再讀輸入、不再出招
 	if _dying:
 		_tick_death(delta)
@@ -197,23 +234,23 @@ func _physics_process(delta: float) -> void:
 		return
 
 	# Reaction 層最高優先級：受擊/倒地/起身只推進時鐘與物理，不接受攻擊輸入
-	if _state in REACTION:
+	if _state in REACTION or _state in TIGER_REACTION:
 		_frame += 1
-		# 被擊瞬間（前4邏輯幀）按重可搶出飞云浦反击 Counter
-		if _state == "HurtStand" and _frame <= 4 and _heavy_pressed:
+		# 被擊瞬間（前4邏輯幀）按重可搶出飞云浦反击 Counter（僅武松）
+		if not _is_tiger() and _state == "HurtStand" and _frame <= 4 and _heavy_pressed:
 			change_state("Counter")
 			return
 		_apply_gravity(delta)
 		move_and_slide()
 		$Visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
-			change_state("Idle")
+			change_state(_idle_state())
 		return
 
 	# 一次性動作（攻擊 / Dash / Drink / Land…）
 	if not bool(spec.loop) and DATA.total_frames(spec) > 0:
 		_frame += 1
-		if _state in ATTACKS:
+		if _state in ATTACKS or _state in TIGER_ATTACKS:
 			_try_hit(spec)
 			if _try_cancel():
 				return  # 取消切入新狀態，下一幀按新狀態處理
@@ -222,12 +259,18 @@ func _physics_process(delta: float) -> void:
 			velocity.x = face_direction * 480.0
 		elif _state == "CmdDrunk" and _frame <= 13:
 			velocity.x = face_direction * 360.0   # 醉打：僅起手＋活躍段前衝穿身
+		elif _state in ["TigerPounce", "TigerPounceChain"]:
+			var startup_n: int = int(spec.get("logic", {}).get("startup", 0))
+			var active_n: int = int(spec.get("logic", {}).get("active", 0))
+			velocity.x = face_direction * TIGER_POUNCE_VX if _frame <= startup_n + active_n else 0.0
+		elif _state == "TigerCross":
+			velocity.x = face_direction * TIGER_CROSS_VX
 		else:
 			velocity.x = 0.0
 		move_and_slide()
 		$Visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
-			change_state("Idle")
+			change_state(_idle_state())
 		return
 
 	# 自由姿態層：決定狀態 → 物理 → 播放
@@ -332,7 +375,77 @@ func _run_ai(delta: float) -> void:
 	_ai_throw_cd = maxf(0.0, _ai_throw_cd - delta)
 	# 確定性低差異序列（黃金比例步進）：同一串 ctx 每次跑出來的決策一致，自測可重現
 	_ai_roll = fmod(_ai_roll + 0.6180339887, 1.0)
+	if ai_profile == "tiger":
+		_run_tiger_ai(delta, dx, dist)
+		return
 	_ai_apply(ai_plan(_ai_ctx(dist)), dx)
+
+## 小虎 AI：選招 → 直接切狀態；出招結束後接一段後跳拉距（docs/04 §3「會後跳」）
+func _run_tiger_ai(delta: float, dx: float, dist: float) -> void:
+	_ai_hop = maxf(0.0, _ai_hop - delta)
+	# 上一幀還在出招、這幀已回到移動態 → 立刻起跳後撤
+	if _tiger_prev_state in TIGER_ATTACKS and _state not in TIGER_ATTACKS:
+		_ai_hop = TIGER_HOP_TIME
+	_tiger_prev_state = _state
+	var plan: String = "hop" if _ai_hop > 0.0 else tiger_plan(_ai_ctx(dist))
+	_ai_apply_tiger(plan, dx, dist)
+
+## 小虎決策（純函數）：遠距越頂/接近，中距前撲或三連撲，貼身尾掃
+func tiger_plan(ctx: Dictionary) -> String:
+	var dist: float = float(ctx.get("dist", 9999.0))
+	var roll: float = float(ctx.get("roll", 0.0))
+	var atk_cd: float = float(ctx.get("atk_cd", 0.0))
+	var opp_state: String = String(ctx.get("opp_state", "Idle"))
+	var opp_frame: int = int(ctx.get("opp_frame", 0))
+	var opp_active_end: int = int(ctx.get("opp_active_end", 0))
+	# 對手正在出招且已進入判定：小虎不會蹲防，只能後跳拉開
+	if opp_state in ATTACKS and opp_frame < opp_active_end and dist < 300.0:
+		return "hop"
+	if atk_cd > 0.0:
+		if dist > 190.0:
+			return "approach"
+		return "wait"
+	if dist > TIGER_POUNCE_MAX:
+		if dist <= 460.0 and roll < 0.35:
+			return "cross"
+		return "approach"
+	if dist > TIGER_POUNCE_MIN:
+		if roll < 0.45:
+			return "pounce"
+		if roll < 0.72:
+			return "chain"
+		if roll < 0.86:
+			return "cross"
+		return "approach"
+	if dist > TIGER_TAIL_RANGE:
+		return "tail" if roll < 0.35 else "pounce"
+	return "tail" if roll < 0.55 else "chain"
+
+## 把決策映射成小虎的移動／出招（不共用伥鬼的 light/heavy/block 旗標）
+func _ai_apply_tiger(plan: String, dx: float, _dist: float) -> void:
+	var toward: float = signf(dx) if absf(dx) > 0.01 else face_direction
+	_move_x = 0.0
+	_block_held = false
+	face_direction = toward
+	match plan:
+		"approach":
+			_move_x = toward * 1.0
+		"hop":
+			_move_x = -toward * 1.0
+		"wait":
+			pass
+		"pounce", "tail", "chain", "cross":
+			if _state in ["TigerIdle", "TigerWalk", "TigerCrouch"] and is_on_floor():
+				var target: String = ""
+				match plan:
+					"pounce": target = "TigerPounce"
+					"tail": target = "TigerTail"
+					"chain": target = "TigerPounceChain"
+					"cross": target = "TigerCross"
+				if target == "TigerCross":
+					velocity = Vector2(toward * TIGER_CROSS_VX, TIGER_CROSS_VY)
+				change_state(target)
+				_ai_cd = TIGER_CHAIN_CD if target == "TigerPounceChain" else TIGER_ATK_CD
 
 ## 組 AI 決策上下文（欄位口徑固定，自測直接用合成 ctx 驗證純函數）
 func _ai_ctx(dist: float) -> Dictionary:
@@ -454,6 +567,9 @@ func _ai_cd_for_next(base_cd: float) -> float:
 	return AI_PANIC_CD if hp_ratio < AI_PANIC_HP else base_cd
 
 func _decide_free_state(_delta: float) -> void:
+	if _is_tiger():
+		_decide_tiger_free_state()
+		return
 	# 空中姿態派生：空防優先於空中攻擊
 	if not is_on_floor():
 		if _block_held:
@@ -528,6 +644,38 @@ func _decide_free_state(_delta: float) -> void:
 	change_state("Idle")
 	velocity.x = 0.0
 
+func _is_tiger() -> bool:
+	return ai_profile == "tiger"
+
+func _idle_state() -> String:
+	return "TigerIdle" if _is_tiger() else "Idle"
+
+func _death_state() -> String:
+	return "TigerKnockdown" if _is_tiger() else "Knockdown"
+
+## 小虎受擊姿態映射：武松那套 HurtStand/HurtAir 沒有小虎素材，一律落到 TigerHurt
+func _hurt_state(kind: String) -> String:
+	if not _is_tiger():
+		return kind
+	if kind == "Knockdown":
+		return "TigerKnockdown"
+	if kind == "WakeUp":
+		return "TigerWakeUp"
+	return "TigerHurt"
+
+## 小虎自由移動：只有 TigerWalk / TigerIdle，沒有站防、蹲防、跳躍
+func _decide_tiger_free_state() -> void:
+	if not is_on_floor():
+		change_state("TigerHurt")
+		velocity.x = 0.0
+		return
+	if absf(_move_x) > 0.1:
+		change_state("TigerWalk")
+		velocity.x = signf(_move_x) * TIGER_WALK_SPEED
+		return
+	change_state("TigerIdle")
+	velocity.x = 0.0
+
 ## 取消鏈：僅在取消幀之後、且招式允許時切入（對齊 06 §3.6）
 func _try_cancel() -> bool:
 	var spec: Dictionary = _spec(_state)
@@ -597,7 +745,8 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	if not is_player1:
 		_ai_retreat = AI_RETREAT_TIME
 	# 牆族：擊退方向就是牆的方向 → 額外傷害 + 黏牆 30 幀（01 §牆族「額外傷害＋彈回」）
-	if _state != "WallStick" and _wall_on_side(from_dir):
+	# 小虎沒有 WallStick 素材與招式，且 docs/04 只給伥鬼牆族表現，這裡直接跳過
+	if not _is_tiger() and _state != "WallStick" and _wall_on_side(from_dir):
 		var bonus: int = maxi(WALL_BONUS_MIN, int(round(float(dmg) * WALL_BONUS_RATIO)))
 		current_hp -= bonus
 		_wall_bonus_last = bonus
@@ -611,7 +760,7 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		_begin_death()
 		return
 	velocity = Vector2(from_dir * 200.0, -100.0 if knock_up <= 0.0 else -knock_up)
-	change_state("HurtStand")
+	change_state(_hurt_state("HurtStand"))
 
 ## 死亡演出開始：倒地姿態 + 青煙粒子，本體隨後淡出
 func _begin_death() -> void:
@@ -623,7 +772,7 @@ func _begin_death() -> void:
 	_ai_cd = 999.0
 	_ai_retreat = 0.0
 	velocity = Vector2.ZERO
-	change_state("Knockdown")
+	change_state(_death_state())
 	_spawn_death_mist()
 
 ## 死亡演出推進：不讀輸入、不出招；青煙先起，本體 0.25s 後淡出 0.8s
@@ -631,7 +780,7 @@ func _tick_death(delta: float) -> void:
 	_death_t += delta
 	_frame += 1
 	velocity = Vector2.ZERO
-	$Visual.play_action("Knockdown", _spec("Knockdown"), delta)
+	$Visual.play_action(_death_state(), _spec(_death_state()), delta)
 	if _death_t >= DEATH_FADE_START:
 		var k: float = clampf((_death_t - DEATH_FADE_START) / DEATH_FADE_TIME, 0.0, 1.0)
 		$Visual.modulate.a = 1.0 - k
@@ -658,7 +807,8 @@ func _spawn_drop(force_tag: bool) -> void:
 	if force_tag or _rng.randf() < drop_chance:
 		var tag: Node2D = PICKUP_SCENE.new()
 		parent_node.add_child(tag)
-		tag.setup(opponent, "伥鬼的木牌", Vector2(global_position.x + 30.0, global_position.y - 30.0))
+		var tag_name: String = "小虎爪" if _is_tiger() else "伥鬼的木牌"
+		tag.setup(opponent, tag_name, Vector2(global_position.x + 30.0, global_position.y - 30.0))
 
 ## 青煙：播六幀手繪水墨序列（9fps，不循環），播完停在最淡一幀再自清
 func _spawn_death_mist() -> void:
@@ -775,7 +925,7 @@ func _apply_gravity(delta: float) -> void:
 		velocity.y = 0.0
 
 func _face_opponent_when_free() -> void:
-	if opponent == null or _state not in ["Idle", "Walk", "Crouch", "Block", "CrouchBlock"]:
+	if opponent == null or _state not in ["Idle", "Walk", "Crouch", "Block", "CrouchBlock", "TigerIdle", "TigerWalk"]:
 		return
 	var target: float = 1.0 if opponent.global_position.x > global_position.x else -1.0
 	if target != face_direction:

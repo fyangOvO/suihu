@@ -15,6 +15,8 @@ const DATA := preload("res://data/action_frame_data.gd")
 ## 3) anim/ 根目錄：原始素材（含偽裝 JPEG，解碼失敗會被下一層跳過）
 ## 移除 redraw_clean/ 目錄或其條目即整體回退到舊成品，原始素材永不覆蓋。
 const ANIM_DIRS: Array = ["res://assets/anim/redraw_clean/", "res://assets/anim/clean/", "res://assets/anim/"]
+## 實際查找順序；敵人可透過 set_search_dirs 把自己的目錄插到最前面
+var search_dirs: Array = ANIM_DIRS.duplicate()
 
 var _cache: Dictionary = {}
 var _action: String = ""
@@ -31,6 +33,11 @@ func play_action(action: String, spec: Dictionary, delta: float) -> void:
 	if action != _action:
 		_enter(action, spec)
 	tick(delta)
+
+## 設定素材查找目錄（敵人把自己的 anim 目錄放最前，找不到再回退到武松那三層）
+func set_search_dirs(dirs: Array) -> void:
+	search_dirs = dirs.duplicate()
+	_cache.clear()
 
 func _enter(action: String, spec: Dictionary) -> void:
 	_action = action
@@ -73,14 +80,14 @@ func _resolve(file: String) -> Texture2D:
 	if _cache.has(file):
 		return _cache[file]
 	var tex: Texture2D = null
-	for dir in ANIM_DIRS:
+	for dir in search_dirs:
 		var rpath: String = dir + file
 		if ResourceLoader.exists(rpath):
 			tex = load(rpath) as Texture2D
 			if tex != null:
 				break
 	if tex == null:
-		for dir in ANIM_DIRS:
+		for dir in search_dirs:
 			var gpath: String = ProjectSettings.globalize_path(dir + file)
 			var img := Image.new()
 			if img.load(gpath) == OK:
