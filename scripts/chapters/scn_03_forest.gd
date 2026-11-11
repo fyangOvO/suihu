@@ -95,28 +95,64 @@ func _add_trunks(parent: Node) -> void:
 		Vector2(92, 0), Vector2(210, 0), Vector2(1710, 0), Vector2(1830, 0),
 		Vector2(360, 0), Vector2(1560, 0),
 	]:
-		var trunk := Polygon2D.new()
-		trunk.name = "Trunk%d" % int(item.x)
-		trunk.polygon = PackedVector2Array([
-			Vector2(item.x, 900), Vector2(item.x + 34, 900),
-			Vector2(item.x + 26, 310), Vector2(item.x + 12, 210),
-			Vector2(item.x - 4, 310),
-		])
-		trunk.color = FOREST_INK
-		parent.add_child(trunk)
+		var tree := Node2D.new()
+		tree.name = "Tree%d" % int(item.x)
+		tree.position = item
+		parent.add_child(tree)
+
+		# 主幹：下粗上細，保留樹皮折線；不再是等寬黑柱。
+		_add_poly(tree, "Trunk%d" % int(item.x), [
+			Vector2(-18, 900), Vector2(18, 900), Vector2(13, 620),
+			Vector2(10, 420), Vector2(6, 210), Vector2(-5, 210),
+			Vector2(-9, 420), Vector2(-13, 620),
+		], FOREST_INK)
+		# 根部：向兩側抓地。
+		_add_poly(tree, "Root%dL" % int(item.x), [
+			Vector2(-14, 900), Vector2(-58, 900), Vector2(-38, 850), Vector2(-10, 820),
+		], FOREST_INK)
+		_add_poly(tree, "Root%dR" % int(item.x), [
+			Vector2(14, 900), Vector2(56, 900), Vector2(34, 852), Vector2(9, 824),
+		], FOREST_INK)
+		# 側枝：左右各一枝，帶粗細變化；枝端接樹冠。
+		_add_branch(tree, "Branch%dL" % int(item.x), Vector2(0, 570), Vector2(-108, 438), 15.0, 3.0)
+		_add_branch(tree, "Branch%dR" % int(item.x), Vector2(0, 468), Vector2(112, 330), 12.0, 2.5)
+		_add_branch(tree, "Branch%dL2" % int(item.x), Vector2(-6, 390), Vector2(-62, 286), 8.0, 2.0)
+		_add_branch(tree, "Branch%dR2" % int(item.x), Vector2(4, 310), Vector2(58, 218), 7.0, 1.8)
+
+func _add_branch(parent: Node2D, node_name: String, from: Vector2, to: Vector2, width_from: float, width_to: float) -> void:
+	var dir := (to - from).normalized()
+	var perp := Vector2(-dir.y, dir.x)
+	_add_poly(parent, node_name, [
+		from + perp * width_from * 0.5,
+		to + perp * width_to * 0.5,
+		to - perp * width_to * 0.5,
+		from - perp * width_from * 0.5,
+	], FOREST_INK)
 
 func _add_canopy(parent: Node) -> void:
+	# 樹冠改成多團葉簇，避免頂部變成一整排黑色長塊。
 	for item in [
 		Vector2(0, 0), Vector2(280, 0), Vector2(570, 0),
 		Vector2(1390, 0), Vector2(1670, 0), Vector2(1910, 0),
 	]:
-		var crown := Polygon2D.new()
-		crown.name = "Crown%d" % int(item.x)
-		crown.polygon = PackedVector2Array([
-			Vector2(item.x - 90, 0), Vector2(item.x + 120, 0),
-			Vector2(item.x + 86, 52), Vector2(item.x + 42, 88),
-			Vector2(item.x - 12, 60), Vector2(item.x - 58, 104),
-			Vector2(item.x - 122, 44),
-		])
-		crown.color = FOREST_INK_2
-		parent.add_child(crown)
+		var base_x: float = item.x
+		for j in range(4):
+			var offset := Vector2(float(j - 1) * 48.0 + 18.0, 46.0 + float(j % 2) * 42.0 + 12.0)
+			var radius := 32.0 + float((j + int(base_x)) % 3) * 8.0
+			var node_name: String = ("Crown%d" % int(base_x)) if j == 0 else ("Crown%dLeaf%d" % [int(base_x), j])
+			_add_leaf(parent, node_name, Vector2(base_x, 0) + offset, radius)
+
+func _add_leaf(parent: Node, node_name: String, center: Vector2, radius: float) -> void:
+	var pts: PackedVector2Array = PackedVector2Array()
+	for i in range(9):
+		var a := TAU * float(i) / 9.0
+		var r := radius * (0.76 + 0.24 * float((i * 7 + 3) % 5) / 4.0)
+		pts.append(center + Vector2(cos(a) * r, sin(a) * r * 0.62))
+	_add_poly(parent, node_name, pts, FOREST_INK_2)
+
+func _add_poly(parent: Node, node_name: String, points: Array, color: Color) -> void:
+	var p := Polygon2D.new()
+	p.name = node_name
+	p.polygon = PackedVector2Array(points)
+	p.color = color
+	parent.add_child(p)

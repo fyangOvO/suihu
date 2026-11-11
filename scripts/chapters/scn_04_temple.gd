@@ -2,9 +2,9 @@ extends "res://scripts/chapters/stage_base.gd"
 ## SCN-04 山神廟：B4 山神問路，存檔後上山。
 ## 庙內道具全部程序化搭建；燭火與山神像的眨眼是一次性彩蛋。
 
-const STONE := Color(0.105, 0.110, 0.125)
-const STONE_DARK := Color(0.055, 0.060, 0.072)
-const CLOTH := Color(0.28, 0.055, 0.050)
+const STONE := Color(0.13, 0.115, 0.095)
+const STONE_DARK := Color(0.075, 0.062, 0.052)
+const CLOTH := Color(0.38, 0.075, 0.065)
 const CANDLE := Color(0.68, 0.50, 0.24)
 const FLAME := Color(0.98, 0.66, 0.28)
 const GOLD := Color(0.66, 0.50, 0.26)
@@ -23,7 +23,7 @@ func first_beat() -> String:
 	return "B4"
 
 func background_color() -> Color:
-	return Color(0.055, 0.06, 0.075)
+	return Color(0.085, 0.072, 0.065)
 
 func _on_stage_start() -> void:
 	_build_temple()
@@ -58,7 +58,7 @@ func _build_temple() -> void:
 
 	# 地面與牆：中央留出一條進門的路。
 	_rect(props, "Floor", 0, 870, 1920, 210, STONE_DARK)
-	_rect(props, "BackWall", 0, 0, 1920, 900, Color(0.045, 0.050, 0.062, 0.92))
+	_rect(props, "BackWall", 0, 0, 1920, 900, Color(0.080, 0.065, 0.055, 0.92))
 	for x in [120, 1780]:
 		_poly(props, "Pillar%d" % x, [
 			Vector2(x - 34, 0), Vector2(x + 34, 0),
@@ -80,23 +80,42 @@ func _build_temple() -> void:
 		_poly(props, "Incense%d" % x, [
 			Vector2(x, 626), Vector2(x + 2, 540), Vector2(x + 4, 626),
 		], Color(0.30, 0.26, 0.20, 0.55))
+		var smoke := Line2D.new()
+		smoke.name = "IncenseSmoke%d" % x
+		smoke.points = PackedVector2Array([
+			Vector2(x + 3, 540), Vector2(x - 8, 500), Vector2(x + 12, 464),
+			Vector2(x - 4, 424),
+		])
+		smoke.width = 1.5
+		smoke.default_color = Color(0.55, 0.48, 0.38, 0.22)
+		props.add_child(smoke)
 
-	# 兩支燭：燭身＋焰＋暖光斑。
-	for x in [360, 760]:
+	# 兩支燭：燭身＋焰＋暖光斑。右側燭移到山神像外，避免被神像遮住。
+	for x in [360, 980]:
 		_rect(props, "Candle%d" % x, x, 560, 18, 92, CANDLE)
 		_poly(props, "Flame%d" % x, [
 			Vector2(x + 9, 524), Vector2(x + 17, 548), Vector2(x + 9, 562), Vector2(x + 1, 548),
 		], FLAME)
-		_poly(props, "CandleGlow%d" % x, _ellipse_points(Vector2(x + 9, 548), 84, 58), Color(1, 0.55, 0.22, 0.10))
+		_poly(props, "FlameCore%d" % x, [
+			Vector2(x + 9, 532), Vector2(x + 14, 548), Vector2(x + 9, 556), Vector2(x + 4, 548),
+		], Color(1.0, 0.88, 0.55, 0.95))
+		_add_glow(props, "CandleGlow%d" % x, Vector2(x + 9, 548), 118, 82, Color(1, 0.55, 0.22, 0.45))
 	_burning = true
+
+	# 供桌的暖光：把整塊祭台從背景裡拉出來，也让山神像的輪廓有光。
+	_add_glow(props, "AltarLight", Vector2(510, 690), 330, 190, Color(1.0, 0.54, 0.20, 0.40))
+	_add_glow(props, "FloorLight", Vector2(520, 820), 460, 170, Color(1.0, 0.45, 0.16, 0.16))
+	_add_glow(props, "TempleWash", Vector2(700, 560), 620, 460, Color(1.0, 0.42, 0.14, 0.11))
+	for x in [390, 516, 642]:
+		_add_glow(props, "IncenseGlow%d" % x, Vector2(x, 600), 54, 44, Color(1.0, 0.48, 0.16, 0.12))
 
 	# 山神像：坐在供桌後方；眼睛是兩塊金片，眨眼彩蛋會把它們壓成一線。
 	_poly(props, "IdolBody", [
 		Vector2(560, 470), Vector2(860, 470), Vector2(940, 680), Vector2(470, 680),
-	], Color(0.075, 0.080, 0.090))
+	], Color(0.10, 0.09, 0.075))
 	_poly(props, "IdolRobe", [
 		Vector2(580, 500), Vector2(840, 500), Vector2(900, 660), Vector2(520, 660),
-	], Color(0.12, 0.10, 0.085))
+	], Color(0.15, 0.12, 0.095))
 	_poly(props, "IdolFace", [
 		Vector2(610, 360), Vector2(810, 360), Vector2(830, 474), Vector2(590, 474),
 	], Color(0.16, 0.145, 0.115))
@@ -117,6 +136,8 @@ func _build_temple() -> void:
 	], Color(0.28, 0.22, 0.12))
 	for x in [548, 852]:
 		_rect(props, "TempleBanner%d" % x, x, 260, 18, 300, CLOTH)
+	# 山神臉上的暖光，只到額頭與鼻樑，不把整張臉照平。
+	_add_glow(props, "IdolWarm", Vector2(710, 420), 150, 82, Color(1.0, 0.62, 0.28, 0.28))
 
 func _blink_once() -> void:
 	if _blink_count > 0:
@@ -138,6 +159,39 @@ func _poly(parent: Node2D, node_name: String, points: Array, color: Color) -> vo
 	p.polygon = PackedVector2Array(points)
 	p.color = color
 	parent.add_child(p)
+
+func _glow_poly(parent: Node2D, node_name: String, points: Array, color: Color) -> void:
+	var p := Polygon2D.new()
+	p.name = node_name
+	p.polygon = PackedVector2Array(points)
+	p.color = color
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	p.material = mat
+	parent.add_child(p)
+
+func _add_glow(parent: Node2D, node_name: String, center: Vector2, rx: float, ry: float, color: Color) -> void:
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 1))
+	grad.set_color(1, Color(1, 1, 1, 0))
+	grad.add_point(0.46, Color(1, 1, 1, 0.42))
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.width = 128
+	tex.height = 128
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	var spr := Sprite2D.new()
+	spr.name = node_name
+	spr.texture = tex
+	spr.position = center
+	spr.scale = Vector2(rx / 64.0, ry / 64.0)
+	spr.modulate = color
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	spr.material = mat
+	parent.add_child(spr)
 
 func _ellipse_points(center: Vector2, rx: float, ry: float) -> Array:
 	var pts: Array = []

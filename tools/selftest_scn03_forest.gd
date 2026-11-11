@@ -40,7 +40,7 @@ func _process(_delta: float) -> bool:
 			if layer != null:
 				_check("%s has texture" % layer_name, layer.texture != null)
 				_check("%s alpha in range" % layer_name, layer.modulate.a > 0.15 and layer.modulate.a < 0.55)
-		_check("forest trunk exists", bg.get_node_or_null("Trunk92") != null)
+		_check("forest trunk exists", bg.get_node_or_null("Tree92/Trunk92") != null and bg.get_node_or_null("Tree92/Branch92L") != null)
 		_check("forest crown exists", bg.get_node_or_null("Crown0") != null)
 		var banner := main.get_node_or_null("HUD/Banner") as Label
 		_check("banner text", banner != null and banner.text.find("霧裡") >= 0)

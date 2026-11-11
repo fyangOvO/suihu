@@ -181,6 +181,11 @@
   - **SCN-04 山神廟**：`scn_04_temple.gd` 程序化搭建廟內地面、後牆、立柱、廟門、供桌、香爐、雙燭焰光、山神像（金片眼、殘金冠、垂帶）；B4 問路結束後山神像眨眼一次（`_blink_once`，只觸發一次），同時保留存檔與上山流程。
   - **SCN-06 水潭**：`scn_06_pool.gd` 加水面月影／月影寬帶、水岸蘆葦、星點與右岸石台虎屍剪影（含虎斑與冷邊），水下加虎屍倒影；B9 對話結束後留 1.4 秒空鏡再進章末結算，讓倒影與虎屍真的被看見。
   - **驗收**：`tools/selftest_scn03_forest.gd` 14 項、`tools/selftest_scn04_temple.gd` 10 項、`tools/selftest_scn06_pool.gd` 10 項全部 PASS；新增 `capture_scn03.gd`／`capture_scn04.gd`／`capture_scn06.gd`，三張 `err=0`；`selftest_flow` 仍 `fails=0`。
+- [x] **V0.3.7 內容觀感返工：分叉樹、廟內暖光、虎屍脊線與腿部（三支自測仍 PASS、FLOW fails=0）**：
+  - **SCN-03**：`_add_trunks` 改為每棵樹一組 `Tree`／`Trunk`／`Root`／四條 `Branch`，樹幹下粗上細、根部抓地；樹冠改成四團不規則葉簇，不再是一整排黑塊。
+  - **SCN-04**：新增徑向 `GradientTexture2D` 暖光（`_add_glow`＋`BLEND_MODE_ADD`），兩支燭移到山神像外側；供桌、地面、香爐與神像臉面各有暖光，後牆／地面／神像改成暖石灰，燭火不再只是一塊均勻色斑。
+  - **SCN-06**：虎屍加 `TigerSpine` 脊線、`TigerBelly` 腹線、`TigerHaunch` 胯線、耳朵／吻部／閉眼，四條腿重畫成帶膝節與腳掌的多邊形，石台加接觸陰影。
+  - **驗收**：`selftest_scn03_forest`／`selftest_scn04_temple`／`selftest_scn06_pool` 全 PASS；`selftest_flow` `fails=0`；三張截圖已重出。
 
 ## 待實現
 

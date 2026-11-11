@@ -100,10 +100,6 @@ func _build_tiger_corpse(parent: Node) -> void:
 	var parts: Array = [
 		["TigerBody", body], ["TigerHead", head], ["TigerTail", tail],
 	]
-	for leg in [Vector2(54, 42), Vector2(130, 46), Vector2(176, 40), Vector2(208, 34)]:
-		parts.append(["TigerLeg%d" % int(leg.x), [
-			leg, leg + Vector2(14, 40), leg + Vector2(26, 44), leg + Vector2(18, 12),
-		]])
 	for item in parts:
 		var p := _poly(parent, item[0], item[1], Color(0.10, 0.095, 0.082, 0.98))
 		p.position = Vector2(1450, 660)
@@ -122,10 +118,90 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(2, -18), Vector2(90, -45), Vector2(176, -37),
 		Vector2(224, -15), Vector2(246, 15),
 	])
-	rim.width = 2.0
-	rim.default_color = Color(0.36, 0.40, 0.37, 0.55)
+	rim.width = 3.5
+	rim.default_color = Color(0.50, 0.52, 0.45, 0.68)
 	rim.position = Vector2(1450, 660)
 	parent.add_child(rim)
+
+	# 脊線：從尾根一路接到肩胛，讓虎屍不再只是大塊暗影。
+	var spine := Line2D.new()
+	spine.name = "TigerSpine"
+	spine.points = PackedVector2Array([
+		Vector2(12, -18), Vector2(62, -31), Vector2(116, -38),
+		Vector2(172, -31), Vector2(216, -12),
+	])
+	spine.width = 4.0
+	spine.default_color = Color(0.46, 0.40, 0.30, 0.64)
+	spine.position = Vector2(1450, 660)
+	parent.add_child(spine)
+
+	# 腹線與胯部：把軀幹和四肢分開，避免腿和身體糊成一團。
+	var belly := Line2D.new()
+	belly.name = "TigerBelly"
+	belly.points = PackedVector2Array([
+		Vector2(18, 22), Vector2(72, 38), Vector2(132, 44),
+		Vector2(190, 34), Vector2(226, 12),
+	])
+	belly.width = 2.0
+	belly.default_color = Color(0.30, 0.26, 0.20, 0.42)
+	belly.position = Vector2(1450, 660)
+	parent.add_child(belly)
+	var haunch := Line2D.new()
+	haunch.name = "TigerHaunch"
+	haunch.points = PackedVector2Array([Vector2(154, -6), Vector2(186, 16), Vector2(176, 42)])
+	haunch.width = 2.0
+	haunch.default_color = Color(0.28, 0.25, 0.19, 0.38)
+	haunch.position = Vector2(1450, 660)
+	parent.add_child(haunch)
+
+	# 頭部：耳朵、閉眼與吻部；剪影靠這三個缺口讀成虎。
+	for ear in [Vector2(236, -54), Vector2(278, -50)]:
+		var ear_poly := _poly(parent, "TigerEar%d" % int(ear.x), [
+			ear, ear + Vector2(14, -20), ear + Vector2(24, 2),
+		], Color(0.11, 0.10, 0.085, 0.98))
+		ear_poly.position = Vector2(1450, 660)
+	var muzzle := _poly(parent, "TigerMuzzle", [
+		Vector2(274, -10), Vector2(296, -8), Vector2(292, 4),
+		Vector2(272, 6),
+	], Color(0.14, 0.12, 0.095, 0.95))
+	muzzle.position = Vector2(1450, 660)
+	var eye := Line2D.new()
+	eye.name = "TigerClosedEye"
+	eye.points = PackedVector2Array([Vector2(258, -28), Vector2(270, -26)])
+	eye.width = 2.0
+	eye.default_color = Color(0.62, 0.56, 0.44, 0.42)
+	eye.position = Vector2(1450, 660)
+	parent.add_child(eye)
+
+	# 四肢：重畫成四條有膝節的腿，腳掌用略亮的小塊收尾。
+	var legs := [
+		Vector2(42, 36), Vector2(108, 44), Vector2(166, 38), Vector2(202, 30),
+	]
+	for leg in legs:
+		var leg_poly := _poly(parent, "TigerLeg%d" % int(leg.x), [
+			leg, leg + Vector2(9, 30), leg + Vector2(18, 43),
+			leg + Vector2(30, 46), leg + Vector2(28, 54),
+			leg + Vector2(12, 52), leg + Vector2(4, 36),
+		], Color(0.13, 0.115, 0.095, 0.98))
+		leg_poly.position = Vector2(1450, 660)
+		var paw := _poly(parent, "TigerPaw%d" % int(leg.x), [
+			leg + Vector2(12, 52), leg + Vector2(30, 55),
+			leg + Vector2(32, 62), leg + Vector2(10, 60),
+		], Color(0.22, 0.19, 0.15, 0.96))
+		paw.position = Vector2(1450, 660)
+		var knee := Line2D.new()
+		knee.name = "TigerKnee%d" % int(leg.x)
+		knee.points = PackedVector2Array([leg + Vector2(8, 22), leg + Vector2(17, 34)])
+		knee.width = 1.5
+		knee.default_color = Color(0.30, 0.26, 0.20, 0.40)
+		knee.position = Vector2(1450, 660)
+		parent.add_child(knee)
+
+	# 地面的接觸陰影，讓虎屍真的壓在石台上。
+	var shadow := _ellipse(Vector2(1450, 704), 190, 18, Color(0, 0, 0, 0.42))
+	shadow.name = "TigerShadow"
+	parent.add_child(shadow)
+	parent.move_child(shadow, 0)
 
 func _add_night_bank(parent: Node) -> void:
 	# 水岸與稀疏星點：把純黑的上半畫面分出「岸」與「夜」。
