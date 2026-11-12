@@ -201,6 +201,10 @@
   - **路線**：實際順序 SCN-01 → SCN-02 → SCN-04 → SCN-03 → SCN-05 → SCN-06，對應 B1→B9；B4 山神廟先存檔再進 B5 亂林。
   - **結果**：兩跑 3775／3991 幀（約 63–66 秒）、`deaths=0`、`beat=B9`、B1–B9 全 clear、B4 檢查點已寫入、章末結算面板已顯示；伥鬼／小虎／Boss 三場皆由玩家實際打死。
   - **回歸**：`selftest_scn05_boss_fight` 仍為 11 項 PASS（`frames=1799 boss_hp=0 phase=3`），全流程沒有新軟鎖。
+- [x] **V0.3.11 S09.1 失敗重開閉環：死亡面板 → 重試本段／回山神廟（`selftest_restart_flow` 15 項 PASS）**：
+  - **無檢查點路徑**：B3 山道死亡後死亡面板出現、`DeathCheckpoint` 正確禁用；按「重試本段」重載 SCN-02，保持 B3、玩家 800 血且可操作，shell 關閉。
+  - **有檢查點路徑**：B4 山神廟存檔後進 B5，於 SCN-03 死亡；`DeathCheckpoint` 啟用，按「回山神廟」真的讀檔回 SCN-04 B4，恢復存檔血量、解除暫停並回到可玩狀態。
+  - **結果**：`RESTART_FLOW_SELFTEST result=PASS fails=[] frames=397 beat=B4 dialogue_calls=8`；死亡後兩條重開路徑都不軟鎖。
 
 ## 待實現
 
