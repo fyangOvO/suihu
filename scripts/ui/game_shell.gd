@@ -29,6 +29,12 @@ var _pause_buttons: Array[Button] = []
 var _settings_buttons: Array[Button] = []
 var _death_buttons: Array[Button] = []
 var _summary_buttons: Array[Button] = []
+var _credits: Control
+var _credits_body: Control
+var _credits_skip: Button
+var _credits_elapsed: float = 0.0
+var _credits_duration: float = 20.0
+var _credits_speed: float = 0.0
 
 func _ready() -> void:
 	layer = 30
@@ -55,6 +61,7 @@ func _ready() -> void:
 	_build_settings()
 	_build_death()
 	_build_summary()
+	_build_credits()
 	_link_focus(_pause_buttons)
 	_link_focus(_settings_buttons)
 	_link_focus(_death_buttons)
@@ -164,9 +171,83 @@ func _build_summary() -> void:
 	_summary_stats = _label(_summary, "SummaryStats", "", Vector2(64, 190), Vector2(832, 230), 22, UI_STYLE.PAPER)
 	_summary_stats.add_theme_constant_override("line_spacing", 12)
 	_summary_new = _button(_summary, "SummaryNew", "重新開始", 454, _on_summary_new)
-	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 520, _on_menu)
+	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 520, _on_summary_menu)
 	_summary_buttons = [_summary_new, summary_menu]
 	_label(_summary, "SummaryHint", "景陽岡沒有虎了。但武松的影子，從此是四隻。", Vector2(64, 580), Vector2(832, 24), 14, UI_STYLE.GOLD_DIM)
+
+func _build_credits() -> void:
+	_credits = Control.new()
+	_credits.name = "CreditsPage"
+	_credits.position = Vector2.ZERO
+	_credits.size = Vector2(1920, 1080)
+	_credits.mouse_filter = Control.MOUSE_FILTER_STOP
+	_credits.process_mode = Node.PROCESS_MODE_ALWAYS
+	_credits.visible = false
+	_root.add_child(_credits)
+
+	var black := ColorRect.new()
+	black.name = "CreditsBlack"
+	black.position = Vector2.ZERO
+	black.size = Vector2(1920, 1080)
+	black.color = Color(0.004, 0.004, 0.006, 1.0)
+	black.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_credits.add_child(black)
+	UI_STYLE.add_paper(_credits, 0.035)
+	UI_STYLE.add_corner_marks(_credits, 30.0, 36.0)
+
+	var clip := Control.new()
+	clip.name = "CreditsClip"
+	clip.position = Vector2.ZERO
+	clip.size = Vector2(1920, 1080)
+	clip.clip_contents = true
+	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_credits.add_child(clip)
+
+	_credits_body = Control.new()
+	_credits_body.name = "CreditsBody"
+	_credits_body.position = Vector2(560, 1080)
+	_credits_body.size = Vector2(800, 0)
+	_credits_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	clip.add_child(_credits_body)
+
+	var y: float = 0.0
+	y = _credit_line("CreditsTitle", "水滸：妖魔劫", y, 62, UI_STYLE.GOLD, true, 118)
+	y = _credit_line("CreditsLite", "1.0 LITE · 景陽岡", y, 22, UI_STYLE.PAPER_DIM, false, 48)
+	y = _credit_rule("CreditsRule1", y + 22)
+	y = _credit_line("CreditsRole", "企劃・劇本・程式・關卡・美術", y, 24, UI_STYLE.GOLD_DIM, false, 44)
+	y = _credit_line("CreditsTeam", "水滸：妖魔劫 開發組", y, 30, UI_STYLE.PAPER, false, 52)
+	y = _credit_rule("CreditsRule2", y + 24)
+	y = _credit_line("CreditsTest", "測試", y, 24, UI_STYLE.GOLD_DIM, false, 44)
+	y = _credit_line("CreditsTestBody", "流程自測・戰鬥真打自測", y, 26, UI_STYLE.PAPER, false, 50)
+	y = _credit_rule("CreditsRule3", y + 24)
+	y = _credit_line("CreditsThanks", "特別鳴謝", y, 24, UI_STYLE.GOLD_DIM, false, 44)
+	y = _credit_line("CreditsSource", "施耐庵《水滸傳》", y, 28, UI_STYLE.PAPER, false, 50)
+	y = _credit_line("CreditsScenery", "景陽岡 · 武松 · 猛虎", y, 22, UI_STYLE.PAPER_DIM, false, 44)
+	y = _credit_rule("CreditsRule4", y + 24)
+	y = _credit_line("CreditsEngine", "Godot Engine 4.7", y, 24, UI_STYLE.PAPER_DIM, false, 44)
+	y = _credit_line("CreditsEnd", "謝謝遊玩", y + 26, 38, UI_STYLE.GOLD, true, 80)
+	_credits_body.size = Vector2(800, y)
+
+	_label(_credits, "CreditsHint", "Esc／A 跳過　·　名單會自動滾完", Vector2(64, 946), Vector2(700, 24), 13, UI_STYLE.PAPER_DIM)
+	_credits_skip = _button(_credits, "CreditsSkip", "跳過名單", 990, _on_credits_skip)
+	_credits_skip.position = Vector2(1536, 990)
+	_credits_skip.size = Vector2(300, 54)
+	_credits_skip.alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+func _credit_line(node_name: String, text: String, y: float, font_size: int, color: Color, title: bool = false, height: float = 48.0) -> float:
+	var l: Label = _label(_credits_body, node_name, text, Vector2(0, y), Vector2(800, height), font_size, color, title)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	return y + height
+
+func _credit_rule(node_name: String, y: float) -> float:
+	var rule := ColorRect.new()
+	rule.name = node_name
+	rule.position = Vector2(240, y)
+	rule.size = Vector2(320, 1)
+	rule.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.28)
+	_credits_body.add_child(rule)
+	return y + 28.0
 
 func _show_panel(panel: Panel, page: String, focus: Control) -> void:
 	_page = page
@@ -174,6 +255,8 @@ func _show_panel(panel: Panel, page: String, focus: Control) -> void:
 	_settings.visible = false
 	_death.visible = false
 	_summary.visible = false
+	if _credits != null:
+		_credits.visible = false
 	panel.visible = true
 	_root.visible = true
 	_dim.visible = true
@@ -185,6 +268,8 @@ func _close_all(resume: bool = true) -> void:
 	_page = ""
 	_root.visible = false
 	_dim.visible = false
+	if _credits != null:
+		_credits.visible = false
 	if resume:
 		get_tree().paused = false
 
@@ -208,6 +293,38 @@ func show_summary(stats: Dictionary) -> void:
 	_summary_stats.text = "碎銀　%d\n小虎爪　%d\n伥鬼木牌　%d\n\n章節　B1 — B9　完成\n景陽岡　猛虎已伏" % [silver, claw, tag]
 	_show_panel(_summary, "summary", _summary_new)
 
+func show_credits(duration: float = 20.0) -> void:
+	if _credits == null:
+		return
+	_page = "credits"
+	_pause.visible = false
+	_settings.visible = false
+	_death.visible = false
+	_summary.visible = false
+	_credits.visible = true
+	_root.visible = true
+	_dim.visible = false
+	_credits_elapsed = 0.0
+	_credits_duration = maxf(duration, 0.05)
+	_credits_body.position = Vector2(560, 1080)
+	_credits_speed = (1080.0 + _credits_body.size.y + 80.0) / _credits_duration
+	get_tree().paused = true
+	_credits_skip.grab_focus()
+
+func _finish_credits() -> void:
+	if _page != "credits":
+		return
+	_close_all(true)
+	menu_requested.emit()
+
+func _process(delta: float) -> void:
+	if _page != "credits":
+		return
+	_credits_elapsed += delta
+	_credits_body.position.y -= _credits_speed * delta
+	if _credits_elapsed >= _credits_duration or _credits_body.position.y <= -_credits_body.size.y - 80.0:
+		_finish_credits()
+
 func current_page() -> String:
 	return _page
 
@@ -215,6 +332,9 @@ func is_open() -> bool:
 	return _page != ""
 
 func handle_cancel() -> bool:
+	if _page == "credits":
+		_finish_credits()
+		return true
 	if _page == "settings":
 		_on_settings_back()
 		return true
@@ -262,6 +382,12 @@ func _on_death_checkpoint() -> void:
 func _on_summary_new() -> void:
 	_close_all(true)
 	new_game_requested.emit()
+
+func _on_summary_menu() -> void:
+	show_credits()
+
+func _on_credits_skip() -> void:
+	_finish_credits()
 
 func _on_menu() -> void:
 	_close_all(true)

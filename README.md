@@ -211,6 +211,10 @@
   - **暫停鍵**：新增 `ui_pause`（Esc＋手柄 Start），`stage_base` 與 `GameShell` 共用，避免手柄 Start 被當成喝酒，也避免設定頁按 Esc 被搶回暫停首頁；對話演出期間也可暫停。
   - **設定持久化**：新增 `scripts/ui/user_settings.gd`，以 `user://settings.cfg` 保存顯示模式；主菜單啟動時套用，切換即時寫入；檔案損壞或非法值回退視窗模式，下一次保存可自動修復。
   - **結果**：`UI_FOCUS_SETTINGS_SELFTEST result=PASS fails=[] frames=5`；`selftest_ui_shell` 16 項、`selftest_flow` 56 項、`selftest_restart_flow` 15 項仍全 PASS。
+- [x] **V0.3.13 S11 END-01 結局名單（`selftest_end_credits` 11 項 PASS）**：
+  - **流程**：B9 對話後進章末結算；結算頁按「回到主菜單」先進黑幕製作名單，名單縱向滾動 20 秒，可按「跳過名單」或 Esc／手柄 A 立即返回主菜單。
+  - **觀感**：黑底＋紙紋＋四角金線，標題與段落用殘金／宣紙色，右下留「跳過名單」；名單內容只列實際存在的工作項，不編造人名或音頻職位。
+  - **結果**：`END_CREDITS_SELFTEST result=PASS fails=[] frames=6`；UI 焦點與殼層回歸仍 PASS。
 
 ## 待實現
 
