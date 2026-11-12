@@ -219,6 +219,10 @@
   - **Boss 條**：面板改成與 Banner 同軸的 960×92，x=480，和 P1 面板留 16px；Boss 名 30px、`虎威` 小籤、右側階段名與三顆階段菱形、右側血量文字；血條 912×16，左右各內縮 24，沿用 8 段 HUD 的白線／端帽／分段刻度語言。
   - **Banner／教學**：Banner 移到 y=176，與 Boss 面板留 20px；寬高同為 960×64。教學提示多帶 `教學` 小籤，正文避開標籤區並降為 28px；一般劇情 Banner 不帶籤、維持居中 30px。SCN-02 三條教學提示改用此格式。
   - **驗收**：`TUTORIAL_HINT_SELFTEST result=PASS fails=[] frames=5`；`UI_SHELL_SELFTEST` 21 項、`HUD_SELFTEST`、`SELFTEST BOSS`、`FLOW_SELFTEST` 全 PASS。更新 `docs/preview/ui-boss.png`、`flow-scn05-ridge.png`，新增 `flow-scn02-tutorial.png`。
+- [x] **V0.3.15 SCN-03 亂林三層霧（`SCN03_FOREST_SELFTEST` 19 項 PASS）**：
+  - **深度順序**：遠霧先掛在樹幹後方，中霧在樹冠之後，近霧最後蓋到林影上；遠→近移動速度 18／46／92，避免三層同速糊成一片。
+  - **分層帶**：遠霧 y=108、高 260、冷灰藍；中霧 y=390、高 230、灰綠；近霧 y=720、高 200、偏亮灰綠；alpha 0.46／0.38／0.32，各自獨立噪聲，寬 2600 避免循環接縫。
+  - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`；新增「遠霧在樹後／近霧在樹前／三層高低與速度遞增／三張紋理互異」5 項。更新 `docs/preview/scn03-forest.png`。
 
 ## 待實現
 

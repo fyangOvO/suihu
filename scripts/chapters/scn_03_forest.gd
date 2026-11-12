@@ -5,7 +5,7 @@ extends "res://scripts/chapters/stage_base.gd"
 const FOREST_INK := Color(0.035, 0.050, 0.043, 0.88)
 const FOREST_INK_2 := Color(0.050, 0.072, 0.060, 0.78)
 
-const FOG_TRAVEL := 480.0
+const FOG_TRAVEL := 600.0
 
 var _fog_layers: Array[TextureRect] = []
 var _fog_speeds: Array[float] = []
@@ -53,15 +53,15 @@ func _build_fog() -> void:
 	# 林影：先壓暗背景，再用邊緣樹幹與頂部枝冠把「山道」變成「亂林」。
 	if bg is CanvasItem:
 		(bg as CanvasItem).modulate = Color(0.68, 0.74, 0.68, 1.0)
+
+	# 遠霧先掛在背景後方，讓樹幹真正遮住它；中／近霧再依序蓋到林影上。
+	_add_fog_layer(bg, "FogFar", 0.0055, 18.0, 108.0, 260.0, Color(0.54, 0.66, 0.70, 0.46), -80.0)
 	_add_trunks(bg)
 	_add_canopy(bg)
+	_add_fog_layer(bg, "FogMid", 0.010, 46.0, 390.0, 230.0, Color(0.62, 0.70, 0.64, 0.38), -260.0)
+	_add_fog_layer(bg, "FogNear", 0.018, 92.0, 720.0, 200.0, Color(0.78, 0.84, 0.76, 0.32), -470.0)
 
-	# 遠／中／近三層霧：不同噪聲與速度，形成真正的霧帶，而不是平鋪方塊。
-	_add_fog_layer(bg, "FogFar", 0.006, 30.0, 180.0, 240.0, Color(0.62, 0.70, 0.66, 0.34))
-	_add_fog_layer(bg, "FogMid", 0.010, 55.0, 390.0, 280.0, Color(0.64, 0.72, 0.68, 0.28))
-	_add_fog_layer(bg, "FogNear", 0.016, 86.0, 650.0, 320.0, Color(0.68, 0.76, 0.72, 0.22))
-
-func _add_fog_layer(parent: Node, node_name: String, frequency: float, speed: float, y: float, height: float, tint: Color) -> void:
+func _add_fog_layer(parent: Node, node_name: String, frequency: float, speed: float, y: float, height: float, tint: Color, start_x: float) -> void:
 	var noise := FastNoiseLite.new()
 	noise.seed = int(speed * 13.0 + frequency * 1000.0)
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
@@ -74,13 +74,13 @@ func _add_fog_layer(parent: Node, node_name: String, frequency: float, speed: fl
 		for px in range(512):
 			var n := noise.get_noise_2d(px, py)
 			var a := clampf((n + 0.55) * 0.9, 0.0, 1.0)
-			img.set_pixel(px, py, Color(tint.r, tint.g, tint.b, a * envelope * 0.72))
+			img.set_pixel(px, py, Color(tint.r, tint.g, tint.b, a * envelope * 0.90))
 	var tex := ImageTexture.create_from_image(img)
 
 	var layer := TextureRect.new()
 	layer.name = node_name
-	layer.position = Vector2(-80, y)
-	layer.size = Vector2(2400, height)
+	layer.position = Vector2(start_x, y)
+	layer.size = Vector2(2600, height)
 	layer.texture = tex
 	layer.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	layer.stretch_mode = TextureRect.STRETCH_SCALE

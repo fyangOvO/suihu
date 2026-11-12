@@ -42,6 +42,15 @@ func _process(_delta: float) -> bool:
 				_check("%s alpha in range" % layer_name, layer.modulate.a > 0.15 and layer.modulate.a < 0.55)
 		_check("forest trunk exists", bg.get_node_or_null("Tree92/Trunk92") != null and bg.get_node_or_null("Tree92/Branch92L") != null)
 		_check("forest crown exists", bg.get_node_or_null("Crown0") != null)
+		var far := bg.get_node_or_null("FogFar") as TextureRect
+		var mid := bg.get_node_or_null("FogMid") as TextureRect
+		var near_layer := bg.get_node_or_null("FogNear") as TextureRect
+		var trunk := bg.get_node_or_null("Tree92") as Node2D
+		_check("FogFar is behind trunks", far != null and trunk != null and far.get_index() < trunk.get_index())
+		_check("FogNear is in front of trunks", near_layer != null and trunk != null and near_layer.get_index() > trunk.get_index())
+		_check("fog bands stack high to low", far != null and mid != null and near_layer != null and far.position.y < mid.position.y and mid.position.y < near_layer.position.y)
+		_check("fog speeds increase by depth", main._fog_speeds.size() == 3 and main._fog_speeds[0] < main._fog_speeds[1] and main._fog_speeds[1] < main._fog_speeds[2])
+		_check("fog layers use distinct textures", far != null and mid != null and near_layer != null and far.texture != mid.texture and mid.texture != near_layer.texture)
 		var banner := main.get_node_or_null("HUD/Banner") as Label
 		_check("banner text", banner != null and banner.text.find("霧裡") >= 0)
 		start_x = (bg.get_node("FogNear") as TextureRect).position.x
