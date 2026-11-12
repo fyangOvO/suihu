@@ -235,6 +235,7 @@
   - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（24 項）；`FLOW_SELFTEST fails=0`；`selftest_full_run` 重跑 `result=PASS fails=[] frames=3900 deaths=0 beat=B9`。更新 `docs/preview/scn06-pool.png`。
 - [x] **V0.3.18 UI 殼層結算頁間距收尾（`UI_SHELL_SELFTEST` 23 項 PASS）**：
   - **章末結算**：`SummaryNew`／`SummaryMenu` 上移 24px，和底下 `SummaryHint` 留出 30px，按鈕不再貼住提示文字；`SummaryStats` 與按鈕之間仍保留 10px。
+  - **設置標題**：`SettingsTitle` 的陰影降為 1px、去外描邊，避免 960×540 下「設置」字邊發糊像重影。
   - **防回歸**：`selftest_ui_shell` 新增「設置頁標題只出現一次」與「結算提示與按鈕至少留 16px」2 項，23 項全 PASS。
   - **截圖**：重出 `docs/preview/ui-summary.png`、`ui-settings.png`、`ui-pause.png`、`ui-death.png`、`ui-boss.png`、`flow-main-menu.png`。
 

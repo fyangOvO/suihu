@@ -144,7 +144,11 @@ func _build_pause() -> void:
 
 func _build_settings() -> void:
 	_settings = _panel("SettingsPanel", Vector2(600, 270), Vector2(720, 520))
-	_label(_settings, "SettingsTitle", "設置", Vector2(60, 24), Vector2(500, 70), 56, UI_STYLE.PAPER, true)
+	var settings_title := _label(_settings, "SettingsTitle", "設置", Vector2(60, 24), Vector2(500, 70), 56, UI_STYLE.PAPER, true)
+	settings_title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.24))
+	settings_title.add_theme_constant_override("shadow_offset_x", 1)
+	settings_title.add_theme_constant_override("shadow_offset_y", 1)
+	settings_title.add_theme_constant_override("shadow_outline_size", 0)
 	_label(_settings, "SettingsSubtitle", "先把畫面調順，再談別的。", Vector2(64, 96), Vector2(590, 24), 16, UI_STYLE.PAPER_DIM)
 	_settings_mode = _button(_settings, "SettingsMode", "顯示：全屏", 174, _toggle_display)
 	_settings_mode.size = Vector2(592, 58)
