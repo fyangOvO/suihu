@@ -196,6 +196,11 @@
   - **SCN-05 入場實戰**：新增 `tools/selftest_scn05_boss_fight.gd`，從 B7 真實實例化 `SCN_05_Ridge.tscn`，用 `Input.action_press` 模擬玩家：Boss 冷卻窗口貼到 135–150 打 `Light1→2→3` 連段；冷卻結束前 0.8s 退到 350–370；不可格擋撲擊用醉打無敵／Dash 穿過；第一輪先吃一次撲擊驗證 Boss 傷害窗口。不在外部改血量。
   - **結果**：`frames=1799 p1_hp=493 p1_min=493 boss_hp=0 boss_min=0 attacks=8 phase=3`；Boss 實際走完 P1→P2→P3、死亡演出、B7 clear 並排隊 B8。
   - **回歸**：`selftest_boss` 既有 39+4 項 `fails=0`，兩處 AI 修正未破壞招式、尺寸與階段斷言。
+- [x] **V0.3.10 S09 線性全流程一輪到底：酒肆→山道→山神廟→亂林→崗頂→水潭（`selftest_full_run` 10 項 PASS、約 3.8–4.0k 幀、零死亡）**：
+  - **新自測**：`tools/selftest_full_run.gd` 從 B1 酒肆起跑，對話自動翻頁；山道伥鬼、亂林小虎、崗頂 Boss 全部用 `Input.action_press` 真打，不呼叫 `take_damage`、不改血量。
+  - **路線**：實際順序 SCN-01 → SCN-02 → SCN-04 → SCN-03 → SCN-05 → SCN-06，對應 B1→B9；B4 山神廟先存檔再進 B5 亂林。
+  - **結果**：兩跑 3775／3991 幀（約 63–66 秒）、`deaths=0`、`beat=B9`、B1–B9 全 clear、B4 檢查點已寫入、章末結算面板已顯示；伥鬼／小虎／Boss 三場皆由玩家實際打死。
+  - **回歸**：`selftest_scn05_boss_fight` 仍為 11 項 PASS（`frames=1799 boss_hp=0 phase=3`），全流程沒有新軟鎖。
 
 ## 待實現
 
