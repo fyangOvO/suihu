@@ -36,6 +36,13 @@ func _process(_delta: float) -> bool:
 			quit(0)
 			return true
 		_check("GameShell layer 30", shell.layer == 30)
+		var settings_panel := shell.get_node_or_null("ShellRoot/SettingsPanel") as Panel
+		var settings_titles: int = 0
+		if settings_panel != null:
+			for child in settings_panel.get_children():
+				if child is Label and (child as Label).text == "設置":
+					settings_titles += 1
+		_check("settings title appears once", settings_titles == 1)
 		shell.show_pause()
 		var pause_panel := shell.get_node_or_null("ShellRoot/PausePanel") as Panel
 		_check("pause panel visible", pause_panel != null and pause_panel.visible)
@@ -56,6 +63,9 @@ func _process(_delta: float) -> bool:
 		var stats := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryStats") as Label
 		_check("summary panel visible", summary != null and summary.visible)
 		_check("summary stats has B1-B9", stats != null and stats.text.find("B1 — B9") >= 0)
+		var summary_hint := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryHint") as Label
+		var summary_menu := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryMenu") as Button
+		_check("summary hint clears menu", summary_hint != null and summary_menu != null and summary_menu.position.y + summary_menu.size.y + 16.0 <= summary_hint.position.y)
 		shell._on_resume()
 		_check("resume unpauses", not paused and not shell.is_open())
 		main.queue_free()

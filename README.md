@@ -233,6 +233,10 @@
   - **虎屍剪影**：虎身壓暗到近黑，補冷灰背脊、頭部邊光、虎斑與腿部層次；水面倒影改成可讀的壓扁虎形，加上四道水下波紋，避免 960×540 只看見一團暗影。
   - **水面**：加深水色，補 `WaterSurface`／`WaterDeep` 上下水帶與月影外圈微光；月影條帶略提 alpha、寬度，讓黑水仍有上下層次。
   - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（24 項）；`FLOW_SELFTEST fails=0`；`selftest_full_run` 重跑 `result=PASS fails=[] frames=3900 deaths=0 beat=B9`。更新 `docs/preview/scn06-pool.png`。
+- [x] **V0.3.18 UI 殼層結算頁間距收尾（`UI_SHELL_SELFTEST` 23 項 PASS）**：
+  - **章末結算**：`SummaryNew`／`SummaryMenu` 上移 24px，和底下 `SummaryHint` 留出 30px，按鈕不再貼住提示文字；`SummaryStats` 與按鈕之間仍保留 10px。
+  - **防回歸**：`selftest_ui_shell` 新增「設置頁標題只出現一次」與「結算提示與按鈕至少留 16px」2 項，23 項全 PASS。
+  - **截圖**：重出 `docs/preview/ui-summary.png`、`ui-settings.png`、`ui-pause.png`、`ui-death.png`、`ui-boss.png`、`flow-main-menu.png`。
 
 ## 待實現
 

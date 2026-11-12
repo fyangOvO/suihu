@@ -170,8 +170,8 @@ func _build_summary() -> void:
 	_label(_summary, "SummaryRule", "", Vector2(64, 160), Vector2(832, 30), 1, UI_STYLE.GOLD)
 	_summary_stats = _label(_summary, "SummaryStats", "", Vector2(64, 190), Vector2(832, 230), 22, UI_STYLE.PAPER)
 	_summary_stats.add_theme_constant_override("line_spacing", 12)
-	_summary_new = _button(_summary, "SummaryNew", "重新開始", 454, _on_summary_new)
-	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 520, _on_summary_menu)
+	_summary_new = _button(_summary, "SummaryNew", "重新開始", 430, _on_summary_new)
+	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 496, _on_summary_menu)
 	_summary_buttons = [_summary_new, summary_menu]
 	_label(_summary, "SummaryHint", "景陽岡沒有虎了。但武松的影子，從此是四隻。", Vector2(64, 580), Vector2(832, 24), 14, UI_STYLE.GOLD_DIM)
 
