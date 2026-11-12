@@ -230,7 +230,7 @@ func _build_hud() -> void:
 	_p2_panel = Panel.new()
 	_p2_panel.name = "P2Panel"
 	_p2_panel.position = Vector2(1456, 26)
-	_p2_panel.size = Vector2(430, 112)
+	_p2_panel.size = Vector2(430, 128)
 	_p2_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.80, UI_STYLE.STEEL))
 	hud.add_child(_p2_panel)
 	UI_STYLE.add_paper(_p2_panel)
@@ -250,6 +250,12 @@ func _build_hud() -> void:
 	_add_hp_icon(Vector2(6, 54), UI_STYLE.STEEL, _p2_panel)
 	_p2hp_overlay = _add_hp_overlay(_p2hp, UI_STYLE.STEEL)
 	_p2_ticks = _add_bar_ticks(_p2hp, 8)
+	var p2_rule := ColorRect.new()
+	p2_rule.name = "P2Rule"
+	p2_rule.position = Vector2(18, 84)
+	p2_rule.size = Vector2(372, 1)
+	p2_rule.color = Color(UI_STYLE.STEEL.r, UI_STYLE.STEEL.g, UI_STYLE.STEEL.b, 0.42)
+	_p2_panel.add_child(p2_rule)
 
 	if p2 == null:
 		_p2hp.visible = false
@@ -282,17 +288,17 @@ func _build_hud() -> void:
 		UI_STYLE.add_nine_patch(_boss_panel)
 		UI_STYLE.add_corner_marks(_boss_panel, 20.0, 7.0)
 		_label("BossName", Vector2(504, 70), Vector2(640, 38), 30, UI_STYLE.PAPER, true).text = opponent_display_name()
-		_boss_phase = _label("BossPhase", Vector2(1300, 70), Vector2(120, 24), 14, UI_STYLE.BLOOD_LIGHT)
+		_boss_phase = _label("BossPhase", Vector2(1296, 70), Vector2(120, 24), 14, UI_STYLE.BLOOD_LIGHT)
 		_boss_phase.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_boss_phase.text = "一階段"
 		_label("BossTag", Vector2(504, 101), Vector2(240, 18), 12, UI_STYLE.GOLD_DIM).text = "虎威"
-		_boss_hp_text = _label("BossHPText", Vector2(1360, 99), Vector2(80, 18), 13, UI_STYLE.PAPER_DIM)
+		_boss_hp_text = _label("BossHPText", Vector2(1336, 99), Vector2(80, 18), 13, UI_STYLE.PAPER_DIM)
 		_boss_hp_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_boss_hp_text.text = "%d / %d" % [int(p2.current_hp), int(p2.max_hp)]
 		for i in range(3):
 			var pip := ColorRect.new()
 			pip.name = "BossPhasePip%d" % i
-			pip.position = Vector2(1300.0 + float(i) * 18.0, 102.0)
+			pip.position = Vector2(1296.0 + float(i) * 14.0, 102.0)
 			pip.size = Vector2(7, 7)
 			pip.rotation = PI * 0.25
 			pip.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.2)

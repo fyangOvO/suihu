@@ -66,6 +66,7 @@ func _process(_delta: float) -> bool:
 		_capture("ui-summary.png")
 		shell._on_resume()
 		main.queue_free()
+		root.get_node("ChapterManager").set_beat("B7")
 		main = load(SCN05).instantiate()
 		vp.add_child(main)
 		stage = 5

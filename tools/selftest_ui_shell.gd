@@ -2,6 +2,7 @@ extends SceneTree
 ## UI-01／UI-08 先行殼層自測：暫停、設置、死亡重開、章末結算與 Boss 條。
 
 const SCN01 := "res://scenes/chapters/SCN_01_Inn.tscn"
+const SCN02 := "res://scenes/chapters/SCN_02_Trail.tscn"
 const SCN05 := "res://scenes/chapters/SCN_05_Ridge.tscn"
 
 var main: Node
@@ -49,6 +50,14 @@ func _process(_delta: float) -> bool:
 		_check("pause page", shell.current_page() == "pause")
 		_check("tree paused", paused)
 		_check("pause panel paper", pause_panel != null and pause_panel.has_node("PaperGrain"))
+		_check("pause panel nine-patch", pause_panel != null and pause_panel.has_node("NinePatchFrame"))
+		_check("pause title rule", pause_panel != null and pause_panel.has_node("PauseRule"))
+		for name in ["PauseResume", "PauseSettings", "PauseMenu", "PauseQuit"]:
+			var btn := shell.get_node_or_null("ShellRoot/PausePanel/%s" % name) as Button
+			_check("%s has icon" % name, btn != null and btn.has_node("MenuIcon"))
+		var settings_page := shell.get_node_or_null("ShellRoot/SettingsPanel") as Panel
+		_check("settings panel nine-patch", settings_page != null and settings_page.has_node("NinePatchFrame"))
+		_check("settings section rule", settings_page != null and settings_page.has_node("SettingsRule") and settings_page.has_node("SettingsSection"))
 		stage = 1
 		frame = 0
 	elif stage == 1:
@@ -57,11 +66,17 @@ func _process(_delta: float) -> bool:
 		var checkpoint := shell.get_node_or_null("ShellRoot/DeathPanel/DeathCheckpoint") as Button
 		_check("death panel visible", death_panel != null and death_panel.visible)
 		_check("death page", shell.current_page() == "death")
+		_check("death panel nine-patch", death_panel != null and death_panel.has_node("NinePatchFrame"))
+		_check("death title rule", death_panel != null and death_panel.has_node("DeathRule"))
 		_check("death checkpoint enabled", checkpoint != null and not checkpoint.disabled)
+		_check("death buttons have icons", checkpoint != null and checkpoint.has_node("MenuIcon") and shell.get_node_or_null("ShellRoot/DeathPanel/DeathRetry").has_node("MenuIcon"))
 		shell.show_summary({"碎銀": 3, "小虎爪": 2, "伥鬼的木牌": 1})
 		var summary := shell.get_node_or_null("ShellRoot/SummaryPanel") as Panel
 		var stats := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryStats") as Label
 		_check("summary panel visible", summary != null and summary.visible)
+		_check("summary panel nine-patch", summary != null and summary.has_node("NinePatchFrame"))
+		_check("summary title rule is a line", summary != null and summary.get_node_or_null("SummaryRule") is ColorRect)
+		_check("summary buttons have icons", summary != null and summary.get_node_or_null("SummaryNew").has_node("MenuIcon") and summary.get_node_or_null("SummaryMenu").has_node("MenuIcon"))
 		_check("summary stats has B1-B9", stats != null and stats.text.find("B1 — B9") >= 0)
 		var summary_hint := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryHint") as Label
 		var summary_menu := shell.get_node_or_null("ShellRoot/SummaryPanel/SummaryMenu") as Button
@@ -98,7 +113,32 @@ func _process(_delta: float) -> bool:
 			if hud != null and hud.get_node_or_null("BossPhasePip%d" % i) != null:
 				pips += 1
 		_check("boss has three phase pips", pips == 3)
+		var boss_hp_text := hud.get_node_or_null("BossHPText") as Label
+		_check("boss HP text inset 24 from right", boss_panel != null and boss_hp_text != null and is_equal_approx(boss_hp_text.position.x + boss_hp_text.size.x, boss_panel.position.x + boss_panel.size.x - 24.0))
+		var pip_clear := true
+		for i in range(3):
+			var pip := hud.get_node_or_null("BossPhasePip%d" % i) as ColorRect
+			if pip != null and boss_hp_text != null and pip.position.x + pip.size.x + 4.0 > boss_hp_text.position.x:
+				pip_clear = false
+		_check("boss phase pips clear HP text", pip_clear)
 		_check("story banner has no tutorial tag", tag != null and not tag.visible)
+		main.queue_free()
+		var cm2 = root.get_node("ChapterManager")
+		cm2.set_beat("B3")
+		main = load(SCN02).instantiate()
+		root.add_child(main)
+		stage = 3
+		frame = 0
+	elif stage == 3 and frame >= 5:
+		var hud2 = main.get_node_or_null("HUD")
+		var p1_panel := hud2.get_node_or_null("P1Panel") as Panel if hud2 != null else null
+		var p2_panel := hud2.get_node_or_null("P2Panel") as Panel if hud2 != null else null
+		_check("P2 panel visible in normal fight", p2_panel != null and p2_panel.visible)
+		_check("P1 and P2 share width", p1_panel != null and p2_panel != null and is_equal_approx(p1_panel.size.x, p2_panel.size.x))
+		_check("P1 and P2 share height", p1_panel != null and p2_panel != null and is_equal_approx(p1_panel.size.y, p2_panel.size.y))
+		_check("P1 and P2 share top edge", p1_panel != null and p2_panel != null and is_equal_approx(p1_panel.position.y, p2_panel.position.y))
+		_check("P2 panel mirrors P1 inset", p2_panel != null and is_equal_approx(p2_panel.position.x + p2_panel.size.x, 1920.0 - 34.0))
+		_check("P2 panel nine-patch", p2_panel != null and p2_panel.has_node("NinePatchFrame") and p2_panel.has_node("P2Rule"))
 		if fails.is_empty():
 			print("UI_SHELL_SELFTEST result=PASS")
 		else:

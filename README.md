@@ -247,6 +247,13 @@
   - **教學連結**：新增 `TutorialFocus` 四角金框＋頂部菱形，跟隨 P2 並緩慢呼吸；三段教學期間顯示，第 10.8 秒或伥鬼死亡後隱藏。
   - **截圖**：`tools/capture_scn02.gd` 重寫，先凍住入場站位拍 `flow-scn02-corpse.png`，再觸發第一段教學拍 `flow-scn02-tutorial.png`。
   - **驗收**：`SCN02_FIGHT_SELFTEST result=PASS fails=[] frames=767`；`FLOW_SELFTEST fails=0`；`TUTORIAL_HINT_SELFTEST PASS`；`FULL_RUN_SELFTEST result=PASS fails=[] frames=3901 deaths=0 beat=B9`。
+- [x] **V0.3.21 UI 殼層收尾：四頁面板九宮格、按鈕圖標、Boss／P2 對齊（`UI_SHELL_SELFTEST` 45 項 PASS）**：
+  - **面板**：`add_nine_patch` 改為 `PRESET_FULL_RECT` 跟隨父節點尺寸，不再只在建立時取一次 `parent.size`；暫停／設置／死亡／結算四頁都掛九宮格，紙紋降到 0.045、四角金線加粗到 2px。
+  - **按鈕**：`menu_button_styles` 增加可選 `icon_kind`，殼層按鈕左側改畫程序化小圖標（繼續／設置／主菜單／離開／顯示／返回／重試／山神廟／重新開始／跳過），文字起點同步內縮到 52px；主菜單仍保留既有菱形 `MenuMark`。
+  - **頁面內容**：暫停、設置、死亡補標題下金線；設置頁補「畫面」小節；結算頁 `SummaryRule` 從空 Label 改成真正的 1px 金線。
+  - **Boss／P2**：`BossHPText` 右端內縮 24px，階段 pip 改為 14px 間距並與 HP 文字留 5px 空隙；P2 面板由 430×112 改為 430×128，補 `P2Rule`，與 P1 同高、同寬、同頂邊、左右 34px 對稱。
+  - **截圖**：`capture_ui_shell.gd` 在拍 Boss 條前把 beat 設到 B7，避免 SCN-05 在 B6 亮相時 Boss 仍借用基礎人形貼圖；`ui-boss.png` 已重出為乾淨的虎與 Boss 條。
+  - **驗收**：`UI_SHELL_SELFTEST result=PASS`（45 項）；`HUD_SELFTEST result=PASS`；`FLOW_SELFTEST fails=0`；重出 `ui-pause.png`、`ui-settings.png`、`ui-death.png`、`ui-summary.png`、`ui-boss.png`、`flow-scn02-corpse.png`、`flow-scn02-tutorial.png`。
 
 ## 待實現
 

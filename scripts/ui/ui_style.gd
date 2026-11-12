@@ -58,25 +58,25 @@ static func add_paper(parent: Control, alpha: float = 0.055) -> void:
 	parent.add_child(grain)
 	parent.move_child(grain, 0)
 
-static func add_corner_marks(parent: Control, length: float = 22.0, inset: float = 8.0) -> void:
+static func add_corner_marks(parent: Control, length: float = 22.0, inset: float = 8.0, thickness: float = 1.0) -> void:
 	var w: float = parent.size.x
 	var h: float = parent.size.y
 	for corner in [Vector2(inset, inset), Vector2(w - inset - length, inset), Vector2(inset, h - inset - length), Vector2(w - inset - length, h - inset - length)]:
 		var horizontal := ColorRect.new()
 		horizontal.position = Vector2(corner.x, corner.y)
-		horizontal.size = Vector2(length, 1)
-		horizontal.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.52)
+		horizontal.size = Vector2(length, thickness)
+		horizontal.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.58)
 		parent.add_child(horizontal)
 		var vertical := ColorRect.new()
 		vertical.position = Vector2(corner.x, corner.y)
-		vertical.size = Vector2(1, length)
-		vertical.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.52)
+		vertical.size = Vector2(thickness, length)
+		vertical.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.58)
 		parent.add_child(vertical)
 
-static func add_nine_patch(parent: Control) -> void:
+static func add_nine_patch(parent: Control, alpha: float = 0.44) -> void:
 	var img := Image.create(32, 32, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
-	var gold := Color(0.72, 0.56, 0.32, 0.44)
+	var gold := Color(GOLD.r, GOLD.g, GOLD.b, alpha)
 	for x in range(32):
 		img.set_pixel(x, 0, gold)
 		img.set_pixel(x, 31, gold)
@@ -90,12 +90,10 @@ static func add_nine_patch(parent: Control) -> void:
 			for dy in range(5):
 				var p := Vector2(corner.x + dx, corner.y + dy)
 				if dx < 2 or dy < 2:
-					img.set_pixel(int(p.x), int(p.y), Color(GOLD.r, GOLD.g, GOLD.b, 0.62))
+					img.set_pixel(int(p.x), int(p.y), Color(GOLD.r, GOLD.g, GOLD.b, minf(alpha + 0.18, 1.0)))
 	var tex := ImageTexture.create_from_image(img)
 	var frame := NinePatchRect.new()
 	frame.name = "NinePatchFrame"
-	frame.position = Vector2.ZERO
-	frame.size = parent.size
 	frame.texture = tex
 	frame.patch_margin_left = 8
 	frame.patch_margin_top = 8
@@ -105,6 +103,7 @@ static func add_nine_patch(parent: Control) -> void:
 	frame.axis_stretch_vertical = NinePatchRect.AXIS_STRETCH_MODE_STRETCH
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(frame)
+	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 static func bar_background() -> StyleBoxFlat:
 	var s := StyleBoxFlat.new()
@@ -154,7 +153,7 @@ static func text_rule(width: float, color: Color = GOLD_DIM) -> ColorRect:
 	r.size = Vector2(width, 1)
 	return r
 
-static func menu_button_styles(btn: Button) -> void:
+static func menu_button_styles(btn: Button, icon_kind: String = "") -> void:
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = Color(0.025, 0.022, 0.020, 0.62)
 	normal.border_color = Color(GOLD_DIM.r, GOLD_DIM.g, GOLD_DIM.b, 0.55)
@@ -162,7 +161,7 @@ static func menu_button_styles(btn: Button) -> void:
 	normal.border_width_top = 1
 	normal.border_width_right = 1
 	normal.border_width_bottom = 1
-	normal.content_margin_left = 26.0
+	normal.content_margin_left = 52.0 if icon_kind != "" else 26.0
 	normal.content_margin_right = 18.0
 	normal.content_margin_top = 10.0
 	normal.content_margin_bottom = 10.0
@@ -193,6 +192,10 @@ static func menu_button_styles(btn: Button) -> void:
 	btn.add_theme_color_override("font_hover_color", Color(1.0, 0.93, 0.78))
 	btn.add_theme_color_override("font_focus_color", Color(1.0, 0.93, 0.78))
 	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	if icon_kind != "":
+		if not btn.has_node("MenuIcon"):
+			add_button_icon(btn, icon_kind)
+		return
 	if not btn.has_node("MenuMark"):
 		var mark := ColorRect.new()
 		mark.name = "MenuMark"
@@ -202,3 +205,113 @@ static func menu_button_styles(btn: Button) -> void:
 		mark.color = Color(GOLD.r, GOLD.g, GOLD.b, 0.85)
 		mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		btn.add_child(mark)
+
+static func add_button_icon(btn: Button, kind: String) -> void:
+	var holder := Node2D.new()
+	holder.name = "MenuIcon"
+	holder.position = Vector2(24, 27)
+	btn.add_child(holder)
+	var gold := Color(GOLD.r, GOLD.g, GOLD.b, 0.84)
+	var dim := Color(GOLD.r, GOLD.g, GOLD.b, 0.42)
+	match kind:
+		"play":
+			_icon_poly(holder, PackedVector2Array([
+				Vector2(-4, -7), Vector2(7, 0), Vector2(-4, 7),
+			]), gold)
+		"sliders":
+			for y in [-5.0, 0.0, 5.0]:
+				_icon_line(holder, PackedVector2Array([
+					Vector2(-6, y), Vector2(6, y),
+				]), dim)
+			for p in [Vector2(-2, -5), Vector2(2, 0), Vector2(-1, 5)]:
+				_icon_rect(holder, p, 3.0, gold)
+		"screen":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-7, -6), Vector2(7, -6), Vector2(7, 4),
+				Vector2(-7, 4), Vector2(-7, -6),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-3, 7), Vector2(3, 7),
+			]), dim)
+		"home":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-7, -1), Vector2(0, -8), Vector2(7, -1),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-5, -1), Vector2(-5, 6), Vector2(5, 6),
+				Vector2(5, -1),
+			]), dim)
+		"gate":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-6, -6), Vector2(6, -6),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-4, -3), Vector2(4, -3),
+			]), dim)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-4, -6), Vector2(-4, 6),
+			]), dim)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(4, -6), Vector2(4, 6),
+			]), dim)
+		"retry":
+			var arc := PackedVector2Array()
+			for i in range(14):
+				var a: float = -0.7 + 4.9 * float(i) / 13.0
+				arc.append(Vector2(cos(a) * 6.0, sin(a) * 6.0))
+			_icon_line(holder, arc, gold)
+			_icon_poly(holder, PackedVector2Array([
+				Vector2(4, -7), Vector2(9, -4), Vector2(4, -1),
+			]), gold)
+		"new":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-6, 0), Vector2(6, 0),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(0, -6), Vector2(0, 6),
+			]), gold)
+		"back":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-3, -6), Vector2(-8, 0), Vector2(-3, 6),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-8, 0), Vector2(6, 0),
+			]), dim)
+		"quit":
+			_icon_line(holder, PackedVector2Array([
+				Vector2(-5, -5), Vector2(5, 5),
+			]), gold)
+			_icon_line(holder, PackedVector2Array([
+				Vector2(5, -5), Vector2(-5, 5),
+			]), gold)
+		"skip":
+			_icon_poly(holder, PackedVector2Array([
+				Vector2(-6, -6), Vector2(1, 0), Vector2(-6, 6),
+			]), dim)
+			_icon_poly(holder, PackedVector2Array([
+				Vector2(1, -6), Vector2(8, 0), Vector2(1, 6),
+			]), gold)
+		_:
+			_icon_rect(holder, Vector2(-2, -2), 4.0, gold)
+
+static func _icon_line(parent: Node2D, points: PackedVector2Array, color: Color) -> void:
+	var line := Line2D.new()
+	line.points = points
+	line.width = 1.6
+	line.default_color = color
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	parent.add_child(line)
+
+static func _icon_poly(parent: Node2D, points: PackedVector2Array, color: Color) -> void:
+	var poly := Polygon2D.new()
+	poly.polygon = points
+	poly.color = color
+	parent.add_child(poly)
+
+static func _icon_rect(parent: Node2D, center: Vector2, radius: float, color: Color) -> void:
+	_icon_poly(parent, PackedVector2Array([
+		center + Vector2(-radius, -radius),
+		center + Vector2(radius, -radius),
+		center + Vector2(radius, radius),
+		center + Vector2(-radius, radius),
+	]), color)

@@ -74,8 +74,9 @@ func _panel(node_name: String, pos: Vector2, size: Vector2) -> Panel:
 	p.size = size
 	p.process_mode = Node.PROCESS_MODE_ALWAYS
 	p.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.93))
-	UI_STYLE.add_paper(p)
-	UI_STYLE.add_corner_marks(p)
+	UI_STYLE.add_paper(p, 0.045)
+	UI_STYLE.add_nine_patch(p, 0.42)
+	UI_STYLE.add_corner_marks(p, 22.0, 8.0, 2.0)
 	_root.add_child(p)
 	p.visible = false
 	return p
@@ -90,13 +91,13 @@ func _label(parent: Control, node_name: String, text: String, pos: Vector2, size
 	parent.add_child(l)
 	return l
 
-func _button(parent: Control, node_name: String, text: String, y: float, callback: Callable) -> Button:
+func _button(parent: Control, node_name: String, text: String, y: float, callback: Callable, icon_kind: String = "") -> Button:
 	var b := Button.new()
 	b.name = node_name
 	b.text = text
 	b.position = Vector2(64, y)
 	b.size = Vector2(592, 54)
-	UI_STYLE.menu_button_styles(b)
+	UI_STYLE.menu_button_styles(b, icon_kind)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.focus_mode = Control.FOCUS_ALL
 	b.pressed.connect(callback)
@@ -135,10 +136,14 @@ func _build_pause() -> void:
 	_pause = _panel("PausePanel", Vector2(600, 250), Vector2(720, 560))
 	_label(_pause, "PauseTitle", "暫停", Vector2(60, 24), Vector2(500, 70), 56, UI_STYLE.PAPER, true)
 	_label(_pause, "PauseSubtitle", "酒還溫著。", Vector2(64, 96), Vector2(500, 24), 16, UI_STYLE.PAPER_DIM)
-	_pause_btn = _button(_pause, "PauseResume", "繼續", 166, _on_resume)
-	_settings_btn = _button(_pause, "PauseSettings", "設置", 232, _on_settings)
-	var pause_menu := _button(_pause, "PauseMenu", "回到主菜單", 298, _on_menu)
-	var pause_quit := _button(_pause, "PauseQuit", "離開遊戲", 364, _on_quit)
+	var pause_rule := UI_STYLE.text_rule(592.0)
+	pause_rule.name = "PauseRule"
+	pause_rule.position = Vector2(64, 144)
+	_pause.add_child(pause_rule)
+	_pause_btn = _button(_pause, "PauseResume", "繼續", 166, _on_resume, "play")
+	_settings_btn = _button(_pause, "PauseSettings", "設置", 232, _on_settings, "sliders")
+	var pause_menu := _button(_pause, "PauseMenu", "回到主菜單", 298, _on_menu, "home")
+	var pause_quit := _button(_pause, "PauseQuit", "離開遊戲", 364, _on_quit, "quit")
 	_pause_buttons = [_pause_btn, _settings_btn, pause_menu, pause_quit]
 	_label(_pause, "PauseHint", "Esc 返回遊戲　·　手柄 Start 可呼出", Vector2(64, 508), Vector2(590, 22), 13, UI_STYLE.PAPER_DIM)
 
@@ -150,9 +155,14 @@ func _build_settings() -> void:
 	settings_title.add_theme_constant_override("shadow_offset_y", 1)
 	settings_title.add_theme_constant_override("shadow_outline_size", 0)
 	_label(_settings, "SettingsSubtitle", "先把畫面調順，再談別的。", Vector2(64, 96), Vector2(590, 24), 16, UI_STYLE.PAPER_DIM)
-	_settings_mode = _button(_settings, "SettingsMode", "顯示：全屏", 174, _toggle_display)
+	_label(_settings, "SettingsSection", "畫面", Vector2(64, 122), Vector2(590, 20), 13, UI_STYLE.GOLD_DIM)
+	var settings_rule := UI_STYLE.text_rule(592.0)
+	settings_rule.name = "SettingsRule"
+	settings_rule.position = Vector2(64, 146)
+	_settings.add_child(settings_rule)
+	_settings_mode = _button(_settings, "SettingsMode", "顯示：全屏", 174, _toggle_display, "screen")
 	_settings_mode.size = Vector2(592, 58)
-	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 254, _on_settings_back)
+	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 254, _on_settings_back, "back")
 	_settings_buttons = [_settings_mode, settings_back]
 	_label(_settings, "SettingsHint", "顯示模式會即時保存，下次啟動沿用。音量、手柄死區、打擊停頓待音頻／輸入批次接入。", Vector2(64, 340), Vector2(590, 50), 13, UI_STYLE.PAPER_DIM)
 
@@ -161,9 +171,13 @@ func _build_death() -> void:
 	_label(_death, "DeathTitle", "倒下了", Vector2(60, 26), Vector2(700, 90), 72, UI_STYLE.BLOOD_LIGHT, true)
 	_label(_death, "DeathSubtitle", "景陽岡不等人。", Vector2(64, 120), Vector2(700, 26), 16, UI_STYLE.PAPER_DIM)
 	_death_hint = _label(_death, "DeathHint", "檢查點：山神廟", Vector2(64, 164), Vector2(700, 24), 15, UI_STYLE.GOLD_DIM)
-	_death_retry = _button(_death, "DeathRetry", "重試本段", 206, _on_death_retry)
-	_death_checkpoint = _button(_death, "DeathCheckpoint", "回山神廟", 272, _on_death_checkpoint)
-	var death_menu := _button(_death, "DeathMenu", "回到主菜單", 338, _on_menu)
+	var death_rule := UI_STYLE.text_rule(720.0)
+	death_rule.name = "DeathRule"
+	death_rule.position = Vector2(64, 190)
+	_death.add_child(death_rule)
+	_death_retry = _button(_death, "DeathRetry", "重試本段", 206, _on_death_retry, "retry")
+	_death_checkpoint = _button(_death, "DeathCheckpoint", "回山神廟", 272, _on_death_checkpoint, "gate")
+	var death_menu := _button(_death, "DeathMenu", "回到主菜單", 338, _on_menu, "home")
 	_death_buttons = [_death_retry, _death_checkpoint, death_menu]
 	_label(_death, "DeathHintBottom", "重試會從本場景起點重來；回山神廟會讀最近檢查點。", Vector2(64, 432), Vector2(720, 24), 13, UI_STYLE.PAPER_DIM)
 
@@ -171,11 +185,14 @@ func _build_summary() -> void:
 	_summary = _panel("SummaryPanel", Vector2(480, 220), Vector2(960, 620))
 	_label(_summary, "SummaryTitle", "章末 · 景陽岡", Vector2(60, 26), Vector2(840, 72), 52, UI_STYLE.PAPER, true)
 	_label(_summary, "SummarySubtitle", "下山。", Vector2(64, 104), Vector2(840, 30), 18, UI_STYLE.PAPER_DIM)
-	_label(_summary, "SummaryRule", "", Vector2(64, 160), Vector2(832, 30), 1, UI_STYLE.GOLD)
+	var summary_rule := UI_STYLE.text_rule(832.0)
+	summary_rule.name = "SummaryRule"
+	summary_rule.position = Vector2(64, 160)
+	_summary.add_child(summary_rule)
 	_summary_stats = _label(_summary, "SummaryStats", "", Vector2(64, 190), Vector2(832, 230), 22, UI_STYLE.PAPER)
 	_summary_stats.add_theme_constant_override("line_spacing", 12)
-	_summary_new = _button(_summary, "SummaryNew", "重新開始", 430, _on_summary_new)
-	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 496, _on_summary_menu)
+	_summary_new = _button(_summary, "SummaryNew", "重新開始", 430, _on_summary_new, "new")
+	var summary_menu := _button(_summary, "SummaryMenu", "回到主菜單", 496, _on_summary_menu, "home")
 	_summary_buttons = [_summary_new, summary_menu]
 	_label(_summary, "SummaryHint", "景陽岡沒有虎了。但武松的影子，從此是四隻。", Vector2(64, 580), Vector2(832, 24), 14, UI_STYLE.GOLD_DIM)
 
@@ -233,7 +250,7 @@ func _build_credits() -> void:
 	_credits_body.size = Vector2(800, y)
 
 	_label(_credits, "CreditsHint", "Esc／A 跳過　·　名單會自動滾完", Vector2(64, 946), Vector2(700, 24), 13, UI_STYLE.PAPER_DIM)
-	_credits_skip = _button(_credits, "CreditsSkip", "跳過名單", 990, _on_credits_skip)
+	_credits_skip = _button(_credits, "CreditsSkip", "跳過名單", 990, _on_credits_skip, "skip")
 	_credits_skip.position = Vector2(1536, 990)
 	_credits_skip.size = Vector2(300, 54)
 	_credits_skip.alignment = HORIZONTAL_ALIGNMENT_CENTER
