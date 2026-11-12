@@ -8,6 +8,10 @@ const MOON_X := 960.0
 var _ripples: Array[Polygon2D] = []
 var _ripple_phases: Array[float] = []
 var _tiger_parts: Array[Polygon2D] = []
+var _reflection_human: Node2D
+var _reflection_tiger: Node2D
+var _reflection_flash: ColorRect
+var _reflection_changed: bool = false
 
 func scene_id() -> String:
 	return "SCN-06"
@@ -23,10 +27,19 @@ func background_color() -> Color:
 
 func _on_stage_start() -> void:
 	_build_water()
+	_build_pool_reflection()
 	if _cm().current_beat == "B9":
+		_reveal_white_tiger_reflection()
 		_play_ending()
 	else:
 		_say(STORY.lines("B8"), Callable(self, "_after_b8"))
+		_schedule_reflection_reveal()
+
+func _schedule_reflection_reveal() -> void:
+	# B8 字幕先讓玩家看見「正常倒影」，再切換成白虎；不阻塞對話。
+	await get_tree().create_timer(0.75).timeout
+	if is_inside_tree() and not _reflection_changed and not _stage_over:
+		_reveal_white_tiger_reflection()
 
 func _tick_stage(_delta: float) -> void:
 	for i in range(_ripples.size()):
@@ -54,22 +67,188 @@ func _build_water() -> void:
 	water.name = "Water"
 	water.position = Vector2(0, WATER_Y)
 	water.size = Vector2(1920, 180)
-	water.color = Color(0.045, 0.075, 0.105, 1)
+	water.color = Color(0.055, 0.085, 0.115, 1)
 	parent.add_child(water)
+	var surface := ColorRect.new()
+	surface.name = "WaterSurface"
+	surface.position = Vector2(0, WATER_Y - 1)
+	surface.size = Vector2(1920, 3)
+	surface.color = Color(0.18, 0.27, 0.32, 0.55)
+	parent.add_child(surface)
+	var deep := ColorRect.new()
+	deep.name = "WaterDeep"
+	deep.position = Vector2(0, WATER_Y + 54)
+	deep.size = Vector2(1920, 126)
+	deep.color = Color(0.020, 0.035, 0.055, 0.55)
+	parent.add_child(deep)
 
 	# 月影：水面上一串壓扁的冷色橢圓，越遠越窄。
 	for i in range(7):
 		var ry := 3.0 + float(i) * 1.2
-		var rx := 58.0 - float(i) * 4.0
-		var strip := _ellipse(Vector2(MOON_X, WATER_Y + 14.0 + float(i) * 12.0), rx, ry, Color(0.62, 0.76, 0.84, 0.14))
+		var rx := 62.0 - float(i) * 4.0
+		var strip := _ellipse(Vector2(MOON_X, WATER_Y + 14.0 + float(i) * 12.0), rx, ry, Color(0.62, 0.76, 0.84, 0.18))
 		strip.name = "MoonReflection%d" % i
 		parent.add_child(strip)
 		_ripples.append(strip)
 		_ripple_phases.append(float(i) * 0.7)
+	var moon_glow := _ellipse(Vector2(MOON_X, WATER_Y + 10), 210, 36, Color(0.48, 0.62, 0.70, 0.10))
+	moon_glow.name = "MoonReflectionGlow"
+	parent.add_child(moon_glow)
 
 	_add_night_bank(parent)
 	_build_tiger_corpse(parent)
 	_add_reflection(parent)
+	_build_pool_reflection()
+
+func _build_pool_reflection() -> void:
+	var bg := get_node_or_null("Background")
+	var parent: Node = bg if bg != null else self
+	if parent.get_node_or_null("PoolReflection") != null:
+		return
+	var root := Node2D.new()
+	root.name = "PoolReflection"
+	root.position = Vector2(600, 930)
+	root.scale = Vector2(1.0, -0.90)
+	parent.add_child(root)
+
+	# 正常倒影：先只留一個潮濕、發暗的人形，等字幕推進再換成白虎。
+	_reflection_human = Node2D.new()
+	_reflection_human.name = "PlayerHumanReflection"
+	root.add_child(_reflection_human)
+	var head := _disc(Vector2(0, -88), 13, Color(0.10, 0.11, 0.10, 0.58))
+	head.name = "HumanHead"
+	_reflection_human.add_child(head)
+	var torso := _poly(_reflection_human, "HumanTorso", [
+		Vector2(-20, -74), Vector2(20, -74), Vector2(29, -8),
+		Vector2(34, 4), Vector2(-34, 4), Vector2(-29, -8),
+	], Color(0.10, 0.11, 0.10, 0.52))
+	torso.name = "HumanTorso"
+	var arm_l := Line2D.new()
+	arm_l.name = "HumanArmL"
+	arm_l.points = PackedVector2Array([Vector2(-18, -66), Vector2(-36, -34), Vector2(-28, -10)])
+	arm_l.width = 4.0
+	arm_l.default_color = Color(0.12, 0.13, 0.12, 0.48)
+	_reflection_human.add_child(arm_l)
+	var arm_r := Line2D.new()
+	arm_r.name = "HumanArmR"
+	arm_r.points = PackedVector2Array([Vector2(18, -66), Vector2(36, -34), Vector2(28, -10)])
+	arm_r.width = 4.0
+	arm_r.default_color = Color(0.12, 0.13, 0.12, 0.48)
+	_reflection_human.add_child(arm_r)
+
+	# 白虎倒影：先藏著；B8 字幕到一半時以水面閃光切換。
+	_reflection_tiger = Node2D.new()
+	_reflection_tiger.name = "PlayerWhiteTigerReflection"
+	_reflection_tiger.visible = false
+	root.add_child(_reflection_tiger)
+	_poly(_reflection_tiger, "WhiteTigerBody", [
+		Vector2(-96, -28), Vector2(-66, -56), Vector2(-18, -64),
+		Vector2(38, -60), Vector2(78, -46), Vector2(94, -20),
+		Vector2(86, 2), Vector2(30, 6), Vector2(-42, 4), Vector2(-88, -6),
+	], Color(0.66, 0.70, 0.64, 0.52))
+	_poly(_reflection_tiger, "WhiteTigerHead", [
+		Vector2(72, -54), Vector2(108, -62), Vector2(132, -44),
+		Vector2(136, -22), Vector2(116, -4), Vector2(86, -10), Vector2(68, -28),
+	], Color(0.72, 0.75, 0.68, 0.55))
+	for ear_pos in [Vector2(78, -58), Vector2(108, -60)]:
+		_poly(_reflection_tiger, "WhiteTigerEar%d" % int(ear_pos.x), [
+			ear_pos, ear_pos + Vector2(10, -18), ear_pos + Vector2(20, -2),
+		], Color(0.66, 0.70, 0.64, 0.50))
+	_poly(_reflection_tiger, "WhiteTigerTail", [
+		Vector2(-88, -8), Vector2(-128, 4), Vector2(-150, 20),
+		Vector2(-142, 30), Vector2(-110, 18), Vector2(-88, 10),
+	], Color(0.62, 0.66, 0.60, 0.42))
+	# 直裰：不是給虎穿衣服，而是把「人形倒影披著的白袍」留在老虎肩上。
+	_poly(_reflection_tiger, "WhiteRobe", [
+		Vector2(-54, -58), Vector2(22, -64), Vector2(54, -38),
+		Vector2(42, -4), Vector2(-30, 0), Vector2(-66, -22),
+	], Color(0.27, 0.27, 0.23, 0.44))
+	# 水面把白虎的背脊切出一條冷白邊，讓剪影不至於變成發亮的水斑。
+	var white_rim := Line2D.new()
+	white_rim.name = "WhiteTigerRim"
+	white_rim.points = PackedVector2Array([
+		Vector2(-88, -16), Vector2(-64, -48), Vector2(-18, -59),
+		Vector2(38, -56), Vector2(78, -42), Vector2(96, -22), Vector2(94, -10),
+	])
+	white_rim.width = 2.0
+	white_rim.default_color = Color(0.78, 0.84, 0.78, 0.58)
+	_reflection_tiger.add_child(white_rim)
+	for i in range(3):
+		var stripe := Line2D.new()
+		stripe.name = "WhiteTigerStripe%d" % i
+		stripe.points = PackedVector2Array([
+			Vector2(-50.0 + i * 30.0, -54), Vector2(-38.0 + i * 30.0, -42),
+			Vector2(-28.0 + i * 30.0, -34),
+		])
+		stripe.width = 2.0
+		stripe.default_color = Color(0.12, 0.16, 0.15, 0.42)
+		_reflection_tiger.add_child(stripe)
+	for leg_x in [-64.0, -20.0, 30.0, 60.0]:
+		_poly(_reflection_tiger, "WhiteTigerLeg%d" % int(leg_x), [
+			Vector2(leg_x, -8), Vector2(leg_x + 8, 6), Vector2(leg_x + 16, 14),
+			Vector2(leg_x + 14, 22), Vector2(leg_x + 2, 18), Vector2(leg_x - 4, 4),
+		], Color(0.60, 0.64, 0.58, 0.44))
+	# 舉爪：白虎倒影的右手抬到水面上緣，讓「不是武松」的輪廓更明確。
+	_poly(_reflection_tiger, "WhiteTigerPaw", [
+		Vector2(126, -28), Vector2(150, -50), Vector2(168, -34),
+		Vector2(164, -12), Vector2(144, -4), Vector2(128, -12),
+	], Color(0.74, 0.77, 0.70, 0.48))
+	for claw_x in [150.0, 158.0, 166.0]:
+		var claw := Line2D.new()
+		claw.name = "WhiteTigerClaw%d" % int(claw_x)
+		claw.points = PackedVector2Array([Vector2(claw_x, -20), Vector2(claw_x + 5, -31)])
+		claw.width = 1.5
+		claw.default_color = Color(0.20, 0.22, 0.19, 0.55)
+		_reflection_tiger.add_child(claw)
+	_poly(_reflection_tiger, "WhiteTigerNose", [
+		Vector2(126, -22), Vector2(136, -24), Vector2(132, -14),
+	], Color(0.16, 0.18, 0.16, 0.62))
+	for fang_x in [124.0, 136.0]:
+		_poly(_reflection_tiger, "WhiteTigerFang%d" % int(fang_x), [
+			Vector2(fang_x, -8), Vector2(fang_x + 4, -9), Vector2(fang_x + 2, 2),
+		], Color(0.84, 0.86, 0.78, 0.52))
+	for stripe_x in [84.0, 104.0, 118.0]:
+		var head_stripe := Line2D.new()
+		head_stripe.name = "WhiteTigerHeadStripe%d" % int(stripe_x)
+		head_stripe.points = PackedVector2Array([Vector2(stripe_x, -56), Vector2(stripe_x + 6, -36)])
+		head_stripe.width = 2.0
+		head_stripe.default_color = Color(0.12, 0.16, 0.15, 0.46)
+		_reflection_tiger.add_child(head_stripe)
+	var eye := Line2D.new()
+	eye.name = "WhiteTigerEye"
+	eye.points = PackedVector2Array([Vector2(100, -40), Vector2(112, -38)])
+	eye.width = 2.5
+	eye.default_color = Color(0.78, 0.64, 0.34, 0.58)
+	_reflection_tiger.add_child(eye)
+
+	# 人形／白虎腳下的水面波紋，讓倒影不是浮貼在黑水上。
+	for i in range(3):
+		var ripple := _ellipse(Vector2(600, 936.0 + float(i) * 17.0), 120.0 - float(i) * 24.0, 4.0, Color(0.42, 0.52, 0.50, 0.10))
+		ripple.name = "PoolReflectionRipple%d" % i
+		parent.add_child(ripple)
+	_reflection_flash = ColorRect.new()
+	_reflection_flash.name = "ReflectionFlash"
+	_reflection_flash.position = Vector2(470, 896)
+	_reflection_flash.size = Vector2(260, 7)
+	_reflection_flash.color = Color(0.72, 0.82, 0.78, 0.0)
+	_reflection_flash.visible = false
+	parent.add_child(_reflection_flash)
+
+func _reveal_white_tiger_reflection() -> void:
+	if _reflection_changed:
+		return
+	_reflection_changed = true
+	if _reflection_human != null:
+		_reflection_human.visible = false
+	if _reflection_tiger != null:
+		_reflection_tiger.visible = true
+	if _reflection_flash != null:
+		_reflection_flash.visible = _cm().current_beat == "B8"
+		if _reflection_flash.visible:
+			_reflection_flash.color.a = 0.42
+			var tw := create_tween()
+			tw.tween_property(_reflection_flash, "color:a", 0.0, 0.35)
+			tw.finished.connect(func() -> void: _reflection_flash.visible = false)
 
 func _build_tiger_corpse(parent: Node) -> void:
 	# 右岸石台：把虎屍抬高到對話框之上，剪影才看得見。
@@ -101,14 +280,14 @@ func _build_tiger_corpse(parent: Node) -> void:
 		["TigerBody", body], ["TigerHead", head], ["TigerTail", tail],
 	]
 	for item in parts:
-		var p := _poly(parent, item[0], item[1], Color(0.10, 0.095, 0.082, 0.98))
+		var p := _poly(parent, item[0], item[1], Color(0.065, 0.060, 0.052, 0.99))
 		p.position = Vector2(1450, 660)
 		_tiger_parts.append(p)
 	# 虎斑：只留幾道暗赭，遠看是剪影，近看能認出虎。
-	for stripe in [Vector2(60, -24), Vector2(104, -32), Vector2(150, -28), Vector2(190, -24)]:
+	for stripe in [Vector2(60, -24), Vector2(104, -32), Vector2(150, -28), Vector2(190, -24), Vector2(120, 34), Vector2(168, 30)]:
 		var s := _poly(parent, "TigerStripe%d" % int(stripe.x), [
-			stripe, stripe + Vector2(10, -8), stripe + Vector2(18, 2), stripe + Vector2(6, 6),
-		], Color(0.24, 0.13, 0.075, 0.55))
+			stripe, stripe + Vector2(12, -8), stripe + Vector2(22, 2), stripe + Vector2(8, 7),
+		], Color(0.30, 0.15, 0.080, 0.72))
 		s.position = Vector2(1450, 660)
 		_tiger_parts.append(s)
 	# 月照在虎背上的冷邊，讓黑剪影不至於糊進夜色。
@@ -118,10 +297,21 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(2, -18), Vector2(90, -45), Vector2(176, -37),
 		Vector2(224, -15), Vector2(246, 15),
 	])
-	rim.width = 3.5
-	rim.default_color = Color(0.50, 0.52, 0.45, 0.68)
+	rim.width = 4.0
+	rim.default_color = Color(0.60, 0.62, 0.53, 0.76)
 	rim.position = Vector2(1450, 660)
 	parent.add_child(rim)
+	# 頭頂另補一段月邊，讓虎頭從夜色裡先被讀出來。
+	var head_rim := Line2D.new()
+	head_rim.name = "TigerHeadRim"
+	head_rim.points = PackedVector2Array([
+		Vector2(218, -40), Vector2(252, -58), Vector2(286, -42),
+		Vector2(294, -18), Vector2(276, -4),
+	])
+	head_rim.width = 3.0
+	head_rim.default_color = Color(0.62, 0.64, 0.55, 0.72)
+	head_rim.position = Vector2(1450, 660)
+	parent.add_child(head_rim)
 
 	# 脊線：從尾根一路接到肩胛，讓虎屍不再只是大塊暗影。
 	var spine := Line2D.new()
@@ -130,8 +320,8 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(12, -18), Vector2(62, -31), Vector2(116, -38),
 		Vector2(172, -31), Vector2(216, -12),
 	])
-	spine.width = 4.0
-	spine.default_color = Color(0.46, 0.40, 0.30, 0.64)
+	spine.width = 4.5
+	spine.default_color = Color(0.54, 0.46, 0.34, 0.72)
 	spine.position = Vector2(1450, 660)
 	parent.add_child(spine)
 
@@ -228,7 +418,7 @@ func _add_reflection(parent: Node) -> void:
 	var mirror := Node2D.new()
 	mirror.name = "TigerReflection"
 	mirror.position = Vector2(1450, 960)
-	mirror.scale = Vector2(1.0, -0.30)
+	mirror.scale = Vector2(1.0, -0.42)
 	parent.add_child(mirror)
 	var body: Array = [
 		Vector2(0, -20), Vector2(92, -48), Vector2(178, -40),
@@ -244,9 +434,35 @@ func _add_reflection(parent: Node) -> void:
 		Vector2(-78, 58), Vector2(-38, 40), Vector2(4, 20),
 	]
 	for item in [["RBody", body], ["RHead", head], ["RTail", tail]]:
-		_poly(mirror, item[0], item[1], Color(0.24, 0.23, 0.20, 0.30))
+		_poly(mirror, item[0], item[1], Color(0.38, 0.36, 0.30, 0.56))
+	# 倒影裡保留一段冷色脊線，讓水面那層不是一塊均勻暗影。
+	var mirror_spine := Line2D.new()
+	mirror_spine.name = "RSpine"
+	mirror_spine.points = PackedVector2Array([
+		Vector2(12, -18), Vector2(62, -31), Vector2(116, -38),
+		Vector2(172, -31), Vector2(216, -12),
+	])
+	mirror_spine.width = 2.5
+	mirror_spine.default_color = Color(0.50, 0.52, 0.46, 0.50)
+	mirror_spine.position = Vector2(0, 0)
+	mirror.add_child(mirror_spine)
+	var mirror_head_rim := Line2D.new()
+	mirror_head_rim.name = "RHeadRim"
+	mirror_head_rim.points = PackedVector2Array([
+		Vector2(218, -40), Vector2(252, -58), Vector2(286, -42),
+		Vector2(294, -18), Vector2(276, -4),
+	])
+	mirror_head_rim.width = 2.0
+	mirror_head_rim.default_color = Color(0.54, 0.56, 0.50, 0.50)
+	mirror_head_rim.position = Vector2(0, 0)
+	mirror.add_child(mirror_head_rim)
+	# 倒影被水面切開的幾道波紋；越靠下越淡。
+	for i in range(4):
+		var band := _ellipse(Vector2(1450, 934.0 + float(i) * 16.0), 130.0 - float(i) * 18.0, 5.0, Color(0.44, 0.52, 0.50, 0.10))
+		band.name = "TigerReflectionRipple%d" % i
+		parent.add_child(band)
 	# 月影的倒影用同一套水面波紋，不再重複生成。
-	var moon_band := _ellipse(Vector2(MOON_X, 1018), 150, 12, Color(0.62, 0.76, 0.84, 0.12))
+	var moon_band := _ellipse(Vector2(MOON_X, 1018), 180, 14, Color(0.62, 0.76, 0.84, 0.16))
 	moon_band.name = "MoonReflectionWide"
 	parent.add_child(moon_band)
 
@@ -280,6 +496,7 @@ func _poly(parent: Node, node_name: String, points: Array, color: Color) -> Poly
 
 func _after_b8() -> void:
 	_cm().mark_clear("B8")
+	_reveal_white_tiger_reflection()
 	_cm().set_beat("B9")
 	_play_ending()
 

@@ -228,6 +228,11 @@
   - **臉部層次**：山神臉補眉骨、鼻樑、鼻側陰影與眼窩；金片眼睛加 `pivot_offset`，眨眼從眼窩中心向上下合攏，不再只縮左上角。
   - **眨眼**：由 `_tick_stage` 以 0.10s 閉眼、0.16s 睜眼確定性推進；B4 對話結束後只觸發一次，1.8s 後進 B5。
   - **驗收**：`SCN04_TEMPLE_SELFTEST result=PASS fails=[]`；新增眼窩、眉骨／鼻樑、暖光暈、眨眼中段與睜眼回位 5 項。更新 `docs/preview/scn04-temple.png`，新增 `docs/preview/scn04-blink.png`。
+- [x] **V0.3.17 SCN-06 水潭倒影與虎屍剪影（`SCN06_POOL_SELFTEST` 24 項 PASS）**：
+  - **玩家倒影**：B8 先在潭邊水面留一個發暗的人形倒影；字幕推進 0.75s 後以一道水面冷光切換成披直裰的白虎倒影（含虎頭、耳朵、四腿、舉爪、虎斑與尾），B9「下山」保留白虎倒影作結。
+  - **虎屍剪影**：虎身壓暗到近黑，補冷灰背脊、頭部邊光、虎斑與腿部層次；水面倒影改成可讀的壓扁虎形，加上四道水下波紋，避免 960×540 只看見一團暗影。
+  - **水面**：加深水色，補 `WaterSurface`／`WaterDeep` 上下水帶與月影外圈微光；月影條帶略提 alpha、寬度，讓黑水仍有上下層次。
+  - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（24 項）；`FLOW_SELFTEST fails=0`；`selftest_full_run` 重跑 `result=PASS fails=[] frames=3900 deaths=0 beat=B9`。更新 `docs/preview/scn06-pool.png`。
 
 ## 待實現
 
