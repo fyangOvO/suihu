@@ -562,10 +562,15 @@ func _restart_after_death() -> void:
 		get_tree().reload_current_scene()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel") and not _stage_over and not _dialogue_active:
-		if _shell != null:
-			_shell.show_pause()
-			get_viewport().set_input_as_handled()
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("ui_pause"):
+		if _shell != null and _shell.is_open():
+			if _shell.handle_cancel():
+				get_viewport().set_input_as_handled()
+			return
+		if not _stage_over:
+			if _shell != null:
+				_shell.show_pause()
+				get_viewport().set_input_as_handled()
 		return
 	if not _stage_over or _pending_next != "__checkpoint__":
 		return

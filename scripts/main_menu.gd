@@ -4,6 +4,7 @@ extends Control
 const STORY := preload("res://data/story_beats.gd")
 const FIRST_SCENE := "res://scenes/chapters/SCN_01_Inn.tscn"
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
+const SETTINGS := preload("res://scripts/ui/user_settings.gd")
 
 @onready var _title: Label = $Title
 @onready var _subtitle: Label = $Subtitle
@@ -17,6 +18,7 @@ const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 var _buttons: Array[Button] = []
 
 func _ready() -> void:
+	SETTINGS.apply_display_mode()
 	_buttons = [_btn_new, _btn_continue, _btn_quit]
 	_btn_new.pressed.connect(_start_new)
 	_btn_continue.pressed.connect(_continue_game)

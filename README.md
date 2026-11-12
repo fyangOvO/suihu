@@ -205,6 +205,12 @@
   - **無檢查點路徑**：B3 山道死亡後死亡面板出現、`DeathCheckpoint` 正確禁用；按「重試本段」重載 SCN-02，保持 B3、玩家 800 血且可操作，shell 關閉。
   - **有檢查點路徑**：B4 山神廟存檔後進 B5，於 SCN-03 死亡；`DeathCheckpoint` 啟用，按「回山神廟」真的讀檔回 SCN-04 B4，恢復存檔血量、解除暫停並回到可玩狀態。
   - **結果**：`RESTART_FLOW_SELFTEST result=PASS fails=[] frames=397 beat=B4 dialogue_calls=8`；死亡後兩條重開路徑都不軟鎖。
+- [x] **V0.3.12 S10 UI 焦點可達性＋顯示設置持久化（`selftest_ui_focus_settings` 34 項 PASS）**：
+  - **主菜單真修復**：`MainMenu.tscn` 根節點原本漏掛 `main_menu.gd`，按鈕與焦點邏輯不會生效；現已補回 `script = ExtResource("1_menu")`，新局／續玩／離開與鍵盤手柄焦點都接回。
+  - **焦點鏈**：暫停 4 鍵、設置 2 鍵、死亡 2／3 鍵（依檢查點動態跳過禁用）、結算 2 鍵都建立上／下／左／右／next／prev 環；面板開啟即抓第一顆，設定頁按取消回暫停，暫停頁取消回遊戲。
+  - **暫停鍵**：新增 `ui_pause`（Esc＋手柄 Start），`stage_base` 與 `GameShell` 共用，避免手柄 Start 被當成喝酒，也避免設定頁按 Esc 被搶回暫停首頁；對話演出期間也可暫停。
+  - **設定持久化**：新增 `scripts/ui/user_settings.gd`，以 `user://settings.cfg` 保存顯示模式；主菜單啟動時套用，切換即時寫入；檔案損壞或非法值回退視窗模式，下一次保存可自動修復。
+  - **結果**：`UI_FOCUS_SETTINGS_SELFTEST result=PASS fails=[] frames=5`；`selftest_ui_shell` 16 項、`selftest_flow` 56 項、`selftest_restart_flow` 15 項仍全 PASS。
 
 ## 待實現
 
