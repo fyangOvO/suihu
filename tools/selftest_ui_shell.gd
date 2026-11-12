@@ -69,11 +69,26 @@ func _process(_delta: float) -> bool:
 		_check("boss bar HP exists", hud != null and hud.get_node_or_null("BossHP") != null)
 		var boss_panel: Panel = null
 		var p2_panel: Panel = null
+		var banner_panel: Panel = null
+		var boss_hp: ProgressBar = null
+		var tag: Label = null
 		if hud != null:
 			boss_panel = hud.get_node_or_null("BossPanel") as Panel
 			p2_panel = hud.get_node_or_null("P2Panel") as Panel
+			banner_panel = hud.get_node_or_null("BannerPanel") as Panel
+			boss_hp = hud.get_node_or_null("BossHP") as ProgressBar
+			tag = hud.get_node_or_null("BannerTag") as Label
 		_check("boss bar visible", boss_panel != null and boss_panel.visible)
 		_check("boss hides P2 panel", p2_panel != null and not p2_panel.visible)
+		_check("boss and banner share x", boss_panel != null and banner_panel != null and is_equal_approx(boss_panel.position.x, banner_panel.position.x))
+		_check("boss and banner share width", boss_panel != null and banner_panel != null and is_equal_approx(boss_panel.size.x, banner_panel.size.x))
+		_check("boss HP inset 24 from panel", boss_panel != null and boss_hp != null and is_equal_approx(boss_hp.position.x - boss_panel.position.x, 24.0) and is_equal_approx(boss_hp.size.x, boss_panel.size.x - 48.0))
+		var pips := 0
+		for i in range(3):
+			if hud != null and hud.get_node_or_null("BossPhasePip%d" % i) != null:
+				pips += 1
+		_check("boss has three phase pips", pips == 3)
+		_check("story banner has no tutorial tag", tag != null and not tag.visible)
 		if fails.is_empty():
 			print("UI_SHELL_SELFTEST result=PASS")
 		else:

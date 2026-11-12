@@ -60,10 +60,10 @@ func _tick_stage(delta: float) -> void:
 		return
 	if _tutorial_step == 0 and _tutorial_t >= 2.2:
 		_tutorial_step = 1
-		show_banner("J 輕擊 / K 重擊：木棍很長，貼身前先看起手。", 2.4)
+		show_banner("J 輕擊 / K 重擊：木棍很長，貼身前先看起手。", 2.4, "教學")
 	elif _tutorial_step == 1 and _tutorial_t >= 5.2:
 		_tutorial_step = 2
-		show_banner("L 站防；它會站著擋，不會蹲防。", 2.4)
+		show_banner("L 站防；它會站著擋，不會蹲防。", 2.4, "教學")
 	elif _tutorial_step == 2 and _tutorial_t >= 8.2:
 		_tutorial_step = 3
-		show_banner("它揮棍前搖長，看準收招再打。", 2.4)
+		show_banner("它揮棍前搖長，看準收招再打。", 2.4, "教學")

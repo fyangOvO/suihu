@@ -32,6 +32,8 @@ var _boss_hp: ProgressBar
 var _boss_hp_text: Label
 var _boss_phase: Label
 var _boss_ticks: Control
+var _boss_phase_pips: Array[ColorRect] = []
+var _banner_tag: Label
 var _boss_overlay: Control
 var _is_boss: bool = false
 var _shell: CanvasLayer
@@ -272,28 +274,40 @@ func _build_hud() -> void:
 		_p2hp_overlay.visible = false
 		_boss_panel = Panel.new()
 		_boss_panel.name = "BossPanel"
-		_boss_panel.position = Vector2(480, 72)
-		_boss_panel.size = Vector2(960, 84)
-		_boss_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.88))
+		_boss_panel.position = Vector2(480, 64)
+		_boss_panel.size = Vector2(960, 92)
+		_boss_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.90))
 		hud.add_child(_boss_panel)
 		UI_STYLE.add_paper(_boss_panel)
 		UI_STYLE.add_nine_patch(_boss_panel)
 		UI_STYLE.add_corner_marks(_boss_panel, 20.0, 7.0)
-		_label("BossName", Vector2(500, 78), Vector2(640, 34), 28, UI_STYLE.PAPER, true).text = opponent_display_name()
-		_boss_phase = _label("BossPhase", Vector2(1200, 80), Vector2(220, 22), 14, UI_STYLE.BLOOD_LIGHT)
+		_label("BossName", Vector2(504, 70), Vector2(640, 38), 30, UI_STYLE.PAPER, true).text = opponent_display_name()
+		_boss_phase = _label("BossPhase", Vector2(1300, 70), Vector2(120, 24), 14, UI_STYLE.BLOOD_LIGHT)
 		_boss_phase.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_boss_phase.text = "一階段"
-		_boss_hp_text = _label("BossHPText", Vector2(1300, 98), Vector2(120, 18), 13, UI_STYLE.PAPER_DIM)
+		_label("BossTag", Vector2(504, 101), Vector2(240, 18), 12, UI_STYLE.GOLD_DIM).text = "虎威"
+		_boss_hp_text = _label("BossHPText", Vector2(1360, 99), Vector2(80, 18), 13, UI_STYLE.PAPER_DIM)
 		_boss_hp_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		_boss_hp_text.text = "%d / %d" % [int(p2.current_hp), int(p2.max_hp)]
-		_boss_hp = _bar("BossHP", Vector2(500, 116), Vector2(920, 16), p2.max_hp, UI_STYLE.BLOOD)
+		for i in range(3):
+			var pip := ColorRect.new()
+			pip.name = "BossPhasePip%d" % i
+			pip.position = Vector2(1300.0 + float(i) * 18.0, 102.0)
+			pip.size = Vector2(7, 7)
+			pip.rotation = PI * 0.25
+			pip.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.2)
+			pip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			hud.add_child(pip)
+			_boss_phase_pips.append(pip)
+		_boss_hp = _bar("BossHP", Vector2(504, 124), Vector2(912, 16), p2.max_hp, UI_STYLE.BLOOD)
+		_add_hp_icon(Vector2(14, 58), UI_STYLE.BLOOD_LIGHT, _boss_panel)
 		_boss_overlay = _add_hp_overlay(_boss_hp, UI_STYLE.BLOOD_LIGHT)
 		_boss_ticks = _add_bar_ticks(_boss_hp, 3)
 
 	_banner_panel = Panel.new()
 	_banner_panel.name = "BannerPanel"
-	_banner_panel.position = Vector2(360, 168)
-	_banner_panel.size = Vector2(1200, 64)
+	_banner_panel.position = Vector2(480, 176)
+	_banner_panel.size = Vector2(960, 64)
 	_banner_panel.add_theme_stylebox_override("panel", UI_STYLE.panel_style(0.82))
 	_banner_panel.visible = false
 	hud.add_child(_banner_panel)
@@ -303,19 +317,21 @@ func _build_hud() -> void:
 	var banner_top := ColorRect.new()
 	banner_top.name = "BannerRuleTop"
 	banner_top.position = Vector2(0, 0)
-	banner_top.size = Vector2(1200, 1)
+	banner_top.size = Vector2(960, 1)
 	banner_top.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.55)
 	_banner_panel.add_child(banner_top)
 	var banner_bottom := ColorRect.new()
 	banner_bottom.name = "BannerRuleBottom"
 	banner_bottom.position = Vector2(0, 63)
-	banner_bottom.size = Vector2(1200, 1)
+	banner_bottom.size = Vector2(960, 1)
 	banner_bottom.color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.45)
 	_banner_panel.add_child(banner_bottom)
 
-	_banner = _label("Banner", Vector2(380, 176), Vector2(1160, 48), 34, UI_STYLE.GOLD, true)
+	_banner = _label("Banner", Vector2(500, 184), Vector2(920, 48), 30, UI_STYLE.GOLD, true)
 	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_banner.visible = false
+	_banner_tag = _label("BannerTag", Vector2(504, 190), Vector2(92, 28), 15, UI_STYLE.GOLD_DIM)
+	_banner_tag.visible = false
 
 	_result = _label("Result", Vector2(360, 452), Vector2(1200, 80), 56, UI_STYLE.GOLD, true)
 	_result.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -462,6 +478,8 @@ func _tick_overlay(delta: float) -> void:
 				_banner.visible = false
 			if _banner_panel != null:
 				_banner_panel.visible = false
+			if _banner_tag != null:
+				_banner_tag.visible = false
 	if _pickup_timer > 0.0:
 		_pickup_timer -= delta
 		if _pickup_timer <= 0.0 and _hint != null:
@@ -488,7 +506,14 @@ func _update_hud() -> void:
 		if _boss_hp_text != null:
 			_boss_hp_text.text = "%d / %d" % [int(p2.current_hp), int(p2.max_hp)]
 		if _boss_phase != null:
-			_boss_phase.text = ["一階段", "二階段", "三階段"][clampi(int(p2.boss_phase), 1, 3) - 1]
+			var phase_index: int = clampi(int(p2.boss_phase), 1, 3)
+			_boss_phase.text = ["一階段", "二階段", "三階段"][phase_index - 1]
+			for i in range(_boss_phase_pips.size()):
+				var lit: bool = i < phase_index
+				_boss_phase_pips[i].color = Color(
+					UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b,
+					0.86 if lit else 0.16
+				)
 		_update_hp_overlay(_boss_hp, _boss_overlay, p2.max_hp, p2.current_hp)
 
 func _say(lines: Array, on_done: Callable = Callable()) -> void:
@@ -511,15 +536,30 @@ func _freeze_fighters(frozen: bool) -> void:
 	if p2 != null and not p2._death_done:
 		p2.set_physics_process(not frozen)
 
-func show_banner(text: String, seconds: float = 2.0) -> void:
+func show_banner(text: String, seconds: float = 2.0, tag: String = "") -> void:
 	if text.strip_edges() == "" or seconds <= 0.0:
 		_banner.visible = false
 		_banner_panel.visible = false
+		if _banner_tag != null:
+			_banner_tag.visible = false
 		_banner_timer = 0.0
 		return
 	_banner.text = text
 	_banner.visible = true
 	_banner_panel.visible = true
+	if _banner_tag != null:
+		_banner_tag.text = tag
+		_banner_tag.visible = tag != ""
+	if tag != "":
+		_banner.position = Vector2(600, 184)
+		_banner.size = Vector2(820, 48)
+		_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_banner.add_theme_font_size_override("font_size", 28)
+	else:
+		_banner.position = Vector2(500, 184)
+		_banner.size = Vector2(920, 48)
+		_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_banner.add_theme_font_size_override("font_size", 30)
 	_banner_timer = seconds
 
 func _finish_to(next_beat: String, delay: float = 1.2, banner_text: String = "前路已清") -> void:

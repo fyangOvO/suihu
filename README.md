@@ -215,6 +215,10 @@
   - **流程**：B9 對話後進章末結算；結算頁按「回到主菜單」先進黑幕製作名單，名單縱向滾動 20 秒，可按「跳過名單」或 Esc／手柄 A 立即返回主菜單。
   - **觀感**：黑底＋紙紋＋四角金線，標題與段落用殘金／宣紙色，右下留「跳過名單」；名單內容只列實際存在的工作項，不編造人名或音頻職位。
   - **結果**：`END_CREDITS_SELFTEST result=PASS fails=[] frames=6`；UI 焦點與殼層回歸仍 PASS。
+- [x] **V0.3.14 S11 Boss 條／教學提示觀感統一（`selftest_tutorial_hint` 8 項＋`selftest_ui_shell` 21 項 PASS）**：
+  - **Boss 條**：面板改成與 Banner 同軸的 960×92，x=480，和 P1 面板留 16px；Boss 名 30px、`虎威` 小籤、右側階段名與三顆階段菱形、右側血量文字；血條 912×16，左右各內縮 24，沿用 8 段 HUD 的白線／端帽／分段刻度語言。
+  - **Banner／教學**：Banner 移到 y=176，與 Boss 面板留 20px；寬高同為 960×64。教學提示多帶 `教學` 小籤，正文避開標籤區並降為 28px；一般劇情 Banner 不帶籤、維持居中 30px。SCN-02 三條教學提示改用此格式。
+  - **驗收**：`TUTORIAL_HINT_SELFTEST result=PASS fails=[] frames=5`；`UI_SHELL_SELFTEST` 21 項、`HUD_SELFTEST`、`SELFTEST BOSS`、`FLOW_SELFTEST` 全 PASS。更新 `docs/preview/ui-boss.png`、`flow-scn05-ridge.png`，新增 `flow-scn02-tutorial.png`。
 
 ## 待實現
 
