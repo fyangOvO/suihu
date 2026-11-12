@@ -42,6 +42,14 @@ func _process(_delta: float) -> bool:
 			and scn.find_child("LampGlow", true, false) != null
 			and scn.find_child("LampFlame", true, false) != null)
 		_check("shopkeeper shadow", scn.find_child("ShopkeeperShadow", true, false) != null)
+		var shop_rim := scn.find_child("ShopkeeperRim", true, false) as Line2D
+		_check("shopkeeper rim", shop_rim != null and shop_rim.width >= 2.0)
+		var tail_line := scn.find_child("TailLine", true, false) as Line2D
+		var tail_rim := scn.find_child("TailRim", true, false) as Line2D
+		_check("tail silhouette", tail_line != null and tail_line.width >= 40.0)
+		_check("tail edge rim", tail_rim != null and tail_rim.width >= 5.0)
+		var bowl_detail_ok: bool = scn._bowls.all(Callable(self, "_bowl_has_detail"))
+		_check("bowls have body/rim/wine/glint", bowl_detail_ok)
 		_check("tail hidden at start", not scn._tail_root.visible)
 		_check("B1 no opponent", scn.p2 == null)
 		_check("P1 visual ready", scn.p1.get_node_or_null("Visual") != null)
@@ -89,3 +97,9 @@ func _process(_delta: float) -> bool:
 		quit(1)
 		return true
 	return false
+
+func _bowl_has_detail(bowl: Node) -> bool:
+	for part in ["BowlBody", "BowlRim", "BowlWine", "BowlWineGlint"]:
+		if bowl.find_child(part, true, false) == null:
+			return false
+	return true

@@ -176,10 +176,10 @@ func _build_inn_set() -> void:
 	_add_rect(_inn_front, "TableLegL", 405, 799, 26, 101, Color(0.13, 0.095, 0.07))
 	_add_rect(_inn_front, "TableLegR", 895, 799, 26, 101, Color(0.13, 0.095, 0.07))
 
-	# 三只酒碗
+	# 三只酒碗：碗身加高、碗沿提亮，酒面留一點暖色反光，960×540 才讀得出三碗
 	_bowls.clear()
 	for i in range(3):
-		_bowls.append(_make_bowl(i, 430.0 + i * 78.0, 748.0))
+		_bowls.append(_make_bowl(i, 420.0 + i * 86.0, 748.0))
 
 	# 酒壺
 	_add_poly(_inn_front, "WineJug", [
@@ -226,24 +226,40 @@ func _build_inn_set() -> void:
 	# 店家剪影：尾影先加入，後畫身體，尾巴才從影後伸出來
 	_tail_root = Node2D.new()
 	_tail_root.name = "TailRoot"
-	_tail_root.position = Vector2(1410, 806)
+	_tail_root.position = Vector2(1418, 794)
 	_tail_root.visible = false
+	var tail_points := PackedVector2Array([
+		Vector2(0, 0), Vector2(52, 4), Vector2(104, -6), Vector2(150, -42),
+		Vector2(176, -94), Vector2(166, -144), Vector2(144, -176),
+	])
 	var tail := Line2D.new()
 	tail.name = "TailLine"
-	tail.points = PackedVector2Array([
-		Vector2(0, 0), Vector2(56, -2), Vector2(104, -28), Vector2(132, -72),
-		Vector2(118, -120), Vector2(84, -152),
-	])
-	tail.width = 32.0
+	tail.points = tail_points
+	tail.width = 44.0
 	var taper := Curve.new()
 	taper.add_point(Vector2(0.0, 1.0))
 	taper.add_point(Vector2(0.35, 0.82))
 	taper.add_point(Vector2(0.70, 0.45))
 	taper.add_point(Vector2(1.0, 0.10))
 	tail.width_curve = taper
-	tail.default_color = Color(0.55, 0.46, 0.36, 0.95)
+	tail.default_color = Color(0.21, 0.18, 0.145, 1.0)
 	tail.joint_mode = Line2D.LINE_JOINT_ROUND
 	_tail_root.add_child(tail)
+	var tail_rim := Line2D.new()
+	tail_rim.name = "TailRim"
+	tail_rim.points = PackedVector2Array([
+		Vector2(0, -18), Vector2(52, -13), Vector2(104, -23), Vector2(150, -59),
+		Vector2(176, -111), Vector2(166, -161), Vector2(144, -193),
+	])
+	tail_rim.width = 6.0
+	var rim_taper := Curve.new()
+	rim_taper.add_point(Vector2(0.0, 1.0))
+	rim_taper.add_point(Vector2(0.45, 0.75))
+	rim_taper.add_point(Vector2(1.0, 0.10))
+	tail_rim.width_curve = rim_taper
+	tail_rim.default_color = Color(0.62, 0.50, 0.35, 0.45)
+	tail_rim.joint_mode = Line2D.LINE_JOINT_ROUND
+	_tail_root.add_child(tail_rim)
 	_inn_front.add_child(_tail_root)
 
 	_add_rect(_inn_front, "ShopkeeperNeck", 1346, 642, 28, 46, Color(0.130, 0.110, 0.090))
@@ -259,6 +275,17 @@ func _build_inn_set() -> void:
 	_add_poly(_inn_front, "ShopkeeperTopknot", [
 		Vector2(1352, 584), Vector2(1362, 570), Vector2(1372, 584),
 	], Color(0.130, 0.110, 0.090))
+	var shop_rim := Line2D.new()
+	shop_rim.name = "ShopkeeperRim"
+	shop_rim.points = PackedVector2Array([
+		Vector2(1324, 626), Vector2(1332, 596), Vector2(1360, 584),
+		Vector2(1388, 596), Vector2(1396, 626), Vector2(1382, 652),
+		Vector2(1416, 682), Vector2(1445, 868),
+	])
+	shop_rim.width = 3.0
+	shop_rim.default_color = Color(0.46, 0.38, 0.29, 0.30)
+	shop_rim.joint_mode = Line2D.LINE_JOINT_ROUND
+	_inn_front.add_child(shop_rim)
 
 	_canvas_mod = CanvasModulate.new()
 	_canvas_mod.name = "InnCanvasModulate"
@@ -271,23 +298,40 @@ func _make_bowl(index: int, x: float, y: float) -> Node2D:
 	root.position = Vector2(x, y)
 	_inn_front.add_child(root)
 	var body := Polygon2D.new()
+	body.name = "BowlBody"
 	body.polygon = PackedVector2Array([
-		Vector2(-26, 0), Vector2(26, 0), Vector2(19, 17), Vector2(-19, 17),
+		Vector2(-30, 0), Vector2(30, 0), Vector2(21, 24), Vector2(-21, 24),
 	])
-	body.color = Color(0.12, 0.10, 0.085)
+	body.color = Color(0.115, 0.095, 0.075)
 	root.add_child(body)
-	var rim := Polygon2D.new()
-	rim.polygon = PackedVector2Array([
-		Vector2(-29, -3), Vector2(29, -3), Vector2(25, 4), Vector2(-25, 4),
+	var belly := Polygon2D.new()
+	belly.name = "BowlBelly"
+	belly.polygon = PackedVector2Array([
+		Vector2(-23, 5), Vector2(23, 5), Vector2(17, 21), Vector2(-17, 21),
 	])
-	rim.color = Color(0.58, 0.52, 0.40)
+	belly.color = Color(0.175, 0.145, 0.110)
+	root.add_child(belly)
+	var rim := Polygon2D.new()
+	rim.name = "BowlRim"
+	rim.polygon = PackedVector2Array([
+		Vector2(-33, -4), Vector2(33, -4), Vector2(27, 6), Vector2(-27, 6),
+	])
+	rim.color = Color(0.62, 0.55, 0.42)
 	root.add_child(rim)
 	var wine := Polygon2D.new()
+	wine.name = "BowlWine"
 	wine.polygon = PackedVector2Array([
-		Vector2(-20, -1), Vector2(20, -1), Vector2(16, 3), Vector2(-16, 3),
+		Vector2(-25, -1), Vector2(25, -1), Vector2(20, 4), Vector2(-20, 4),
 	])
-	wine.color = Color(0.34, 0.18, 0.07)
+	wine.color = Color(0.46, 0.245, 0.085)
 	root.add_child(wine)
+	var glint := Polygon2D.new()
+	glint.name = "BowlWineGlint"
+	glint.polygon = PackedVector2Array([
+		Vector2(-17, -1), Vector2(-6, -2), Vector2(2, 0), Vector2(-9, 1),
+	])
+	glint.color = Color(1.0, 0.73, 0.38, 0.55)
+	root.add_child(glint)
 	return root
 
 func _add_rect(parent: Node2D, node_name: String, x: float, y: float, w: float, h: float, color: Color) -> Polygon2D:

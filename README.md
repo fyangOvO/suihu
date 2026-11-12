@@ -238,6 +238,10 @@
   - **設置標題**：`SettingsTitle` 的陰影降為 1px、去外描邊，避免 960×540 下「設置」字邊發糊像重影。
   - **防回歸**：`selftest_ui_shell` 新增「設置頁標題只出現一次」與「結算提示與按鈕至少留 16px」2 項，23 項全 PASS。
   - **截圖**：重出 `docs/preview/ui-summary.png`、`ui-settings.png`、`ui-pause.png`、`ui-death.png`、`ui-boss.png`、`flow-main-menu.png`。
+- [x] **V0.3.19 SCN-01 三碗酒／燈滅尾影觀感（`INN_SELFTEST` 30 項 PASS）**：
+  - **三碗酒**：碗身高 24px、補碗腹、碗沿、酒面與暖色反光，三碗間距 86px；960×540 下不再只剩三條亮邊。
+  - **尾影**：`TailLine` 改為 44px 寬暗褐錐形、`TailRim` 6px 暖邊；補 `ShopkeeperRim` 3px 剪影輪廓，尾巴從店家背後伸出，不再像浮在牆上的發光彎鉤。
+  - **驗收**：`INN_SELFTEST fails=[]`（30 項）；`FLOW_SELFTEST fails=0`；`FULL_RUN_SELFTEST result=PASS fails=[] frames=3775 deaths=0 beat=B9`。重出 `docs/preview/flow-scn01-drink.png`、`flow-scn01-tail.png`。
 
 ## 待實現
 
