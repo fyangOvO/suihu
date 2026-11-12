@@ -73,6 +73,10 @@ func _on_physics() -> void:
 		p2._ai_cd = 0.0
 		enemy_hp_start = p2.current_hp
 		player_hp_start = p1.current_hp
+		_check("ghost presence built", game.find_child("GhostPresence", true, false) != null)
+		_check("ghost cold fog", game.find_child("GhostFogLow", true, false) != null)
+		_check("ghost tutorial focus", game.find_child("TutorialFocus", true, false) != null)
+		_check("ghost visual scaled up", p2.get_node("Visual").scale.y >= 0.65)
 
 	if n > 5:
 		if p2._state in CORPSE_ATTACKS:
@@ -115,6 +119,8 @@ func _on_physics() -> void:
 		_check("enemy died from player attacks", p2._death_done)
 		_check("B3 marked clear", cm.is_clear("B3"))
 		_check("SCN-02 queues B4", game._stage_over and game._pending_next == "B4")
+		var focus := game.find_child("TutorialFocus", true, false)
+		_check("tutorial focus hides on death", focus == null or not focus.visible)
 		print("SCN02_FIGHT_SELFTEST result=", "PASS" if fails.is_empty() else "FAIL",
 			" fails=", fails, " frames=", n, " p1_hp=", p1.current_hp, " p2_hp=", p2.current_hp,
 			" min_p2_hp=", enemy_hp_min, " presses=", attack_press_count,
