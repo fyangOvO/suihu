@@ -6,6 +6,7 @@ const SCN04 := "res://scenes/chapters/SCN_04_Temple.tscn"
 var main: Node
 var fails: Array[String] = []
 var frame: int = 0
+var blink_eye: ColorRect
 
 func _check(label: String, ok: bool) -> void:
 	if not ok:
@@ -39,10 +40,18 @@ func _process(_delta: float) -> bool:
 		_check("right eye exists", bg.get_node_or_null("TempleProps/IdolEyeR") != null)
 		_check("candle exists", bg.get_node_or_null("TempleProps/Candle360") != null)
 		_check("temple banner exists", bg.get_node_or_null("TempleProps/TempleBanner548") != null)
+		_check("eye socket exists", bg.get_node_or_null("TempleProps/IdolSocketL") != null and bg.get_node_or_null("TempleProps/IdolSocketR") != null)
+		_check("face brow/nose exists", bg.get_node_or_null("TempleProps/IdolBrowL") != null and bg.get_node_or_null("TempleProps/IdolNose") != null)
+		_check("warm halo exists", bg.get_node_or_null("TempleProps/CandleHalo360") != null and bg.get_node_or_null("TempleProps/IdolHalo") != null)
+		blink_eye = bg.get_node_or_null("TempleProps/IdolEyeL") as ColorRect
 		main._blink_once()
 		_check("blink once", main._blink_count == 1)
 		main._blink_once()
 		_check("blink not repeated", main._blink_count == 1)
+		main._update_blink(0.06)
+		_check("eye closes mid-blink", blink_eye != null and blink_eye.scale.y < 0.70)
+		main._update_blink(0.30)
+		_check("eye opens after blink", blink_eye != null and abs(blink_eye.scale.y - 1.0) < 0.03 and not main._blink_active)
 		print("SCN04_TEMPLE_SELFTEST result=", "PASS" if fails.is_empty() else "FAIL", " fails=", fails)
 		quit(0)
 		return true

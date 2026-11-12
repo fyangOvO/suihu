@@ -11,6 +11,8 @@ const GOLD := Color(0.66, 0.50, 0.26)
 
 var _idol_eyes: Array[ColorRect] = []
 var _blink_count: int = 0
+var _blink_active: bool = false
+var _blink_t: float = 0.0
 var _burning: bool = false
 
 func scene_id() -> String:
@@ -41,12 +43,28 @@ func _after_b4() -> void:
 	await get_tree().create_timer(1.8).timeout
 	_cm().goto_beat("B5")
 
-func _tick_stage(_delta: float) -> void:
+func _tick_stage(delta: float) -> void:
+	_update_blink(delta)
 	if not _burning:
 		return
 	for eye in _idol_eyes:
 		if is_instance_valid(eye):
 			eye.modulate.a = 0.82 + sin(Time.get_ticks_msec() * 0.004) * 0.12
+
+func _update_blink(delta: float) -> void:
+	if not _blink_active:
+		return
+	_blink_t += delta
+	var open_amount := 1.0
+	if _blink_t <= 0.10:
+		open_amount = 1.0 - 0.90 * (_blink_t / 0.10)
+	elif _blink_t <= 0.26:
+		open_amount = 0.10 + 0.90 * ((_blink_t - 0.10) / 0.16)
+	else:
+		_blink_active = false
+	for eye in _idol_eyes:
+		if is_instance_valid(eye):
+			eye.scale.y = open_amount
 
 func _build_temple() -> void:
 	var bg := get_node_or_null("Background")
@@ -99,13 +117,17 @@ func _build_temple() -> void:
 		_poly(props, "FlameCore%d" % x, [
 			Vector2(x + 9, 532), Vector2(x + 14, 548), Vector2(x + 9, 556), Vector2(x + 4, 548),
 		], Color(1.0, 0.88, 0.55, 0.95))
-		_add_glow(props, "CandleGlow%d" % x, Vector2(x + 9, 548), 118, 82, Color(1, 0.55, 0.22, 0.45))
+		_add_glow(props, "CandleGlow%d" % x, Vector2(x + 9, 548), 132, 92, Color(1, 0.55, 0.22, 0.50))
+		_add_glow(props, "CandleHalo%d" % x, Vector2(x + 9, 548), 250, 176, Color(1, 0.42, 0.16, 0.16))
+		_add_glow(props, "CandlePool%d" % x, Vector2(x + 9, 650), 220, 90, Color(1, 0.36, 0.12, 0.18))
 	_burning = true
 
 	# 供桌的暖光：把整塊祭台從背景裡拉出來，也让山神像的輪廓有光。
-	_add_glow(props, "AltarLight", Vector2(510, 690), 330, 190, Color(1.0, 0.54, 0.20, 0.40))
-	_add_glow(props, "FloorLight", Vector2(520, 820), 460, 170, Color(1.0, 0.45, 0.16, 0.16))
-	_add_glow(props, "TempleWash", Vector2(700, 560), 620, 460, Color(1.0, 0.42, 0.14, 0.11))
+	_add_glow(props, "AltarLight", Vector2(510, 690), 360, 210, Color(1.0, 0.54, 0.20, 0.46))
+	_add_glow(props, "AltarFrontLight", Vector2(510, 730), 310, 128, Color(1.0, 0.36, 0.10, 0.20))
+	_add_glow(props, "FloorLight", Vector2(520, 820), 520, 190, Color(1.0, 0.45, 0.16, 0.20))
+	_add_glow(props, "TempleWash", Vector2(700, 560), 760, 520, Color(1.0, 0.42, 0.14, 0.13))
+	_add_glow(props, "IdolHalo", Vector2(700, 470), 390, 280, Color(1.0, 0.52, 0.20, 0.17))
 	for x in [390, 516, 642]:
 		_add_glow(props, "IncenseGlow%d" % x, Vector2(x, 600), 54, 44, Color(1.0, 0.48, 0.16, 0.12))
 
@@ -119,14 +141,29 @@ func _build_temple() -> void:
 	_poly(props, "IdolFace", [
 		Vector2(610, 360), Vector2(810, 360), Vector2(830, 474), Vector2(590, 474),
 	], Color(0.16, 0.145, 0.115))
+	_poly(props, "IdolBrowL", [
+		Vector2(640, 392), Vector2(690, 396), Vector2(688, 404), Vector2(644, 400),
+	], Color(0.075, 0.062, 0.050))
+	_poly(props, "IdolBrowR", [
+		Vector2(730, 396), Vector2(780, 392), Vector2(776, 400), Vector2(732, 404),
+	], Color(0.075, 0.062, 0.050))
+	_poly(props, "IdolNose", [
+		Vector2(692, 404), Vector2(718, 404), Vector2(724, 454), Vector2(686, 454),
+	], Color(0.175, 0.155, 0.123))
+	_poly(props, "IdolNoseShadow", [
+		Vector2(692, 424), Vector2(702, 424), Vector2(702, 458), Vector2(688, 454),
+	], Color(0.105, 0.088, 0.070))
 	_poly(props, "IdolBeard", [
 		Vector2(650, 456), Vector2(770, 456), Vector2(740, 560), Vector2(680, 560),
 	], Color(0.075, 0.065, 0.055))
 	for x in [668, 752]:
+		var socket_name := "IdolSocket%s" % ("L" if x < 700 else "R")
+		_rect(props, socket_name, x - 5, 406, 32, 20, Color(0.045, 0.038, 0.032))
 		var eye := ColorRect.new()
 		eye.name = "IdolEye%s" % ("L" if x < 700 else "R")
 		eye.position = Vector2(x, 412)
 		eye.size = Vector2(22, 8)
+		eye.pivot_offset = Vector2(11, 4)
 		eye.color = GOLD
 		props.add_child(eye)
 		_idol_eyes.append(eye)
@@ -143,12 +180,11 @@ func _blink_once() -> void:
 	if _blink_count > 0:
 		return
 	_blink_count += 1
+	_blink_active = true
+	_blink_t = 0.0
 	for eye in _idol_eyes:
-		if not is_instance_valid(eye):
-			continue
-		var tw := create_tween()
-		tw.tween_property(eye, "scale:y", 0.10, 0.10)
-		tw.tween_property(eye, "scale:y", 1.0, 0.16)
+		if is_instance_valid(eye):
+			eye.scale.y = 1.0
 
 func _rect(parent: Node2D, node_name: String, x: float, y: float, w: float, h: float, color: Color) -> void:
 	_poly(parent, node_name, [Vector2(x, y), Vector2(x + w, y), Vector2(x + w, y + h), Vector2(x, y + h)], color)
