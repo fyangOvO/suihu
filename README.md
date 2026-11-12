@@ -242,6 +242,11 @@
   - **三碗酒**：碗身高 24px、補碗腹、碗沿、酒面與暖色反光，三碗間距 86px；960×540 下不再只剩三條亮邊。
   - **尾影**：`TailLine` 改為 44px 寬暗褐錐形、`TailRim` 6px 暖邊；補 `ShopkeeperRim` 3px 剪影輪廓，尾巴從店家背後伸出，不再像浮在牆上的發光彎鉤。
   - **驗收**：`INN_SELFTEST fails=[]`（30 項）；`FLOW_SELFTEST fails=0`；`FULL_RUN_SELFTEST result=PASS fails=[] frames=3775 deaths=0 beat=B9`。重出 `docs/preview/flow-scn01-drink.png`、`flow-scn01-tail.png`。
+- [x] **V0.3.20 SCN-02 伥鬼剪影與教學聚焦（`SCN02_FIGHT_SELFTEST` 12 項 PASS）**：
+  - **伥鬼存在感**：`CORPSE_VISUAL_SCALE=0.68`、`CORPSE_VISUAL_Y=-198` 把 P2 放大並保持腳底貼地；新增 `GhostPresence`（腳影、高低冷霧、左右煙絲、入場霧爆散），碰撞盒不變。
+  - **教學連結**：新增 `TutorialFocus` 四角金框＋頂部菱形，跟隨 P2 並緩慢呼吸；三段教學期間顯示，第 10.8 秒或伥鬼死亡後隱藏。
+  - **截圖**：`tools/capture_scn02.gd` 重寫，先凍住入場站位拍 `flow-scn02-corpse.png`，再觸發第一段教學拍 `flow-scn02-tutorial.png`。
+  - **驗收**：`SCN02_FIGHT_SELFTEST result=PASS fails=[] frames=767`；`FLOW_SELFTEST fails=0`；`TUTORIAL_HINT_SELFTEST PASS`；`FULL_RUN_SELFTEST result=PASS fails=[] frames=3901 deaths=0 beat=B9`。
 
 ## 待實現
 
