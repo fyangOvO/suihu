@@ -45,10 +45,18 @@ func _process(_delta: float) -> bool:
 		_check("forest branch leaves exist", bg.get_node_or_null("Tree92/Branch92LAALeaf") != null)
 		_check("forest crown exists", bg.get_node_or_null("Crown0") != null)
 		_check("ground mist wisps exist", bg.get_node_or_null("Mist90") != null and bg.get_node_or_null("Mist1370") != null)
+		_check("moon glow exists", bg.get_node_or_null("MoonGlowWide") != null and bg.get_node_or_null("MoonGlowCore") != null)
+		_check("moon shafts exist", bg.get_node_or_null("MoonShaftVolume") != null and bg.get_node_or_null("MoonShaftA") != null and bg.get_node_or_null("MoonShaftB") != null and bg.get_node_or_null("MoonShaftC") != null and bg.get_node_or_null("MoonShaftD") != null)
+		var shaft_a := bg.get_node_or_null("MoonShaftA")
+		var shaft_tex: Sprite2D = null
+		if shaft_a != null:
+			shaft_tex = shaft_a.get_node_or_null("MoonShaftASprite") as Sprite2D
+		_check("moon shafts are additive", shaft_tex != null and shaft_tex.material is CanvasItemMaterial and (shaft_tex.material as CanvasItemMaterial).blend_mode == CanvasItemMaterial.BLEND_MODE_ADD)
 		var far := bg.get_node_or_null("FogFar") as TextureRect
 		var mid := bg.get_node_or_null("FogMid") as TextureRect
 		var near_layer := bg.get_node_or_null("FogNear") as TextureRect
 		var trunk := bg.get_node_or_null("Tree92") as Node2D
+		_check("moon shafts behind trunks", shaft_a != null and trunk != null and shaft_a.get_index() < trunk.get_index())
 		_check("FogFar is behind trunks", far != null and trunk != null and far.get_index() < trunk.get_index())
 		_check("FogNear is in front of trunks", near_layer != null and trunk != null and near_layer.get_index() > trunk.get_index())
 		_check("fog bands stack high to low", far != null and mid != null and near_layer != null and far.position.y < mid.position.y and mid.position.y < near_layer.position.y)

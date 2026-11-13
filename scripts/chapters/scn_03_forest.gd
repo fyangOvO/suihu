@@ -10,6 +10,8 @@ const FOREST_RIM := Color(0.19, 0.25, 0.20, 0.24)
 const FOG_TRAVEL := 600.0
 const FOG_TEXTURE_W := 768
 const FOG_TEXTURE_H := 160
+const BEAM_TEXTURE_W := 256
+const BEAM_TEXTURE_H := 512
 
 var _fog_layers: Array[TextureRect] = []
 var _fog_speeds: Array[float] = []
@@ -65,6 +67,9 @@ func _build_fog() -> void:
 
 	# 遠霧先掛在背景後方，讓樹幹真正遮住它；中／近霧再依序蓋到林影上。
 	_add_fog_layer(bg, "FogFar", 0.0065, 18.0, 90.0, 258.0, Color(0.54, 0.66, 0.70, 0.40), -80.0)
+	_add_moon_glow(bg)
+	# 光柱放在樹幹之前，讓枝幹真正遮出「樹隙」，而不是浮在林影上的舞台燈。
+	_add_moon_shafts(bg)
 	_add_trunks(bg)
 	_add_canopy(bg)
 	_add_fog_layer(bg, "FogMid", 0.0110, 46.0, 338.0, 274.0, Color(0.62, 0.70, 0.64, 0.34), -260.0)
@@ -148,6 +153,87 @@ func _add_ground_wisp(parent: Node, node_name: String, pos: Vector2, size: Vecto
 	wisp.modulate = Color(1.0, 1.0, 1.0, alpha)
 	wisp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(wisp)
+
+func _add_moon_glow(parent: Node) -> void:
+	var tex := _make_radial_texture()
+	_add_glow_sprite(parent, "MoonGlowWide", Vector2(960, 238), Vector2(6.2, 4.0), Color(0.58, 0.72, 0.78, 0.085), tex)
+	_add_glow_sprite(parent, "MoonGlowCore", Vector2(960, 238), Vector2(3.0, 2.2), Color(0.70, 0.82, 0.86, 0.120), tex)
+
+func _add_glow_sprite(parent: Node, node_name: String, pos: Vector2, scale: Vector2, tint: Color, tex: Texture2D) -> void:
+	var glow := Sprite2D.new()
+	glow.name = node_name
+	glow.texture = tex
+	glow.position = pos
+	glow.scale = scale
+	glow.modulate = tint
+	glow.material = _additive_material()
+	parent.add_child(glow)
+
+func _make_radial_texture() -> GradientTexture2D:
+	var grad := Gradient.new()
+	grad.set_color(0, Color(1, 1, 1, 1))
+	grad.set_color(1, Color(1, 1, 1, 0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = grad
+	tex.width = 128
+	tex.height = 128
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	return tex
+
+func _add_moon_shafts(parent: Node) -> void:
+	# 一層極淡的體積底光，再加四束窄光柱；避免三束重疊成一根大灰柱。
+	_add_beam(parent, "MoonShaftVolume", Vector2(960, 246), Vector2(880, 920), 1.45, 0.18, 5)
+	_add_beam(parent, "MoonShaftA", Vector2(960, 246), Vector2(620, 900), 0.36, 0.92, 11)
+	_add_beam(parent, "MoonShaftB", Vector2(960, 246), Vector2(790, 940), 0.30, 0.80, 23)
+	_add_beam(parent, "MoonShaftC", Vector2(960, 246), Vector2(980, 920), 0.26, 0.70, 31)
+	_add_beam(parent, "MoonShaftD", Vector2(960, 246), Vector2(1130, 870), 0.34, 0.86, 37)
+
+func _add_beam(parent: Node, node_name: String, from: Vector2, to: Vector2, width_scale: float, alpha: float, seed: int) -> void:
+	var dir := to - from
+	var length := dir.length()
+	var pivot := Node2D.new()
+	pivot.name = node_name
+	pivot.position = from
+	pivot.rotation = Vector2(0.0, 1.0).angle_to(dir.normalized())
+	parent.add_child(pivot)
+
+	var sprite := Sprite2D.new()
+	sprite.name = node_name + "Sprite"
+	sprite.texture = _make_beam_texture(seed)
+	var sy := length / float(BEAM_TEXTURE_H)
+	sprite.scale = Vector2(width_scale, sy)
+	# 貼圖頂端對齊光柱起點，底端落在 to。
+	sprite.position = Vector2(0.0, (float(BEAM_TEXTURE_H) * 0.5) * sy)
+	sprite.modulate = Color(0.72, 0.84, 0.88, alpha)
+	sprite.material = _additive_material()
+	pivot.add_child(sprite)
+
+func _make_beam_texture(seed: int) -> ImageTexture:
+	var noise := FastNoiseLite.new()
+	noise.seed = seed
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
+	noise.frequency = 0.035
+	noise.fractal_octaves = 2
+	var img := Image.create(BEAM_TEXTURE_W, BEAM_TEXTURE_H, false, Image.FORMAT_RGBA8)
+	for py in range(BEAM_TEXTURE_H):
+		var t := float(py) / float(BEAM_TEXTURE_H - 1)
+		var half_width := 7.0 + 82.0 * pow(t, 0.82)
+		var fade := pow(1.0 - t, 0.60)
+		if t < 0.05:
+			fade *= t / 0.05
+		for px in range(BEAM_TEXTURE_W):
+			var d: float = abs(float(px) - float(BEAM_TEXTURE_W) * 0.5) / half_width
+			var n := noise.get_noise_2d(float(px), float(py))
+			var a := exp(-d * d * 4.2) * fade * (0.24 + 0.04 * n)
+			img.set_pixel(px, py, Color(1.0, 1.0, 1.0, clampf(a, 0.0, 1.0)))
+	return ImageTexture.create_from_image(img)
+
+func _additive_material() -> CanvasItemMaterial:
+	var mat := CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	return mat
 
 func _add_trunks(parent: Node) -> void:
 	# 近景／中景／遠景分開，讓左右邊緣不是一整排同寬黑柱。
