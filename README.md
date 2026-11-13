@@ -276,6 +276,14 @@
   - **月影與遠岸**：月影從整齊七層改成九條帶橫向偏移的碎月，水面不再像漏斗；新增 `FarRidge` 遠岸嶺線與 `PoolMist` 水線薄霧，讓大面積黑空有前後景。
   - **玩家倒影**：`PoolReflection` 加冷色 modulate，白虎倒影補 `WhiteTigerUnderbelly` 與 `WhiteTigerHeadRim`，壓低過亮的水面白塊。
   - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（31 項，新增虎腿、肋線血跡、面部、倒影腿、白虎頭緣、遠岸薄霧）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
+- [x] **V0.3.26 SCN-06 水潭只調色與提亮（`SCN06_POOL_SELFTEST` 31 項 PASS）**：
+  - **虎屍提亮**：`TigerBody`／`TigerHead`／`TigerTail`、四腿與腳掌整體上調，`TigerBody` 由近黑褐抬到 `(0.125,0.112,0.092,0.99)`，頭部抬到 `(0.175,0.155,0.125,0.99)`，和石台剪影拉開；趾節、膝線同步提亮。
+  - **虎屍細節**：血跡與血泊、四條肋線、虎斑、背脊冷邊、頭頂冷邊、脊線、腹線、胯線、耳、吻部、鼻頭、獠牙、鬍鬚、閉眼全部提高明度與 alpha，960×540 下能讀出頭、脊、四腿，不再只是暗塊。
+  - **白虎倒影下調**：`WhiteTigerBody`／`Head`／`Ear`／`Tail`／`Leg`／`Paw`／`Rim`／`HeadRim`／`Fang`／`Eye` 與 `PoolReflection.root.modulate` 全部壓低，白虎倒影回到水面冷灰，不再像亮白貼片。
+  - **水中虎影微調**：`TigerReflection` 本體、頭、腿、掌、吻部、脊線、頭緣與虎斑略提，保持水下比岸上更暗的層級。
+  - **邊界**：只改顏色與 alpha，未新增節點、未改幾何、未移動位置。
+  - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（31 項）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
+
 
 
 ## 待實現

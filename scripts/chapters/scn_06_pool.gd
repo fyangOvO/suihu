@@ -110,7 +110,7 @@ func _build_pool_reflection() -> void:
 	root.name = "PoolReflection"
 	root.position = Vector2(600, 930)
 	root.scale = Vector2(1.0, -0.90)
-	root.modulate = Color(0.78, 0.85, 0.92, 1.0)
+	root.modulate = Color(0.72, 0.80, 0.88, 1.0)
 	parent.add_child(root)
 
 	# 正常倒影：先只留一個潮濕、發暗的人形，等字幕推進再換成白虎。
@@ -147,28 +147,28 @@ func _build_pool_reflection() -> void:
 		Vector2(-96, -28), Vector2(-66, -56), Vector2(-18, -64),
 		Vector2(38, -60), Vector2(78, -46), Vector2(94, -20),
 		Vector2(86, 2), Vector2(30, 6), Vector2(-42, 4), Vector2(-88, -6),
-	], Color(0.62, 0.66, 0.60, 0.46))
+	], Color(0.50, 0.55, 0.50, 0.40))
 	_poly(_reflection_tiger, "WhiteTigerUnderbelly", [
 		Vector2(-88, -8), Vector2(-40, 2), Vector2(36, 4), Vector2(88, -6),
 		Vector2(82, 10), Vector2(26, 14), Vector2(-48, 12),
-	], Color(0.20, 0.23, 0.21, 0.34))
+	], Color(0.18, 0.21, 0.19, 0.34))
 	_poly(_reflection_tiger, "WhiteTigerHead", [
 		Vector2(72, -54), Vector2(108, -62), Vector2(132, -44),
 		Vector2(136, -22), Vector2(116, -4), Vector2(86, -10), Vector2(68, -28),
-	], Color(0.68, 0.71, 0.64, 0.50))
+	], Color(0.54, 0.59, 0.53, 0.44))
 	for ear_pos in [Vector2(78, -58), Vector2(108, -60)]:
 		_poly(_reflection_tiger, "WhiteTigerEar%d" % int(ear_pos.x), [
 			ear_pos, ear_pos + Vector2(10, -18), ear_pos + Vector2(20, -2),
-		], Color(0.66, 0.70, 0.64, 0.50))
+		], Color(0.50, 0.55, 0.50, 0.44))
 	_poly(_reflection_tiger, "WhiteTigerTail", [
 		Vector2(-88, -8), Vector2(-128, 4), Vector2(-150, 20),
 		Vector2(-142, 30), Vector2(-110, 18), Vector2(-88, 10),
-	], Color(0.62, 0.66, 0.60, 0.42))
+	], Color(0.48, 0.53, 0.48, 0.38))
 	# 直裰：不是給虎穿衣服，而是把「人形倒影披著的白袍」留在老虎肩上。
 	_poly(_reflection_tiger, "WhiteRobe", [
 		Vector2(-54, -58), Vector2(22, -64), Vector2(54, -38),
 		Vector2(42, -4), Vector2(-30, 0), Vector2(-66, -22),
-	], Color(0.27, 0.27, 0.23, 0.44))
+	], Color(0.24, 0.24, 0.20, 0.40))
 	# 水面把白虎的背脊切出一條冷白邊，讓剪影不至於變成發亮的水斑。
 	var white_rim := Line2D.new()
 	white_rim.name = "WhiteTigerRim"
@@ -177,7 +177,7 @@ func _build_pool_reflection() -> void:
 		Vector2(38, -56), Vector2(78, -42), Vector2(96, -22), Vector2(94, -10),
 	])
 	white_rim.width = 2.0
-	white_rim.default_color = Color(0.78, 0.84, 0.78, 0.58)
+	white_rim.default_color = Color(0.64, 0.72, 0.67, 0.44)
 	_reflection_tiger.add_child(white_rim)
 	var white_head_rim := Line2D.new()
 	white_head_rim.name = "WhiteTigerHeadRim"
@@ -186,7 +186,7 @@ func _build_pool_reflection() -> void:
 		Vector2(136, -22), Vector2(116, -4),
 	])
 	white_head_rim.width = 1.6
-	white_head_rim.default_color = Color(0.80, 0.86, 0.80, 0.52)
+	white_head_rim.default_color = Color(0.66, 0.74, 0.69, 0.42)
 	_reflection_tiger.add_child(white_head_rim)
 	for i in range(3):
 		var stripe := Line2D.new()
@@ -196,44 +196,44 @@ func _build_pool_reflection() -> void:
 			Vector2(-28.0 + i * 30.0, -34),
 		])
 		stripe.width = 2.0
-		stripe.default_color = Color(0.12, 0.16, 0.15, 0.42)
+		stripe.default_color = Color(0.10, 0.14, 0.13, 0.44)
 		_reflection_tiger.add_child(stripe)
 	for leg_x in [-64.0, -20.0, 30.0, 60.0]:
 		_poly(_reflection_tiger, "WhiteTigerLeg%d" % int(leg_x), [
 			Vector2(leg_x, -8), Vector2(leg_x + 8, 6), Vector2(leg_x + 16, 14),
 			Vector2(leg_x + 14, 22), Vector2(leg_x + 2, 18), Vector2(leg_x - 4, 4),
-		], Color(0.60, 0.64, 0.58, 0.44))
+		], Color(0.48, 0.53, 0.48, 0.38))
 	# 舉爪：白虎倒影的右手抬到水面上緣，讓「不是武松」的輪廓更明確。
 	_poly(_reflection_tiger, "WhiteTigerPaw", [
 		Vector2(126, -28), Vector2(150, -50), Vector2(168, -34),
 		Vector2(164, -12), Vector2(144, -4), Vector2(128, -12),
-	], Color(0.74, 0.77, 0.70, 0.48))
+	], Color(0.58, 0.62, 0.56, 0.42))
 	for claw_x in [150.0, 158.0, 166.0]:
 		var claw := Line2D.new()
 		claw.name = "WhiteTigerClaw%d" % int(claw_x)
 		claw.points = PackedVector2Array([Vector2(claw_x, -20), Vector2(claw_x + 5, -31)])
 		claw.width = 1.5
-		claw.default_color = Color(0.20, 0.22, 0.19, 0.55)
+		claw.default_color = Color(0.18, 0.20, 0.18, 0.50)
 		_reflection_tiger.add_child(claw)
 	_poly(_reflection_tiger, "WhiteTigerNose", [
 		Vector2(126, -22), Vector2(136, -24), Vector2(132, -14),
-	], Color(0.16, 0.18, 0.16, 0.62))
+	], Color(0.14, 0.16, 0.14, 0.58))
 	for fang_x in [124.0, 136.0]:
 		_poly(_reflection_tiger, "WhiteTigerFang%d" % int(fang_x), [
 			Vector2(fang_x, -8), Vector2(fang_x + 4, -9), Vector2(fang_x + 2, 2),
-		], Color(0.84, 0.86, 0.78, 0.52))
+		], Color(0.72, 0.74, 0.66, 0.46))
 	for stripe_x in [84.0, 104.0, 118.0]:
 		var head_stripe := Line2D.new()
 		head_stripe.name = "WhiteTigerHeadStripe%d" % int(stripe_x)
 		head_stripe.points = PackedVector2Array([Vector2(stripe_x, -56), Vector2(stripe_x + 6, -36)])
 		head_stripe.width = 2.0
-		head_stripe.default_color = Color(0.12, 0.16, 0.15, 0.46)
+		head_stripe.default_color = Color(0.10, 0.14, 0.13, 0.44)
 		_reflection_tiger.add_child(head_stripe)
 	var eye := Line2D.new()
 	eye.name = "WhiteTigerEye"
 	eye.points = PackedVector2Array([Vector2(100, -40), Vector2(112, -38)])
 	eye.width = 2.5
-	eye.default_color = Color(0.78, 0.64, 0.34, 0.58)
+	eye.default_color = Color(0.72, 0.58, 0.30, 0.52)
 	_reflection_tiger.add_child(eye)
 
 	# 人形／白虎腳下的水面波紋，讓倒影不是浮貼在黑水上。
@@ -279,10 +279,10 @@ func _build_tiger_corpse(parent: Node) -> void:
 	ledge_edge.default_color = Color(0.34, 0.38, 0.34, 0.45)
 	parent.add_child(ledge_edge)
 	# 血跡先鋪在石台上，虎身再壓上去；只露邊緣，不搶剪影。
-	var blood := _ellipse(Vector2(1540, 708), 205, 20, Color(0.22, 0.055, 0.040, 0.38))
+	var blood := _ellipse(Vector2(1540, 708), 205, 20, Color(0.31, 0.075, 0.048, 0.44))
 	blood.name = "TigerBlood"
 	parent.add_child(blood)
-	var blood_pool := _ellipse(Vector2(1608, 712), 54, 10, Color(0.30, 0.075, 0.050, 0.34))
+	var blood_pool := _ellipse(Vector2(1608, 712), 54, 10, Color(0.38, 0.095, 0.058, 0.38))
 	blood_pool.name = "TigerBloodPool"
 	parent.add_child(blood_pool)
 	var body: Array = [
@@ -302,11 +302,11 @@ func _build_tiger_corpse(parent: Node) -> void:
 		["TigerBody", body], ["TigerHead", head], ["TigerTail", tail],
 	]
 	for item in parts:
-		var part_color := Color(0.065, 0.060, 0.052, 0.99)
+		var part_color := Color(0.125, 0.112, 0.092, 0.99)
 		if item[0] == "TigerHead":
-			part_color = Color(0.105, 0.092, 0.075, 0.99)
+			part_color = Color(0.175, 0.155, 0.125, 0.99)
 		elif item[0] == "TigerTail":
-			part_color = Color(0.082, 0.074, 0.060, 0.99)
+			part_color = Color(0.135, 0.120, 0.100, 0.99)
 		var p := _poly(parent, item[0], item[1], part_color)
 		p.position = Vector2(1450, 660)
 		_tiger_parts.append(p)
@@ -318,14 +318,14 @@ func _build_tiger_corpse(parent: Node) -> void:
 			Vector2(70 + i * 30, -12), Vector2(82 + i * 30, 8), Vector2(76 + i * 30, 32),
 		])
 		rib.width = 2.0
-		rib.default_color = Color(0.34, 0.27, 0.20, 0.34)
+		rib.default_color = Color(0.43, 0.35, 0.26, 0.40)
 		rib.position = Vector2(1450, 660)
 		parent.add_child(rib)
 	# 虎斑：只留幾道暗赭，遠看是剪影，近看能認出虎。
 	for stripe in [Vector2(60, -24), Vector2(104, -32), Vector2(150, -28), Vector2(190, -24), Vector2(120, 34), Vector2(168, 30)]:
 		var s := _poly(parent, "TigerStripe%d" % int(stripe.x), [
 			stripe, stripe + Vector2(12, -8), stripe + Vector2(22, 2), stripe + Vector2(8, 7),
-		], Color(0.30, 0.15, 0.080, 0.72))
+		], Color(0.40, 0.19, 0.090, 0.78))
 		s.position = Vector2(1450, 660)
 		_tiger_parts.append(s)
 	# 月照在虎背上的冷邊，讓黑剪影不至於糊進夜色。
@@ -336,7 +336,7 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(224, -15), Vector2(246, 15),
 	])
 	rim.width = 4.0
-	rim.default_color = Color(0.60, 0.62, 0.53, 0.76)
+	rim.default_color = Color(0.68, 0.70, 0.58, 0.82)
 	rim.position = Vector2(1450, 660)
 	parent.add_child(rim)
 	# 頭頂另補一段月邊，讓虎頭從夜色裡先被讀出來。
@@ -347,7 +347,7 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(294, -18), Vector2(276, -4),
 	])
 	head_rim.width = 3.0
-	head_rim.default_color = Color(0.62, 0.64, 0.55, 0.72)
+	head_rim.default_color = Color(0.70, 0.72, 0.60, 0.78)
 	head_rim.position = Vector2(1450, 660)
 	parent.add_child(head_rim)
 
@@ -359,7 +359,7 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(172, -31), Vector2(216, -12),
 	])
 	spine.width = 4.5
-	spine.default_color = Color(0.54, 0.46, 0.34, 0.72)
+	spine.default_color = Color(0.64, 0.53, 0.37, 0.80)
 	spine.position = Vector2(1450, 660)
 	parent.add_child(spine)
 
@@ -371,14 +371,14 @@ func _build_tiger_corpse(parent: Node) -> void:
 		Vector2(190, 34), Vector2(226, 12),
 	])
 	belly.width = 2.0
-	belly.default_color = Color(0.30, 0.26, 0.20, 0.42)
+	belly.default_color = Color(0.40, 0.35, 0.27, 0.46)
 	belly.position = Vector2(1450, 660)
 	parent.add_child(belly)
 	var haunch := Line2D.new()
 	haunch.name = "TigerHaunch"
 	haunch.points = PackedVector2Array([Vector2(154, -6), Vector2(186, 16), Vector2(176, 42)])
 	haunch.width = 2.0
-	haunch.default_color = Color(0.28, 0.25, 0.19, 0.38)
+	haunch.default_color = Color(0.37, 0.32, 0.25, 0.42)
 	haunch.position = Vector2(1450, 660)
 	parent.add_child(haunch)
 
@@ -386,34 +386,34 @@ func _build_tiger_corpse(parent: Node) -> void:
 	for ear in [Vector2(236, -54), Vector2(278, -50)]:
 		var ear_poly := _poly(parent, "TigerEar%d" % int(ear.x), [
 			ear, ear + Vector2(14, -20), ear + Vector2(24, 2),
-		], Color(0.11, 0.10, 0.085, 0.98))
+		], Color(0.18, 0.16, 0.128, 0.98))
 		ear_poly.position = Vector2(1450, 660)
 	var muzzle := _poly(parent, "TigerMuzzle", [
 		Vector2(274, -10), Vector2(296, -8), Vector2(292, 4),
 		Vector2(272, 6),
-	], Color(0.16, 0.135, 0.105, 0.95))
+	], Color(0.25, 0.215, 0.17, 0.95))
 	muzzle.position = Vector2(1450, 660)
 	# 鼻頭、齒與鬚：只留三筆，但能把虎頭從石台暗影裡提出來。
 	_poly(parent, "TigerNose", [
 		Vector2(286, -8), Vector2(296, -6), Vector2(292, 0), Vector2(284, -1),
-	], Color(0.055, 0.045, 0.038, 0.95)).position = Vector2(1450, 660)
+	], Color(0.075, 0.062, 0.050, 0.95)).position = Vector2(1450, 660)
 	for tooth_x in [278.0, 288.0]:
 		_poly(parent, "TigerFang%d" % int(tooth_x), [
 			Vector2(tooth_x, 2), Vector2(tooth_x + 4, 3), Vector2(tooth_x + 2, 9),
-		], Color(0.74, 0.70, 0.56, 0.60)).position = Vector2(1450, 660)
+		], Color(0.80, 0.76, 0.62, 0.66)).position = Vector2(1450, 660)
 	for whisker in [Vector2(294, -5), Vector2(296, -2), Vector2(292, 1)]:
 		var w := Line2D.new()
 		w.name = "TigerWhisker%d" % int(whisker.y + 6)
 		w.points = PackedVector2Array([whisker, whisker + Vector2(16, -3)])
 		w.width = 1.0
-		w.default_color = Color(0.48, 0.44, 0.34, 0.34)
+		w.default_color = Color(0.56, 0.51, 0.39, 0.36)
 		w.position = Vector2(1450, 660)
 		parent.add_child(w)
 	var eye := Line2D.new()
 	eye.name = "TigerClosedEye"
 	eye.points = PackedVector2Array([Vector2(258, -28), Vector2(270, -26)])
 	eye.width = 2.0
-	eye.default_color = Color(0.62, 0.56, 0.44, 0.42)
+	eye.default_color = Color(0.70, 0.64, 0.50, 0.50)
 	eye.position = Vector2(1450, 660)
 	parent.add_child(eye)
 
@@ -426,12 +426,12 @@ func _build_tiger_corpse(parent: Node) -> void:
 			leg, leg + Vector2(9, 30), leg + Vector2(18, 43),
 			leg + Vector2(30, 46), leg + Vector2(28, 54),
 			leg + Vector2(12, 52), leg + Vector2(4, 36),
-		], Color(0.17, 0.145, 0.12, 0.98))
+		], Color(0.235, 0.205, 0.168, 0.98))
 		leg_poly.position = Vector2(1450, 660)
 		var paw := _poly(parent, "TigerPaw%d" % int(leg.x), [
 			leg + Vector2(12, 52), leg + Vector2(30, 55),
 			leg + Vector2(32, 62), leg + Vector2(10, 60),
-		], Color(0.30, 0.26, 0.20, 0.96))
+		], Color(0.39, 0.335, 0.26, 0.96))
 		paw.position = Vector2(1450, 660)
 		for toe in range(3):
 			var toe_line := Line2D.new()
@@ -440,14 +440,14 @@ func _build_tiger_corpse(parent: Node) -> void:
 				leg + Vector2(14 + toe * 5, 56), leg + Vector2(15 + toe * 5, 61),
 			])
 			toe_line.width = 1.0
-			toe_line.default_color = Color(0.42, 0.36, 0.28, 0.42)
+			toe_line.default_color = Color(0.50, 0.43, 0.34, 0.46)
 			toe_line.position = Vector2(1450, 660)
 			parent.add_child(toe_line)
 		var knee := Line2D.new()
 		knee.name = "TigerKnee%d" % int(leg.x)
 		knee.points = PackedVector2Array([leg + Vector2(8, 22), leg + Vector2(17, 34)])
 		knee.width = 1.5
-		knee.default_color = Color(0.30, 0.26, 0.20, 0.40)
+		knee.default_color = Color(0.38, 0.33, 0.26, 0.44)
 		knee.position = Vector2(1450, 660)
 		parent.add_child(knee)
 
@@ -503,7 +503,7 @@ func _add_reflection(parent: Node) -> void:
 	mirror.name = "TigerReflection"
 	mirror.position = Vector2(1450, 960)
 	mirror.scale = Vector2(1.0, -0.52)
-	mirror.modulate = Color(0.82, 0.88, 0.94, 1.0)
+	mirror.modulate = Color(0.86, 0.90, 0.95, 1.0)
 	parent.add_child(mirror)
 	var body: Array = [
 		Vector2(0, -20), Vector2(92, -48), Vector2(178, -40),
@@ -519,9 +519,9 @@ func _add_reflection(parent: Node) -> void:
 		Vector2(-78, 58), Vector2(-38, 40), Vector2(4, 20),
 	]
 	for item in [["RBody", body], ["RHead", head], ["RTail", tail]]:
-		var r_color := Color(0.44, 0.41, 0.34, 0.64)
+		var r_color := Color(0.50, 0.46, 0.38, 0.66)
 		if item[0] == "RHead":
-			r_color = Color(0.48, 0.44, 0.36, 0.66)
+			r_color = Color(0.54, 0.49, 0.40, 0.68)
 		_poly(mirror, item[0], item[1], r_color)
 	# 倒影也要有腿與頭部缺口，否則水下只是一條灰帶。
 	for leg in [Vector2(42, 36), Vector2(108, 44), Vector2(166, 38), Vector2(202, 30)]:
@@ -529,15 +529,15 @@ func _add_reflection(parent: Node) -> void:
 			leg, leg + Vector2(9, 30), leg + Vector2(18, 43),
 			leg + Vector2(30, 46), leg + Vector2(28, 54),
 			leg + Vector2(12, 52), leg + Vector2(4, 36),
-		], Color(0.36, 0.33, 0.27, 0.48))
+		], Color(0.40, 0.37, 0.30, 0.50))
 		_poly(mirror, "RPaw%d" % int(leg.x), [
 			leg + Vector2(12, 52), leg + Vector2(30, 55),
 			leg + Vector2(32, 62), leg + Vector2(10, 60),
-		], Color(0.46, 0.41, 0.32, 0.42))
+		], Color(0.50, 0.45, 0.35, 0.44))
 	_poly(mirror, "RMuzzle", [
 		Vector2(274, -10), Vector2(296, -8), Vector2(292, 4),
 		Vector2(272, 6),
-	], Color(0.40, 0.36, 0.28, 0.46))
+	], Color(0.44, 0.40, 0.31, 0.48))
 	# 倒影裡保留一段冷色脊線，讓水面那層不是一塊均勻暗影。
 	var mirror_spine := Line2D.new()
 	mirror_spine.name = "RSpine"
@@ -546,7 +546,7 @@ func _add_reflection(parent: Node) -> void:
 		Vector2(172, -31), Vector2(216, -12),
 	])
 	mirror_spine.width = 2.5
-	mirror_spine.default_color = Color(0.50, 0.52, 0.46, 0.50)
+	mirror_spine.default_color = Color(0.58, 0.58, 0.50, 0.58)
 	mirror_spine.position = Vector2(0, 0)
 	mirror.add_child(mirror_spine)
 	var mirror_head_rim := Line2D.new()
@@ -556,7 +556,7 @@ func _add_reflection(parent: Node) -> void:
 		Vector2(294, -18), Vector2(276, -4),
 	])
 	mirror_head_rim.width = 2.0
-	mirror_head_rim.default_color = Color(0.54, 0.56, 0.50, 0.50)
+	mirror_head_rim.default_color = Color(0.60, 0.60, 0.52, 0.58)
 	mirror_head_rim.position = Vector2(0, 0)
 	mirror.add_child(mirror_head_rim)
 	for i in range(3):
@@ -566,7 +566,7 @@ func _add_reflection(parent: Node) -> void:
 			Vector2(72 + i * 34, -28), Vector2(84 + i * 34, -10), Vector2(80 + i * 34, 14),
 		])
 		mirror_stripe.width = 2.0
-		mirror_stripe.default_color = Color(0.16, 0.20, 0.18, 0.30)
+		mirror_stripe.default_color = Color(0.20, 0.24, 0.21, 0.34)
 		mirror.add_child(mirror_stripe)
 	# 倒影被水面切開的幾道波紋；越靠下越淡。
 	for i in range(4):
