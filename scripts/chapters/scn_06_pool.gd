@@ -12,6 +12,13 @@ var _reflection_human: Node2D
 var _reflection_tiger: Node2D
 var _reflection_flash: ColorRect
 var _reflection_changed: bool = false
+var _water_surface: ColorRect
+var _water_deep: ColorRect
+var _pool_mist: Node2D
+var _pool_reflection_root: Node2D
+var _tiger_mirror_root: Node2D
+var _water_time: float = 0.0
+var _pool_mist_base_x: float = 960.0
 
 func scene_id() -> String:
 	return "SCN-06"
@@ -49,6 +56,19 @@ func _tick_stage(_delta: float) -> void:
 		var s := 1.0 + sin(_ripple_phases[i]) * 0.18
 		_ripples[i].scale.x = s
 		_ripples[i].modulate.a = 0.10 + sin(_ripple_phases[i] * 1.4) * 0.04
+	# 水面呼吸：只動既有節點的 alpha 與霧的極小位移，不加幾何。
+	_water_time += _delta
+	if _water_surface != null and is_instance_valid(_water_surface):
+		_water_surface.modulate.a = 0.94 + sin(_water_time * 0.50) * 0.06
+	if _water_deep != null and is_instance_valid(_water_deep):
+		_water_deep.modulate.a = 0.94 + sin(_water_time * 0.32 + 1.2) * 0.04
+	if _pool_mist != null and is_instance_valid(_pool_mist):
+		_pool_mist.position.x = _pool_mist_base_x + sin(_water_time * 0.32) * 9.0
+		_pool_mist.modulate.a = 0.90 + sin(_water_time * 0.45 + 0.8) * 0.10
+	if _tiger_mirror_root != null and is_instance_valid(_tiger_mirror_root):
+		_tiger_mirror_root.modulate.a = 0.95 + sin(_water_time * 0.38 + 1.5) * 0.05
+	if _pool_reflection_root != null and is_instance_valid(_pool_reflection_root):
+		_pool_reflection_root.modulate.a = 0.95 + sin(_water_time * 0.42 + 0.4) * 0.05
 
 func _build_water() -> void:
 	var bg := get_node_or_null("Background")
@@ -75,12 +95,14 @@ func _build_water() -> void:
 	surface.size = Vector2(1920, 3)
 	surface.color = Color(0.18, 0.27, 0.32, 0.55)
 	parent.add_child(surface)
+	_water_surface = surface
 	var deep := ColorRect.new()
 	deep.name = "WaterDeep"
 	deep.position = Vector2(0, WATER_Y + 54)
 	deep.size = Vector2(1920, 126)
 	deep.color = Color(0.020, 0.035, 0.055, 0.55)
 	parent.add_child(deep)
+	_water_deep = deep
 
 	# 月影：不排成一條整齊的漏斗，改成有橫向偏移的碎月，才像被水揉開。
 	for i in range(9):
@@ -112,6 +134,7 @@ func _build_pool_reflection() -> void:
 	root.scale = Vector2(1.0, -0.90)
 	root.modulate = Color(0.72, 0.80, 0.88, 1.0)
 	parent.add_child(root)
+	_pool_reflection_root = root
 
 	# 正常倒影：先只留一個潮濕、發暗的人形，等字幕推進再換成白虎。
 	_reflection_human = Node2D.new()
@@ -478,6 +501,8 @@ func _add_night_bank(parent: Node) -> void:
 	var mist := _ellipse(Vector2(960, 898), 560, 14, Color(0.38, 0.48, 0.52, 0.055))
 	mist.name = "PoolMist"
 	parent.add_child(mist)
+	_pool_mist = mist
+	_pool_mist_base_x = mist.position.x
 	# 水岸與稀疏星點：把純黑的上半畫面分出「岸」與「夜」。
 	var left_bank := _poly(parent, "BankLeft", [
 		Vector2(0, 820), Vector2(250, 820), Vector2(310, 900), Vector2(0, 900),
@@ -505,6 +530,7 @@ func _add_reflection(parent: Node) -> void:
 	mirror.scale = Vector2(1.0, -0.52)
 	mirror.modulate = Color(0.86, 0.90, 0.95, 1.0)
 	parent.add_child(mirror)
+	_tiger_mirror_root = mirror
 	var body: Array = [
 		Vector2(0, -20), Vector2(92, -48), Vector2(178, -40),
 		Vector2(226, -18), Vector2(248, 16), Vector2(218, 44),

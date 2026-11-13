@@ -283,6 +283,12 @@
   - **水中虎影微調**：`TigerReflection` 本體、頭、腿、掌、吻部、脊線、頭緣與虎斑略提，保持水下比岸上更暗的層級。
   - **邊界**：只改顏色與 alpha，未新增節點、未改幾何、未移動位置。
   - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（31 項）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
+- [x] **V0.3.27 SCN-06 水面呼吸與倒影微動（`SCN06_POOL_SELFTEST` 34 項 PASS）**：
+  - **水面呼吸**：`WaterSurface` 與 `WaterDeep` 的 `modulate.a` 以極慢正弦微微起伏，水線不再是一條死線；月影九條碎光沿用既有節點，繼續做縮放與 alpha 呼吸。
+  - **水霧漂移**：`PoolMist` 以 `960 ± 9px` 極慢橫向漂移，alpha 同步微動，讓岸與水接縫有空氣感。
+  - **倒影微動**：`TigerReflection` 與 `PoolReflection` 的 `modulate.a` 各自以不同相位微動，虎影與白虎倒影不會同步呼吸。
+  - **邊界**：只動既有節點的 alpha 與 `PoolMist.position.x`，未新增節點、未改幾何、未改倒影位置或 scale。
+  - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（34 項，新增水面 alpha、水霧位移、虎影 alpha 三項微動檢查）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
 
 
 

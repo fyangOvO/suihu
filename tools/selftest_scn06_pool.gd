@@ -6,6 +6,9 @@ const SCN06 := "res://scenes/chapters/SCN_06_Pool.tscn"
 var main: Node
 var fails: Array[String] = []
 var frame: int = 0
+var surface_alpha_before: float = 0.0
+var mist_x_before: float = 0.0
+var mirror_alpha_before: float = 0.0
 
 func _check(label: String, ok: bool) -> void:
 	if not ok:
@@ -67,6 +70,17 @@ func _process(_delta: float) -> bool:
 		_check("reflection switches to white tiger", main._reflection_changed and not bg.get_node_or_null("PoolReflection/PlayerHumanReflection").visible and bg.get_node_or_null("PoolReflection/PlayerWhiteTigerReflection").visible)
 		main._reveal_white_tiger_reflection()
 		_check("reflection switch is idempotent", main._reflection_changed)
+		var surface := bg.get_node_or_null("WaterSurface") as ColorRect
+		var mist := bg.get_node_or_null("PoolMist") as Node2D
+		var mirror_alpha_root := bg.get_node_or_null("TigerReflection") as Node2D
+		main._tick_stage(0.25)
+		surface_alpha_before = surface.modulate.a if surface != null else 0.0
+		mist_x_before = mist.position.x if mist != null else 0.0
+		mirror_alpha_before = mirror_alpha_root.modulate.a if mirror_alpha_root != null else 0.0
+		main._tick_stage(0.70)
+		_check("water surface alpha breathes", surface != null and absf(surface.modulate.a - surface_alpha_before) > 0.0005)
+		_check("pool mist drifts", mist != null and absf(mist.position.x - mist_x_before) > 0.001)
+		_check("tiger reflection alpha breathes", mirror_alpha_root != null and absf(mirror_alpha_root.modulate.a - mirror_alpha_before) > 0.0005)
 		print("SCN06_POOL_SELFTEST result=", "PASS" if fails.is_empty() else "FAIL", " fails=", fails)
 		quit(0)
 		return true
