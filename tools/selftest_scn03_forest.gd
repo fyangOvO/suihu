@@ -57,6 +57,7 @@ func _process(_delta: float) -> bool:
 		var near_layer := bg.get_node_or_null("FogNear") as TextureRect
 		var trunk := bg.get_node_or_null("Tree92") as Node2D
 		_check("moon shafts behind trunks", shaft_a != null and trunk != null and shaft_a.get_index() < trunk.get_index())
+		_check("moon shafts under fog", shaft_a != null and mid != null and shaft_a.get_index() < mid.get_index())
 		_check("FogFar is behind trunks", far != null and trunk != null and far.get_index() < trunk.get_index())
 		_check("FogNear is in front of trunks", near_layer != null and trunk != null and near_layer.get_index() > trunk.get_index())
 		_check("fog bands stack high to low", far != null and mid != null and near_layer != null and far.position.y < mid.position.y and mid.position.y < near_layer.position.y)

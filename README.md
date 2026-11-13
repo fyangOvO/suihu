@@ -259,11 +259,11 @@
   - **霧層**：遠／中／近三層改成 `768×160` 雙噪聲貼圖，低頻雲團疊高頻細節，手動 smoothstep 打出可穿過的洞，上下緣用 `sin(πt)` 包絡收邊；層高、位移速度與 alpha 仍分開。
   - **貼地霧團**：新增 `Mist90/720/1370/1680` 四團徑向漸變，打斷 `FogNear` 的整條水平帶；三層霧再加極慢上下浮動，避免像固定橫幅。
   - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`（22 項，新增分叉、枝端葉簇、貼地霧團）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn03-forest.png`。
-- [x] **V0.3.23 SCN-03 月光穿霧與樹隙光柱（`SCN03_FOREST_SELFTEST` 26 項 PASS）**：
+- [x] **V0.3.23 SCN-03 月光穿霧與樹隙光柱（`SCN03_FOREST_SELFTEST` 27 項 PASS）**：
   - **月光光暈**：月亮下方加 `MoonGlowWide`／`MoonGlowCore` 兩層徑向漸變加法光暈，外圈大而淡、內核小而亮，讓月光先滲進遠霧再被樹枝切碎。
   - **樹隙光柱**：`MoonShaftVolume` 一層極淡體積底光，加 A/B/C/D 四束窄光柱；光柱由 `256×512` 程序錐形貼圖生成，頂端收尖、底端展開、沿長度遞減 alpha 並混少量噪聲，材質用 `CanvasItemMaterial.BLEND_MODE_ADD`。
-  - **遮擋關係**：光柱掛在樹幹之前、中近霧之後，枝幹真正遮出樹隙；光柱再由 `FogMid`／`FogNear` 壓一層，避免變成浮在林影上的舞台燈。
-  - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`（26 項，新增月光光暈、四束光柱、加法材質、光柱在樹幹後方）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn03-forest.png`。
+  - **遮擋關係**：節點順序為 `FogFar → MoonGlow → MoonShaft → Tree → FogMid → FogNear`；樹幹遮出樹隙，中近霧再把光柱壓柔，避免變成浮在林影上的舞台燈。
+  - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`（27 項，新增月光光暈、四束光柱、加法材質、光柱在樹幹後方與中近霧後方）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn03-forest.png`。
 
 ## 待實現
 
