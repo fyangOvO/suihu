@@ -41,7 +41,10 @@ func _process(_delta: float) -> bool:
 				_check("%s has texture" % layer_name, layer.texture != null)
 				_check("%s alpha in range" % layer_name, layer.modulate.a > 0.15 and layer.modulate.a < 0.55)
 		_check("forest trunk exists", bg.get_node_or_null("Tree92/Trunk92") != null and bg.get_node_or_null("Tree92/Branch92L") != null)
+		_check("forest fork branches exist", bg.get_node_or_null("Tree92/Branch92R") != null and bg.get_node_or_null("Tree92/Branch92LA") != null)
+		_check("forest branch leaves exist", bg.get_node_or_null("Tree92/Branch92LAALeaf") != null)
 		_check("forest crown exists", bg.get_node_or_null("Crown0") != null)
+		_check("ground mist wisps exist", bg.get_node_or_null("Mist90") != null and bg.get_node_or_null("Mist1370") != null)
 		var far := bg.get_node_or_null("FogFar") as TextureRect
 		var mid := bg.get_node_or_null("FogMid") as TextureRect
 		var near_layer := bg.get_node_or_null("FogNear") as TextureRect

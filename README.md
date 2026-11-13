@@ -254,6 +254,11 @@
   - **Boss／P2**：`BossHPText` 右端內縮 24px，階段 pip 改為 14px 間距並與 HP 文字留 5px 空隙；P2 面板由 430×112 改為 430×128，補 `P2Rule`，與 P1 同高、同寬、同頂邊、左右 34px 對稱。
   - **截圖**：`capture_ui_shell.gd` 在拍 Boss 條前把 beat 設到 B7，避免 SCN-05 在 B6 亮相時 Boss 仍借用基礎人形貼圖；`ui-boss.png` 已重出為乾淨的虎與 Boss 條。
   - **驗收**：`UI_SHELL_SELFTEST result=PASS`（45 項）；`HUD_SELFTEST result=PASS`；`FLOW_SELFTEST fails=0`；重出 `ui-pause.png`、`ui-settings.png`、`ui-death.png`、`ui-summary.png`、`ui-boss.png`、`flow-scn02-corpse.png`、`flow-scn02-tutorial.png`。
+- [x] **V0.3.22 SCN-03 亂林分叉與三層霧打碎（`SCN03_FOREST_SELFTEST` 22 項 PASS）**：
+  - **樹幹分叉**：六棵樹依近／中／遠景分開，主幹在 `y=-420` 附近長出左、右主枝與中央主梢，每枝再遞迴分二級枝；枝條用帶彎度的六點多邊形收尖，枝端接葉簇，樹幹補單側樹皮亮邊與三段根盤。
+  - **霧層**：遠／中／近三層改成 `768×160` 雙噪聲貼圖，低頻雲團疊高頻細節，手動 smoothstep 打出可穿過的洞，上下緣用 `sin(πt)` 包絡收邊；層高、位移速度與 alpha 仍分開。
+  - **貼地霧團**：新增 `Mist90/720/1370/1680` 四團徑向漸變，打斷 `FogNear` 的整條水平帶；三層霧再加極慢上下浮動，避免像固定橫幅。
+  - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`（22 項，新增分叉、枝端葉簇、貼地霧團）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn03-forest.png`。
 
 ## 待實現
 
