@@ -270,6 +270,13 @@
   - **山神像**：補肩、前襟、腰帶、手與 `IdolCheekL/R`、`IdolMouth`、`IdolForeheadMark`、`IdolEyeGlowL/R`、`IdolRimL/R` 與 `IdolCrownEdge`；臉部底灰提亮，暖光集中在額頭與鼻樑，眼窩保留金片眼輝光；後牆補砌石線與廟門框，避免大面積平塗。
   - **眨眼彩蛋**：`_blink_once()` 後眼窩輝光隨眼瞼開合從 base×0.38 回到 base；`BlinkSpark` 在 0.10s 閉眼時達到金色微閃，睜眼後歸零；`capture_scn04.gd` 現在同時輸出 `scn04-temple.png` 與 `scn04-blink.png`。
   - **驗收**：`SCN04_TEMPLE_SELFTEST result=PASS fails=[]`（28 項，新增香爐、前層供桌、暖光層、神像衣褶、牆面砌石、眼窩輝光、金閃、燭火閃爍節點）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn04-temple.png` 與 `docs/preview/scn04-blink.png`。
+- [x] **V0.3.25 SCN-06 水潭虎屍層次與倒影重讀（`SCN06_POOL_SELFTEST` 31 項 PASS）**：
+  - **虎屍剪影**：虎身與頭部分色，補 `TigerBlood`／`TigerBloodPool` 石台血跡、`TigerRib0..3` 肋線、`TigerNose`／`TigerFang278/288`／`TigerWhisker*` 面部細節，四腿重新分色並加 `TigerToe*`；960×540 下不再只是一團暗塊。
+  - **水中虎影**：`TigerReflection` 由 `scale.y=-0.42` 改 `-0.52`，補 `RLeg*`／`RPaw*`／`RMuzzle`／`RStripe0..2`，水線下能讀出四腿與頭部缺口；倒影整體加冷色 modulate，避免和岸上虎屍脫節。
+  - **月影與遠岸**：月影從整齊七層改成九條帶橫向偏移的碎月，水面不再像漏斗；新增 `FarRidge` 遠岸嶺線與 `PoolMist` 水線薄霧，讓大面積黑空有前後景。
+  - **玩家倒影**：`PoolReflection` 加冷色 modulate，白虎倒影補 `WhiteTigerUnderbelly` 與 `WhiteTigerHeadRim`，壓低過亮的水面白塊。
+  - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（31 項，新增虎腿、肋線血跡、面部、倒影腿、白虎頭緣、遠岸薄霧）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
+
 
 ## 待實現
 
