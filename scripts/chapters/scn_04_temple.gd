@@ -106,6 +106,12 @@ func _build_temple() -> void:
 	# 地面與牆：中央留出一條進門的路。
 	_rect(props, "Floor", 0, 870, 1920, 210, STONE_DARK)
 	_rect(props, "BackWall", 0, 0, 1920, 900, Color(0.080, 0.065, 0.055, 0.92))
+	# 牆面砌石：只在暖光邊緣露出來，避免整面牆像一塊平塗。
+	for y in [210, 300, 390, 500, 610]:
+		for x in [150, 1080]:
+			_rect(props, "WallCourse%d_%d" % [x, y], x, y, 690, 2, Color(0.115, 0.092, 0.073, 0.22))
+	for x in [300, 470, 700, 1000, 1250, 1450]:
+		_rect(props, "WallJoint%d" % x, x, 190, 2, 430, Color(0.100, 0.080, 0.064, 0.18))
 	for x in [120, 1780]:
 		_poly(props, "Pillar%d" % x, [
 			Vector2(x - 34, 0), Vector2(x + 34, 0),
@@ -118,6 +124,16 @@ func _build_temple() -> void:
 	_poly(props, "DoorLight", [
 		Vector2(690, 260), Vector2(1010, 260), Vector2(1000, 870), Vector2(700, 870),
 	], Color(0.10, 0.09, 0.075, 0.52))
+	# 門框：被山神像擋住大半，只留左右門柱與橫樑給廟內一點進深。
+	_poly(props, "DoorFrameL", [
+		Vector2(602, 180), Vector2(630, 180), Vector2(628, 870), Vector2(600, 870),
+	], Color(0.155, 0.125, 0.095))
+	_poly(props, "DoorFrameR", [
+		Vector2(1070, 180), Vector2(1098, 180), Vector2(1100, 870), Vector2(1072, 870),
+	], Color(0.145, 0.118, 0.090))
+	_poly(props, "DoorLintel", [
+		Vector2(602, 170), Vector2(1100, 170), Vector2(1100, 198), Vector2(602, 198),
+	], Color(0.165, 0.132, 0.100))
 
 	# 供桌與香爐。
 	_rect(props, "Altar", 300, 650, 520, 34, STONE)
@@ -126,16 +142,25 @@ func _build_temple() -> void:
 	# 香爐：壓在供桌中段，三炷香從爐口插出，讓桌面不是一塊空紅布。
 	_poly(props, "Censer", [
 		Vector2(392, 606), Vector2(640, 606), Vector2(624, 644), Vector2(408, 644),
-	], Color(0.145, 0.115, 0.080))
+	], Color(0.22, 0.165, 0.105))
 	_poly(props, "CenserRim", [
 		Vector2(386, 602), Vector2(646, 602), Vector2(640, 610), Vector2(392, 610),
-	], Color(0.34, 0.25, 0.14))
+	], Color(0.50, 0.36, 0.19))
+	_poly(props, "CenserBand", [
+		Vector2(406, 624), Vector2(626, 624), Vector2(620, 632), Vector2(412, 632),
+	], Color(0.34, 0.245, 0.135))
+	_poly(props, "CenserHandleL", [
+		Vector2(394, 612), Vector2(374, 618), Vector2(372, 630), Vector2(392, 626),
+	], Color(0.34, 0.245, 0.135))
+	_poly(props, "CenserHandleR", [
+		Vector2(638, 612), Vector2(658, 618), Vector2(660, 630), Vector2(640, 626),
+	], Color(0.34, 0.245, 0.135))
 	_poly(props, "CenserFootL", [
 		Vector2(438, 642), Vector2(456, 642), Vector2(452, 656), Vector2(440, 656),
-	], Color(0.105, 0.085, 0.065))
+	], Color(0.17, 0.125, 0.085))
 	_poly(props, "CenserFootR", [
 		Vector2(576, 642), Vector2(594, 642), Vector2(590, 656), Vector2(578, 656),
-	], Color(0.105, 0.085, 0.065))
+	], Color(0.17, 0.125, 0.085))
 	for x in [390, 516, 642]:
 		_poly(props, "Incense%d" % x, [
 			Vector2(x, 626), Vector2(x + 2, 540), Vector2(x + 4, 626),
@@ -189,6 +214,38 @@ func _build_temple() -> void:
 	_poly(props, "IdolRobe", [
 		Vector2(580, 500), Vector2(840, 500), Vector2(900, 660), Vector2(520, 660),
 	], Color(0.15, 0.12, 0.095))
+	# 肩、前襟、腰帶與手：讓神像不只是黑色梯形，坐姿仍保持剪影。
+	_poly(props, "IdolShoulderL", [
+		Vector2(560, 470), Vector2(640, 470), Vector2(590, 540), Vector2(505, 556),
+	], Color(0.125, 0.100, 0.078))
+	_poly(props, "IdolShoulderR", [
+		Vector2(860, 470), Vector2(780, 470), Vector2(830, 540), Vector2(915, 556),
+	], Color(0.115, 0.092, 0.072))
+	_poly(props, "IdolRobeFront", [
+		Vector2(606, 488), Vector2(814, 488), Vector2(842, 650), Vector2(578, 650),
+	], Color(0.16, 0.118, 0.086))
+	_poly(props, "IdolRobeFoldL", [
+		Vector2(624, 500), Vector2(640, 500), Vector2(606, 650), Vector2(586, 650),
+	], Color(0.105, 0.080, 0.060))
+	_poly(props, "IdolRobeFoldR", [
+		Vector2(796, 500), Vector2(812, 500), Vector2(838, 650), Vector2(818, 650),
+	], Color(0.105, 0.080, 0.060))
+	_poly(props, "IdolCollar", [
+		Vector2(666, 470), Vector2(710, 520), Vector2(754, 470), Vector2(742, 470),
+		Vector2(710, 500), Vector2(678, 470),
+	], Color(0.30, 0.22, 0.12))
+	_poly(props, "IdolSash", [
+		Vector2(590, 586), Vector2(830, 586), Vector2(826, 612), Vector2(594, 612),
+	], Color(0.24, 0.065, 0.048))
+	_poly(props, "IdolMedallion", [
+		Vector2(710, 552), Vector2(728, 570), Vector2(710, 588), Vector2(692, 570),
+	], Color(0.46, 0.34, 0.16))
+	_poly(props, "IdolHandL", [
+		Vector2(594, 612), Vector2(654, 616), Vector2(650, 650), Vector2(600, 646),
+	], Color(0.135, 0.110, 0.085))
+	_poly(props, "IdolHandR", [
+		Vector2(766, 616), Vector2(826, 612), Vector2(820, 646), Vector2(770, 650),
+	], Color(0.125, 0.102, 0.080))
 	_poly(props, "IdolFace", [
 		Vector2(610, 360), Vector2(810, 360), Vector2(830, 474), Vector2(590, 474),
 	], Color(0.19, 0.17, 0.135))
@@ -239,6 +296,53 @@ func _build_temple() -> void:
 	], Color(0.28, 0.22, 0.12))
 	for x in [548, 852]:
 		_rect(props, "TempleBanner%d" % x, x, 260, 18, 300, CLOTH)
+	# 前層供桌：神像坐在桌後，桌面、香爐與香必須壓在神像下擺前面。
+	_rect(props, "AltarFront", 300, 650, 520, 34, STONE)
+	_rect(props, "AltarFrontEdge", 286, 642, 548, 10, Color(0.19, 0.17, 0.16))
+	_rect(props, "AltarFrontCloth", 330, 682, 460, 88, CLOTH)
+	_poly(props, "CenserFront", [
+		Vector2(392, 606), Vector2(640, 606), Vector2(624, 644), Vector2(408, 644),
+	], Color(0.24, 0.18, 0.115))
+	_poly(props, "CenserFrontRim", [
+		Vector2(386, 602), Vector2(646, 602), Vector2(640, 610), Vector2(392, 610),
+	], Color(0.56, 0.40, 0.21))
+	_poly(props, "CenserFrontBand", [
+		Vector2(406, 624), Vector2(626, 624), Vector2(620, 632), Vector2(412, 632),
+	], Color(0.38, 0.27, 0.15))
+	_poly(props, "CenserFrontHandleL", [
+		Vector2(394, 612), Vector2(374, 618), Vector2(372, 630), Vector2(392, 626),
+	], Color(0.38, 0.27, 0.15))
+	_poly(props, "CenserFrontHandleR", [
+		Vector2(638, 612), Vector2(658, 618), Vector2(660, 630), Vector2(640, 626),
+	], Color(0.38, 0.27, 0.15))
+	_poly(props, "CenserFrontFootL", [
+		Vector2(438, 642), Vector2(456, 642), Vector2(452, 656), Vector2(440, 656),
+	], Color(0.17, 0.125, 0.085))
+	_poly(props, "CenserFrontFootR", [
+		Vector2(576, 642), Vector2(594, 642), Vector2(590, 656), Vector2(578, 656),
+	], Color(0.17, 0.125, 0.085))
+	for x in [390, 516, 642]:
+		_poly(props, "IncenseFront%d" % x, [
+			Vector2(x, 626), Vector2(x + 2, 540), Vector2(x + 4, 626),
+		], Color(0.34, 0.29, 0.22, 0.62))
+		var smoke_front := Line2D.new()
+		smoke_front.name = "IncenseFrontSmoke%d" % x
+		smoke_front.points = PackedVector2Array([
+			Vector2(x + 3, 540), Vector2(x - 8, 500), Vector2(x + 12, 464),
+			Vector2(x - 4, 424),
+		])
+		smoke_front.width = 1.5
+		smoke_front.default_color = Color(0.55, 0.48, 0.38, 0.24)
+		props.add_child(smoke_front)
+	_glow_poly(props, "CenserFrontGold", [
+		Vector2(386, 602), Vector2(646, 602), Vector2(646, 605), Vector2(386, 605),
+	], Color(0.95, 0.68, 0.30, 0.22))
+	_add_glow(props, "CenserFrontGlow", Vector2(516, 612), 150, 72, Color(1.0, 0.58, 0.22, 0.34))
+	_add_glow(props, "AltarFrontWarm", Vector2(510, 684), 440, 200, Color(1.0, 0.48, 0.16, 0.48))
+	_add_glow(props, "IdolRobeWarm", Vector2(710, 540), 360, 240, Color(1.0, 0.42, 0.14, 0.18))
+	_glow_poly(props, "AltarFrontGold", [
+		Vector2(300, 650), Vector2(820, 650), Vector2(816, 654), Vector2(304, 654),
+	], Color(0.95, 0.68, 0.30, 0.26))
 	# 山神臉上的暖光，只到額頭與鼻樑，不把整張臉照平。
 	_add_glow(props, "IdolFaceWarm", Vector2(710, 432), 230, 132, Color(1.0, 0.60, 0.24, 0.35))
 	_add_glow(props, "IdolWarm", Vector2(710, 420), 180, 96, Color(1.0, 0.64, 0.28, 0.75))
@@ -251,6 +355,18 @@ func _build_temple() -> void:
 	_glow_poly(props, "IdolCrownEdge", [
 		Vector2(624, 352), Vector2(796, 352), Vector2(794, 358), Vector2(626, 358),
 	], Color(0.95, 0.68, 0.30, 0.28))
+	_glow_poly(props, "IdolShoulderGoldL", [
+		Vector2(560, 470), Vector2(640, 470), Vector2(638, 474), Vector2(558, 474),
+	], Color(0.92, 0.62, 0.26, 0.18))
+	_glow_poly(props, "IdolShoulderGoldR", [
+		Vector2(780, 470), Vector2(860, 470), Vector2(862, 474), Vector2(782, 474),
+	], Color(0.92, 0.62, 0.26, 0.14))
+	_glow_poly(props, "IdolSashGold", [
+		Vector2(590, 586), Vector2(830, 586), Vector2(830, 590), Vector2(590, 590),
+	], Color(0.95, 0.68, 0.30, 0.22))
+	_glow_poly(props, "CenserRimGold", [
+		Vector2(386, 602), Vector2(646, 602), Vector2(646, 605), Vector2(386, 605),
+	], Color(0.95, 0.68, 0.30, 0.20))
 	_blink_spark = _add_glow(props, "BlinkSpark", Vector2(710, 416), 210, 18, Color(1.0, 0.72, 0.28, 0.0))
 
 func _blink_once() -> void:

@@ -264,12 +264,12 @@
   - **樹隙光柱**：`MoonShaftVolume` 一層極淡體積底光，加 A/B/C/D 四束窄光柱；光柱由 `256×512` 程序錐形貼圖生成，頂端收尖、底端展開、沿長度遞減 alpha 並混少量噪聲，材質用 `CanvasItemMaterial.BLEND_MODE_ADD`。
   - **遮擋關係**：節點順序為 `FogFar → MoonGlow → MoonShaft → Tree → FogMid → FogNear`；樹幹遮出樹隙，中近霧再把光柱壓柔，避免變成浮在林影上的舞台燈。
   - **驗收**：`SCN03_FOREST_SELFTEST result=PASS fails=[]`（27 項，新增月光光暈、四束光柱、加法材質、光柱在樹幹後方與中近霧後方）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn03-forest.png`。
-- [x] **V0.3.24 SCN-04 山神廟暖光與眨眼彩蛋補完（`SCN04_TEMPLE_SELFTEST` 25 項 PASS）**：
-  - **香爐與供桌**：供桌中段補 `Censer`／`CenserRim`／`CenserFootL/R`，三炷香從爐口插出；供桌前緣加 `AltarGoldEdge` 金線，桌面不再是一塊空紅布。
-  - **暖光層**：燭光分成焰心、近光圈、外圈與地面光池四層，並加入 `AltarFrontLight`、`IdolFaceWarm`、`IdolWarm`、`CenserGlow`；燭焰與燭光以 `sin` 微幅閃爍，暖光不再是靜止的均勻色斑。
-  - **山神臉部**：補 `IdolCheekL/R`、`IdolMouth`、`IdolForeheadMark`、`IdolEyeGlowL/R`、`IdolRimL/R` 與 `IdolCrownEdge`；臉部底灰提亮，暖光集中在額頭與鼻樑，眼窩保留金片眼輝光。
+- [x] **V0.3.24 SCN-04 山神廟暖光與眨眼彩蛋補完（`SCN04_TEMPLE_SELFTEST` 28 項 PASS）**：
+  - **香爐與供桌**：供桌中段補 `Censer`／`CenserRim`／`CenserFootL/R`，三炷香從爐口插出；另加前層 `AltarFront`／`CenserFront`，讓桌面、香爐與香壓在神像下擺前面；供桌前緣加 `AltarGoldEdge` 金線，桌面不再是一塊空紅布。
+  - **暖光層**：燭光分成焰心、近光圈、外圈與地面光池四層，並加入 `AltarFrontWarm`、`IdolFaceWarm`、`IdolWarm`、`IdolRobeWarm`、`CenserFrontGlow`；燭焰與燭光以 `sin` 微幅閃爍，暖光不再是靜止的均勻色斑。
+  - **山神像**：補肩、前襟、腰帶、手與 `IdolCheekL/R`、`IdolMouth`、`IdolForeheadMark`、`IdolEyeGlowL/R`、`IdolRimL/R` 與 `IdolCrownEdge`；臉部底灰提亮，暖光集中在額頭與鼻樑，眼窩保留金片眼輝光；後牆補砌石線與廟門框，避免大面積平塗。
   - **眨眼彩蛋**：`_blink_once()` 後眼窩輝光隨眼瞼開合從 base×0.38 回到 base；`BlinkSpark` 在 0.10s 閉眼時達到金色微閃，睜眼後歸零；`capture_scn04.gd` 現在同時輸出 `scn04-temple.png` 與 `scn04-blink.png`。
-  - **驗收**：`SCN04_TEMPLE_SELFTEST result=PASS fails=[]`（25 項，新增香爐、暖光層、臉部細節、眼窩輝光、金閃、燭火閃爍節點）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn04-temple.png` 與 `docs/preview/scn04-blink.png`。
+  - **驗收**：`SCN04_TEMPLE_SELFTEST result=PASS fails=[]`（28 項，新增香爐、前層供桌、暖光層、神像衣褶、牆面砌石、眼窩輝光、金閃、燭火閃爍節點）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn04-temple.png` 與 `docs/preview/scn04-blink.png`。
 
 ## 待實現
 
