@@ -10,6 +10,7 @@ const SCN04 := "res://scenes/chapters/SCN_04_Temple.tscn"
 var vp: SubViewport
 var main: Node
 var frames: int = 0
+var blink_shot: bool = false
 
 func _initialize() -> void:
 	root.size = Vector2i(1, 1)
@@ -30,9 +31,19 @@ func _process(_delta: float) -> bool:
 	if frames < 30:
 		return false
 	var img: Image = vp.get_texture().get_image()
-	if img != null:
+	if img == null:
+		quit(0)
+		return true
+	if not blink_shot:
 		img.resize(OUT.x, OUT.y, Image.INTERPOLATE_LANCZOS)
 		var err: int = img.save_png(DEST + "scn04-temple.png")
 		print("CAPTURE scn04-temple.png err=", err)
+		main._blink_once()
+		main._update_blink(0.10)
+		blink_shot = true
+		return false
+	img.resize(OUT.x, OUT.y, Image.INTERPOLATE_LANCZOS)
+	var err2: int = img.save_png(DEST + "scn04-blink.png")
+	print("CAPTURE scn04-blink.png err=", err2)
 	quit(0)
 	return true
