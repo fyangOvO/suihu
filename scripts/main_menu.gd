@@ -5,6 +5,7 @@ const STORY := preload("res://data/story_beats.gd")
 const FIRST_SCENE := "res://scenes/chapters/SCN_01_Inn.tscn"
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const SETTINGS := preload("res://scripts/ui/user_settings.gd")
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 @onready var _title: Label = $Title
 @onready var _subtitle: Label = $Subtitle
@@ -19,10 +20,13 @@ var _buttons: Array[Button] = []
 
 func _ready() -> void:
 	SETTINGS.apply_display_mode()
+	AUDIO.play_bgm("bgm_menu")
 	_buttons = [_btn_new, _btn_continue, _btn_quit]
 	_btn_new.pressed.connect(_start_new)
 	_btn_continue.pressed.connect(_continue_game)
 	_btn_quit.pressed.connect(func(): get_tree().quit())
+	for btn in _buttons:
+		btn.focus_entered.connect(func(): AUDIO.play_sfx("sfx_ui_move", -11.0))
 
 	UI_STYLE.apply_label(_title, 96, UI_STYLE.PAPER, true)
 	UI_STYLE.apply_label(_subtitle, 18, UI_STYLE.PAPER_DIM)
@@ -65,14 +69,17 @@ func _move_focus(dir: int) -> void:
 		if not _buttons[next_i].disabled:
 			break
 	_buttons[next_i].grab_focus()
+	AUDIO.play_sfx("sfx_ui_move", -11.0)
 
 func _start_new() -> void:
+	AUDIO.play_sfx("sfx_ui_confirm", -7.0)
 	var cm = get_node_or_null("/root/ChapterManager")
 	if cm != null:
 		cm.start_new_game()
 	get_tree().change_scene_to_file(FIRST_SCENE)
 
 func _continue_game() -> void:
+	AUDIO.play_sfx("sfx_ui_confirm", -7.0)
 	var cm = get_node_or_null("/root/ChapterManager")
 	if cm == null or not cm.load_checkpoint():
 		_save_hint.text = "讀檔失敗"

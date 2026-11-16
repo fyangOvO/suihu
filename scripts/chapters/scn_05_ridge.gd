@@ -10,6 +10,9 @@ func scene_title() -> String:
 func first_beat() -> String:
 	return "B6"
 
+func bgm_track() -> String:
+	return "bgm_ridge"
+
 func background_texture_path() -> String:
 	return "res://assets/stage-jingyang.png"
 

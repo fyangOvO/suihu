@@ -302,7 +302,14 @@
   - **`GameAudio` 靜態入口**：所有腳本透過 `/root/AudioManager` 發聲；`--script` 自測或單場景預覽沒有 autoload 時安全 no-op，設置寫入仍走 `UserSettings`。
   - **設置持久化**：`user://settings.cfg` 的 `[audio]` 段保存 master／bgm／sfx／voice（0–1，越界或非數值回預設）；與 `[display]` 共存，互不覆蓋。
   - **設置頁**：新增「音量」區四列滑桿（主音量／背景音樂／音效／語音）＋即時數值 Label＋金線軌道／菱形握把；焦點鏈 `顯示 → 主音量 → 背景音樂 → 音效 → 語音 → 返回`，進入頁面同步存檔值。
-  - **驗收**：`AUDIO_SELFTEST result=PASS fails=[]`（58 項：總線、預設值、夾取與靜音、非法值回退、SFX 池不增長、BGM 切換與淡入淡出、ducking −6dB、Voice、GameAudio no-op）；`UI_FOCUS_SETTINGS_SELFTEST result=PASS`（38 項）；`UI_SHELL_SELFTEST result=PASS`；主場景 240 幀 RC=0。
+  - **驗收**：`AUDIO_SELFTEST result=PASS fails=[]`（58 項：總線、預設值、夾取與靜音、非法值回退、SFX 池不增長、BGM 切換與淡入淡出、ducking −6dB、Voice、GameAudio no-op）；`UI_FOCUS_SETTINGS_SELFTEST result=PASS`（43 項）；`UI_SHELL_SELFTEST result=PASS`；主場景 240 幀 RC=0。
+- [x] **V0.3.30 場景與戰鬥音頻調用點（AUD-03 先行，`selftest_audio` 62 項 PASS）**：
+  - **戰鬥**：起手刀風（輕／重兩檔、依招式名固定音高）、命中（傷害 ≥100 走重擊）、格擋／架招、受擊、牆族黏牆、死亡（Boss 覆寫為長虎吼）。
+  - **敵人與場景**：小虎前撲／三連撲／越頂／尾掃、伥鬼輕重起手、Boss 撲擊／掀身／尾掃／咆哮／階段切換／召小虎；石頭擲出／落地碎裂、掉落物拾取（碎銀／木牌分開）、酒肆三碗酒／燈滅／尾影；`BossDeathCine` 進場淡出 BGM。
+  - **對話**：開始時 BGM ducking −6dB、關閉還原；每 3 字打一次低音量打字音；劇情行可帶 `voice` 欄位觸發語音軌。
+  - **BGM**：主菜單 `bgm_menu`；SCN-01～06 以 `bgm_track()` 分別請求 `bgm_inn／trail／forest／temple／ridge／pool`，切場景自動交叉淡入。
+  - **UI**：殼層按鈕與主菜單游標移動／確認音；所有調用點在缺素材時安全無聲。
+  - **驗收**：`AUDIO_SELFTEST result=PASS fails=[]`（62 項，新增對話 ducking 調用點與主菜單 BGM 場景調用點）；26 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
 
 
 

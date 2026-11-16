@@ -5,6 +5,7 @@ extends CanvasLayer
 signal finished
 
 const DURATION: float = 3.0
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 var active: bool = false
 var elapsed: float = 0.0
@@ -56,6 +57,7 @@ func _ready() -> void:
 func play() -> void:
 	if not _built:
 		_ready()
+	AUDIO.stop_bgm(1.2)
 	active = true
 	visible = true
 	elapsed = 0.0

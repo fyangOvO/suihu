@@ -30,6 +30,9 @@ func scene_title() -> String:
 func first_beat() -> String:
 	return "B1"
 
+func bgm_track() -> String:
+	return "bgm_inn"
+
 func background_color() -> Color:
 	return Color(0.10, 0.078, 0.062)
 
@@ -98,6 +101,7 @@ func _start_drink(round_index: int) -> void:
 	_drink_action = "InnDrink%d" % (round_index + 1)
 	_phase = "drink"
 	_phase_t = 0.0
+	AUDIO.play_sfx("sfx_drink", -4.0)
 	if _visual != null:
 		_visual.play_action(_drink_action, _drink_spec, 0.0)
 
@@ -115,6 +119,7 @@ func _end_drink() -> void:
 func _begin_lamp_out() -> void:
 	_phase = "lamp"
 	_phase_t = 0.0
+	AUDIO.play_sfx("sfx_lamp_out", -3.0)
 	show_banner("燈滅了。店家的影子，多了一條尾巴。", 2.2)
 	if _lamp_light != null:
 		var tw := create_tween().set_parallel(true)
@@ -128,6 +133,7 @@ func _begin_lamp_out() -> void:
 
 func _reveal_tail() -> void:
 	_tail_shown = true
+	AUDIO.play_sfx("sfx_tail_rustle", -7.0)
 	if _tail_root == null:
 		return
 	_tail_root.visible = true

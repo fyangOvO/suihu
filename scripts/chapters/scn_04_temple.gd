@@ -28,6 +28,9 @@ func scene_title() -> String:
 func first_beat() -> String:
 	return "B4"
 
+func bgm_track() -> String:
+	return "bgm_temple"
+
 func background_color() -> Color:
 	return Color(0.085, 0.072, 0.065)
 

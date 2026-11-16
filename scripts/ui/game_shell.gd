@@ -104,6 +104,8 @@ func _button(parent: Control, node_name: String, text: String, y: float, callbac
 	UI_STYLE.menu_button_styles(b, icon_kind)
 	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.focus_mode = Control.FOCUS_ALL
+	b.pressed.connect(func(): AUDIO.play_sfx("sfx_ui_confirm", -7.0))
+	b.focus_entered.connect(func(): AUDIO.play_sfx("sfx_ui_move", -11.0))
 	b.pressed.connect(callback)
 	parent.add_child(b)
 	return b

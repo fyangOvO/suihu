@@ -5,6 +5,7 @@ extends Node2D
 const COLLECT_BOX: Vector2 = Vector2(64.0, 180.0)
 const COLLECT_OFFSET: Vector2 = Vector2(0.0, -90.0)
 const RADIUS: float = 20.0
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 var target = null
 var item_name: String = "碎銀"
@@ -40,6 +41,7 @@ func _touches_target() -> bool:
 func _collect() -> void:
 	if is_queued_for_deletion():
 		return
+	AUDIO.play_sfx("sfx_pickup_tag" if is_tag else "sfx_pickup_coin", -4.0)
 	var parent_node: Node = get_parent()
 	if parent_node != null and parent_node.has_method("_on_pickup_collected"):
 		parent_node._on_pickup_collected(item_name)

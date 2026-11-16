@@ -6,6 +6,7 @@ signal finished
 
 const CHARS_PER_SECOND: float = 34.0
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 var _lines: Array = []
 var _index: int = -1
@@ -14,6 +15,7 @@ var _chars: float = 0.0
 var _active: bool = false
 var _callback: Callable = Callable()
 var _body: String = ""           # 當前整句快取，避免逐幀從字典重取字串
+var _typing_tick: int = 0        # 上次打字音的顯示字數，每 3 字響一次
 
 @onready var _box: ColorRect = $Box
 @onready var _name: Label = $Box/Name
@@ -36,6 +38,8 @@ func play(lines: Array, on_finished: Callable = Callable()) -> void:
 	_active = true
 	visible = true
 	set_process(true)
+	AUDIO.duck_dialogue(true)
+	AUDIO.play_sfx("sfx_dialog_open", -8.0)
 	_advance_line()
 
 func _advance_line() -> void:
@@ -69,6 +73,7 @@ func close() -> void:
 	_typing = false
 	visible = false
 	set_process(false)
+	AUDIO.duck_dialogue(false)
 	var cb: Callable = _callback
 	_callback = Callable()
 	if cb.is_valid():
@@ -77,18 +82,23 @@ func close() -> void:
 func _start_line(line) -> void:
 	var speaker: String = ""
 	var body: String = ""
+	var voice: String = ""
 	if typeof(line) == TYPE_DICTIONARY:
 		speaker = String(line.get("speaker", ""))
 		body = String(line.get("text", ""))
+		voice = String(line.get("voice", ""))
 	else:
 		body = String(line)
 	_name.text = speaker
 	_name.visible = speaker != ""
 	_body = body
+	_typing_tick = 0
 	_text.text = ""
 	_chars = 0.0
 	_typing = true
 	_hint.text = "任意攻擊鍵 / Enter：顯示全文"
+	if voice != "":
+		AUDIO.play_voice(voice, -2.0)
 
 func _finish_typing() -> void:
 	if _index < 0 or _index >= _lines.size():
@@ -106,6 +116,9 @@ func _process(delta: float) -> void:
 	if shown >= _body.length():
 		_finish_typing()
 		return
+	if shown >= _typing_tick + 3:
+		_typing_tick = shown
+		AUDIO.play_sfx("sfx_typing", -18.0, 0.96 + 0.02 * float(shown % 5))
 	_text.text = _body.substr(0, shown)
 
 func _unhandled_input(event: InputEvent) -> void:

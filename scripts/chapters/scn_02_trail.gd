@@ -23,6 +23,9 @@ func scene_title() -> String:
 func first_beat() -> String:
 	return "B2"
 
+func bgm_track() -> String:
+	return "bgm_trail"
+
 func background_texture_path() -> String:
 	return "res://assets/stage-jingyang.png"
 

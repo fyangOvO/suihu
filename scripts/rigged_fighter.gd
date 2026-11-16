@@ -7,6 +7,7 @@ extends CharacterBody2D
 ## 所有招式數值來自 data/action_frame_data.gd，與 docs/06 Frame Data 對齊。
 
 const DATA := preload("res://data/action_frame_data.gd")
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 @export var is_player1: bool = true:
 	set(value):
@@ -927,6 +928,7 @@ func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bo
 			if _is_tiger():
 				_tiger_guard_stun()
 			return true
+		AUDIO.play_sfx("sfx_hit_heavy" if final_dmg >= 100 else "sfx_hit_light", -3.0)
 		target.take_damage(final_dmg, face_direction, knock_up)
 		_has_hit = true
 		wine_gauge = minf(100.0, wine_gauge + 3.0)
@@ -963,6 +965,7 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	var spec: Dictionary = _spec(_state)
 	if DATA.is_invulnerable(spec, _frame):
 		return
+	AUDIO.play_sfx("sfx_hurt", -5.0)
 	current_hp -= dmg
 	wine_gauge = minf(100.0, wine_gauge + 5.0)
 	# 伥鬼被打會後退一步重組（docs/04 §2）
@@ -976,6 +979,7 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		_wall_bonus_last = bonus
 		_wall_side = signf(from_dir)
 		velocity = Vector2.ZERO
+		AUDIO.play_sfx("sfx_wall", -2.0)
 		change_state("WallStick")
 		return
 	# 血量歸零：伥鬼化青煙（docs/04 §2），不進常規受擊
@@ -996,8 +1000,13 @@ func _begin_death() -> void:
 	_ai_cd = 999.0
 	_ai_retreat = 0.0
 	velocity = Vector2.ZERO
+	AUDIO.play_sfx(_death_sfx(), -2.0)
 	change_state(_death_state())
 	_spawn_death_mist()
+
+## 死亡音效名；Boss 子類覆寫為虎吼長音，其餘走通用倒地聲。
+func _death_sfx() -> String:
+	return "sfx_death"
 
 ## 死亡演出推進：不讀輸入、不出招；青煙先起，本體 0.25s 後淡出 0.8s
 func _tick_death(delta: float) -> void:
@@ -1072,6 +1081,7 @@ func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0, guard_ratio: f
 	# 依防禦姿態折減傷害與擊退；空防不被向上挑空
 	if _dying:
 		return
+	AUDIO.play_sfx("sfx_block", -3.0)
 	var ratio: float = float(GUARD_RATIO.get(_defense, 0.5)) if guard_ratio < 0.0 else guard_ratio
 	var push: float = 80.0 if guard_push < 0.0 else guard_push
 	if guard_ratio < 0.0 and _defense == "crouch":
@@ -1106,9 +1116,16 @@ func _update_super_effect() -> void:
 
 ## 特效層一次性觸發：進入招式狀態即出一刀刀光；醉打額外出酒紅刀光
 func _fx_state(state_name: String) -> void:
+	var kind := _fx_kind(state_name)
+	var extra := _attack_sfx(state_name)
+	if extra != "":
+		AUDIO.play_sfx(extra, -4.0)
+	elif kind != "":
+		# 揮空刀風：起手即出聲；命中／格擋聲由結算端覆蓋
+		AUDIO.play_sfx("sfx_whiff_heavy" if kind in ["heavy", "drunk"] else "sfx_whiff_light",
+			-7.0, 0.95 + 0.02 * float(absi(state_name.hash()) % 5))
 	if _fx == null:
 		return
-	var kind := _fx_kind(state_name)
 	if kind == "":
 		_fx.cancel()          # 切入非攻擊狀態（受擊/待機等）＝上一刀被打斷
 		return
@@ -1132,6 +1149,21 @@ func _fx_kind(state_name: String) -> String:
 			return "rising"
 		"CmdDrunk", "Super":
 			return "drunk"
+	return ""
+
+## 小虎／伥鬼／Boss 的招式音：不套用武松刀光，只補各自起手聲。
+func _attack_sfx(state_name: String) -> String:
+	match state_name:
+		"TigerPounce", "TigerPounceChain", "TigerCross", "BossPounce", "BossPounceP3", "BossDeathPounce":
+			return "sfx_pounce"
+		"TigerTail", "BossTail", "BossIronTail":
+			return "sfx_tail_sweep"
+		"BossRearUp", "BossRearUpP3":
+			return "sfx_rear_up"
+		"CorpseLight", "CorpseDash":
+			return "sfx_whiff_light"
+		"CorpseHeavy":
+			return "sfx_whiff_heavy"
 	return ""
 
 ## 每邏輯幀同步酒氣模式（Super 金脈衝 / 滿氣柔和呼吸 / 醉打酒紅）與酒霧開關

@@ -62,6 +62,7 @@ func _hurt_state(kind: String) -> String:
 func change_state(new_state: String) -> void:
 	if new_state == "BossRoar":
 		boss_roar_done = false
+		AUDIO.play_sfx("sfx_roar", -1.0)
 	super.change_state(new_state)
 	# 腹部 ×2 只在倒地窗口開啟；其餘時間關閉，避免和身體盒重複結算。
 	_set_belly(new_state == BOSS_KNOCKDOWN)
@@ -80,6 +81,9 @@ func _set_belly(enabled: bool) -> void:
 	if shape != null:
 		shape.set_deferred("disabled", not enabled)
 
+func _death_sfx() -> String:
+	return "sfx_boss_death"
+
 func _physics_process(delta: float) -> void:
 	# 繼承場景的 export 覆寫晚於 _ready：首個物理幀讀到的才是 max_hp/start_state 真值。
 	if not _boss_booted:
@@ -92,6 +96,7 @@ func _physics_process(delta: float) -> void:
 			boss_pending_phase = 0
 			boss_poise = 0
 			boss_death_pounce_used = false
+			AUDIO.play_sfx("sfx_phase", -1.0)
 	super._physics_process(delta)
 
 func _run_ai(delta: float) -> void:
@@ -237,6 +242,7 @@ func _tick_summon() -> void:
 		tiger.ai_profile = "tiger"
 		parent_node.add_child(tiger)
 		boss_summoned.append(tiger)
+	AUDIO.play_sfx("sfx_summon", -2.0)
 
 func _clean_summoned() -> void:
 	var alive: Array = []

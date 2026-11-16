@@ -11,6 +11,7 @@ const STAGE_RIGHT: float = 1920.0
 const TARGET_HURT_SIZE: Vector2 = Vector2(64.0, 180.0)
 const TARGET_HURT_OFFSET: Vector2 = Vector2(0.0, -90.0)
 const EXTRA_LIFE: float = 1.2      # 預定落點後再多飛一點，避免邊緣誤刪
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 var damage: int = 75
 var target = null
@@ -35,6 +36,7 @@ func setup(p_target, p_dir: float, p_damage: int, p_from: Vector2) -> void:
 func _ready() -> void:
 	z_index = 3
 	queue_redraw()
+	AUDIO.play_sfx("sfx_rock_throw", -3.0)
 
 func _physics_process(delta: float) -> void:
 	age += delta
@@ -47,6 +49,7 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 		return
 	if position.y >= FLOOR_Y - RADIUS or position.x < STAGE_LEFT or position.x > STAGE_RIGHT:
+		AUDIO.play_sfx("sfx_rock_break", -4.0)
 		queue_free()       # 落地／撞邊界即碎，不留殘骸
 		return
 	if age >= flight_time + EXTRA_LIFE:

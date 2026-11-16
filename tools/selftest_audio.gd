@@ -61,6 +61,8 @@ func _run() -> void:
 	_check_bgm()
 	_check_ducking()
 	_check_voice()
+	_check_dialogue()
+	_check_scene_hooks()
 	_check_game_audio()
 
 func _check_buses() -> void:
@@ -165,6 +167,28 @@ func _check_voice() -> void:
 	_check("voice on Voice bus", voice != null and voice.bus == "Voice")
 	manager.stop_voice()
 	_check("voice stops", not manager.is_voice_playing())
+
+func _check_dialogue() -> void:
+	manager.register_stream("sfx", "sfx_dialog_open", _make_wav(0.2))
+	manager.register_stream("sfx", "sfx_typing", _make_wav(0.1))
+	var dialogue = load("res://scenes/ui/DialogueUI.tscn").instantiate()
+	root.add_child(dialogue)
+	dialogue.play([{"speaker": "店家", "text": "客官，打尖還是住店？"}])
+	_check("dialogue ducks bgm", manager.is_ducked())
+	_check("dialogue swaps to dialogue bus sfx", manager.active_sfx_count() >= 1)
+	dialogue.close()
+	_check("dialogue releases duck", not manager.is_ducked())
+	root.remove_child(dialogue)
+	dialogue.free()
+
+## 真實場景的 BGM 調用點：主菜單應在 _ready 請求 bgm_menu。
+func _check_scene_hooks() -> void:
+	manager.register_stream("bgm", "bgm_menu", _make_wav(0.4))
+	var menu = load("res://scenes/MainMenu.tscn").instantiate()
+	root.add_child(menu)
+	_check("main menu requests bgm_menu", manager.current_bgm() == "bgm_menu")
+	root.remove_child(menu)
+	menu.free()
 
 func _check_game_audio() -> void:
 	_check("GameAudio sees manager", AUDIO.has_manager())

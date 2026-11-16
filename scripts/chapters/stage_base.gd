@@ -7,6 +7,7 @@ const DIALOGUE_SCENE := preload("res://scenes/ui/DialogueUI.tscn")
 const GAME_SHELL := preload("res://scripts/ui/game_shell.gd")
 const STORY := preload("res://data/story_beats.gd")
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -82,6 +83,10 @@ func opponent_display_name() -> String:
 func allow_super_cinematic() -> bool:
 	return false
 
+## 本場景 BGM 曲名（對應 `res://assets/audio/bgm/<name>.wav|ogg|mp3`）；空字串＝不指定。
+func bgm_track() -> String:
+	return ""
+
 func _ready() -> void:
 	_build_world()
 	if _cm().current_beat == "" or String(STORY.beat(_cm().current_beat).get("scene", "")) != scene_id():
@@ -92,6 +97,7 @@ func _cm():
 	return get_node_or_null("/root/ChapterManager")
 
 func _deferred_start() -> void:
+	AUDIO.play_bgm(bgm_track())
 	_on_stage_start()
 
 func _on_stage_start() -> void:
