@@ -35,12 +35,20 @@ var _aura_scale: Vector2 = Vector2.ONE
 var _pending_kind: String = ""
 var _pending_face: float = 1.0
 var _delay: float = 0.0        # 待發延遲（= 招式 startup 幀數 / 60），到點才真正出刀
+# 子節點快取：物理幀內原本逐幀 get_node_or_null，這裡一次取好。
+var _core: Line2D
+var _halo: Line2D
+var _aura: Sprite2D
+var _vapor: CPUParticles2D
 
 
 func _ready() -> void:
-	var aura := get_node_or_null("Aura") as Sprite2D
-	if aura != null:
-		_aura_scale = aura.scale
+	_core = get_node_or_null("SlashCore") as Line2D
+	_halo = get_node_or_null("SlashHalo") as Line2D
+	_aura = get_node_or_null("Aura") as Sprite2D
+	_vapor = get_node_or_null("DrunkVapor") as CPUParticles2D
+	if _aura != null:
+		_aura_scale = _aura.scale
 	_ensure_width_curve("SlashCore")
 	_ensure_width_curve("SlashHalo")
 	reset()
@@ -65,18 +73,15 @@ func reset() -> void:
 	_total = 0.0
 	_pending_kind = ""
 	_delay = 0.0
-	for n in ["SlashCore", "SlashHalo"]:
-		var ln := get_node_or_null(n) as Line2D
+	for ln in [_core, _halo]:
 		if ln != null:
 			ln.visible = false
 			ln.modulate = Color(1, 1, 1, 0)
-	var aura := get_node_or_null("Aura") as Sprite2D
-	if aura != null:
-		aura.visible = false
-		aura.modulate = Color(1, 1, 1, 0)
-	var vap := get_node_or_null("DrunkVapor") as CPUParticles2D
-	if vap != null:
-		vap.emitting = false
+	if _aura != null:
+		_aura.visible = false
+		_aura.modulate = Color(1, 1, 1, 0)
+	if _vapor != null:
+		_vapor.emitting = false
 
 
 ## 觸發一刀刀光；face 為朝向（1 右 / -1 左）
@@ -88,8 +93,7 @@ func strike(kind: String, face: float, delay: float = 0.0) -> void:
 		_delay = delay
 		_total = 0.0
 		_life = 0.0
-		for n in ["SlashCore", "SlashHalo"]:
-			var ln := get_node_or_null(n) as Line2D
+		for ln in [_core, _halo]:
 			if ln != null:
 				ln.visible = false
 				ln.modulate = Color(1, 1, 1, 0)
@@ -103,8 +107,7 @@ func cancel() -> void:
 	_delay = 0.0
 	_total = 0.0
 	_life = 0.0
-	for n in ["SlashCore", "SlashHalo"]:
-		var ln := get_node_or_null(n) as Line2D
+	for ln in [_core, _halo]:
 		if ln != null:
 			ln.visible = false
 			ln.modulate = Color(1, 1, 1, 0)
@@ -117,12 +120,10 @@ func pending_delay() -> float:
 
 func _arm(kind: String, face: float) -> void:
 	var cfg: Dictionary = ARC_KINDS.get(kind, ARC_KINDS["light"])
-	var core := get_node_or_null("SlashCore") as Line2D
-	var halo := get_node_or_null("SlashHalo") as Line2D
-	if core == null or halo == null:
+	if _core == null or _halo == null:
 		return
-	_build_arc(core, cfg, face, 1.0, 0.0, cfg["core"])
-	_build_arc(halo, cfg, face, 1.04, 4.0, cfg["halo"])
+	_build_arc(_core, cfg, face, 1.0, 0.0, cfg["core"])
+	_build_arc(_halo, cfg, face, 1.04, 4.0, cfg["halo"])
 	_total = float(cfg["life"])
 	_life = _total
 	_apply_alpha(0.0)
@@ -146,12 +147,10 @@ func _build_arc(ln: Line2D, cfg: Dictionary, face: float, r_scale: float,
 
 
 func _apply_alpha(a: float) -> void:
-	var core := get_node_or_null("SlashCore") as Line2D
-	if core != null:
-		core.modulate = Color(1, 1, 1, clampf(a, 0.0, 1.0))
-	var halo := get_node_or_null("SlashHalo") as Line2D
-	if halo != null:
-		halo.modulate = Color(1, 1, 1, clampf(a * 0.55, 0.0, 1.0))   # 外圈只留淡輝，避免糊成實心月牙
+	if _core != null:
+		_core.modulate = Color(1, 1, 1, clampf(a, 0.0, 1.0))
+	if _halo != null:
+		_halo.modulate = Color(1, 1, 1, clampf(a * 0.55, 0.0, 1.0))   # 外圈只留淡輝，避免糊成實心月牙
 
 
 func _physics_process(delta: float) -> void:
@@ -168,8 +167,7 @@ func _physics_process(delta: float) -> void:
 		var p: float = clampf(1.0 - _life / _total, 0.0, 1.0)
 		_apply_alpha(sin(p * PI))            # 0 → 1 → 0 的快速涮亮
 		if _life <= 0.0:
-			for n in ["SlashCore", "SlashHalo"]:
-				var ln := get_node_or_null(n) as Line2D
+			for ln in [_core, _halo]:
 				if ln != null:
 					ln.visible = false
 	_update_aura()
@@ -186,29 +184,27 @@ func sync(state: String, frame: int, wine: float) -> void:
 		_aura_mode = "awaken"
 	else:
 		_aura_mode = "none"
-	var vap := get_node_or_null("DrunkVapor") as CPUParticles2D
-	if vap != null and vap.emitting != (state == "CmdDrunk"):
-		vap.emitting = state == "CmdDrunk"
+	if _vapor != null and _vapor.emitting != (state == "CmdDrunk"):
+		_vapor.emitting = state == "CmdDrunk"
 
 
 func _update_aura() -> void:
-	var aura := get_node_or_null("Aura") as Sprite2D
-	if aura == null:
+	if _aura == null:
 		return
 	if _aura_mode == "none":
-		aura.visible = false
-		aura.modulate = Color(1, 1, 1, 0)
+		_aura.visible = false
+		_aura.modulate = Color(1, 1, 1, 0)
 		return
-	aura.visible = true
+	_aura.visible = true
 	if _aura_mode == "super":
 		var pulse: float = 0.5 + 0.5 * sin(float(_logic_frame) * 0.35)
-		aura.modulate = Color(1.0, 0.72 + 0.12 * pulse, 0.28 + 0.14 * pulse, 0.40 + 0.30 * pulse)
-		aura.scale = _aura_scale * (1.00 + 0.14 * pulse)
+		_aura.modulate = Color(1.0, 0.72 + 0.12 * pulse, 0.28 + 0.14 * pulse, 0.40 + 0.30 * pulse)
+		_aura.scale = _aura_scale * (1.00 + 0.14 * pulse)
 	elif _aura_mode == "awaken":
 		var breath: float = 0.5 + 0.5 * sin(_t * 3.0)
-		aura.modulate = Color(1.0, 0.86, 0.52, 0.14 + 0.16 * breath)
-		aura.scale = _aura_scale * (1.00 + 0.05 * breath)
+		_aura.modulate = Color(1.0, 0.86, 0.52, 0.14 + 0.16 * breath)
+		_aura.scale = _aura_scale * (1.00 + 0.05 * breath)
 	else:  # drunk
 		var wob: float = 0.5 + 0.5 * sin(_t * 4.0)
-		aura.modulate = Color(0.95, 0.34, 0.26, 0.24 + 0.24 * wob)
-		aura.scale = _aura_scale * (0.98 + 0.09 * wob)
+		_aura.modulate = Color(0.95, 0.34, 0.26, 0.24 + 0.24 * wob)
+		_aura.scale = _aura_scale * (0.98 + 0.09 * wob)

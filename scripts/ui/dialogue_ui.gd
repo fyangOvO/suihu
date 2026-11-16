@@ -13,6 +13,7 @@ var _typing: bool = false
 var _chars: float = 0.0
 var _active: bool = false
 var _callback: Callable = Callable()
+var _body: String = ""           # 當前整句快取，避免逐幀從字典重取字串
 
 @onready var _box: ColorRect = $Box
 @onready var _name: Label = $Box/Name
@@ -83,6 +84,7 @@ func _start_line(line) -> void:
 		body = String(line)
 	_name.text = speaker
 	_name.visible = speaker != ""
+	_body = body
 	_text.text = ""
 	_chars = 0.0
 	_typing = true
@@ -91,10 +93,8 @@ func _start_line(line) -> void:
 func _finish_typing() -> void:
 	if _index < 0 or _index >= _lines.size():
 		return
-	var line = _lines[_index]
-	var body: String = String(line.get("text", "")) if typeof(line) == TYPE_DICTIONARY else String(line)
-	_text.text = body
-	_chars = float(body.length())
+	_text.text = _body
+	_chars = float(_body.length())
 	_typing = false
 	_hint.text = "任意攻擊鍵 / Enter：繼續"
 
@@ -102,15 +102,11 @@ func _process(delta: float) -> void:
 	if not _active or not _typing:
 		return
 	_chars += CHARS_PER_SECOND * delta
-	if _index < 0 or _index >= _lines.size():
-		return
-	var line = _lines[_index]
-	var body: String = String(line.get("text", "")) if typeof(line) == TYPE_DICTIONARY else String(line)
 	var shown: int = int(_chars)
-	if shown >= body.length():
+	if shown >= _body.length():
 		_finish_typing()
 		return
-	_text.text = body.substr(0, shown)
+	_text.text = _body.substr(0, shown)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _active:

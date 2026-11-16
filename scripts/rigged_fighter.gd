@@ -8,7 +8,10 @@ extends CharacterBody2D
 
 const DATA := preload("res://data/action_frame_data.gd")
 
-@export var is_player1: bool = true
+@export var is_player1: bool = true:
+	set(value):
+		is_player1 = value
+		_spec_cache.clear()   # 敵我身分改變後規格快取失效（自測會在 _ready 後改這個值）
 @export var max_hp: int = 800
 @export var anim_dir: String = "":
 	set(value):
@@ -36,6 +39,17 @@ var _anim_dirs_ready: bool = false
 var _state: String = "Idle"
 var _frame: int = 0
 var _has_hit: bool = false
+
+# 節點快取：物理幀內原本用 $Visual／get_node("HitBox/...") 逐幀解析路徑，
+# 這裡在 _ready 一次取好，戰鬥每幀只做屬性存取。缺節點時保留 null 並走安全分支。
+var _visual: Sprite2D
+var _hitbox: Area2D
+var _attack_shape: CollisionShape2D
+var _hurtbox: Area2D
+var _body_collision: CollisionShape2D
+var _fx: Node
+## 規格快取：敵方 _spec 會複製字典，原本每幀／每次命中都重建一份；規格是常數，結果可重用。
+var _spec_cache: Dictionary = {}
 
 # 輸入
 var _move_x: float = 0.0
@@ -147,13 +161,19 @@ const ENEMY_OVERRIDES: Dictionary = {
 	"Heavy": {"startup": 3, "damage": 130},
 }
 
-## 動作規格：敵方實例在共用數據表上疊 startup 補償與傷害列；回傳的字典已複製，改動不會污染 SPECS
+## 動作規格：敵方實例在共用數據表上疊 startup 補償與傷害列；回傳的字典已複製，改動不會污染 SPECS。
+## 結果按狀態快取（規格是常數）；is_player1 變更時快取會清空。
 func _spec(state_name: String) -> Dictionary:
+	var cached: Dictionary = _spec_cache.get(state_name, {})
+	if not cached.is_empty():
+		return cached
 	var base: Dictionary = DATA.spec(state_name)
 	if is_player1:
+		_spec_cache[state_name] = base
 		return base
 	var ov: Dictionary = ENEMY_OVERRIDES.get(state_name, {})
 	if ov.is_empty():
+		_spec_cache[state_name] = base
 		return base
 	var copy: Dictionary = base.duplicate(false)
 	if ov.has("startup"):
@@ -162,20 +182,35 @@ func _spec(state_name: String) -> Dictionary:
 		copy["logic"] = lg
 	if ov.has("damage"):
 		copy["damage"] = int(ov["damage"])
+	_spec_cache[state_name] = copy
 	return copy
 
 func _ready() -> void:
 	_rng.randomize()
+	_cache_nodes()
 	current_hp = max_hp
 	face_direction = 1.0 if is_player1 else -1.0
 	_apply_anim_dir.call_deferred()
 	change_state(start_state)
 
+## 取一次常用子節點，避免物理幀內重複解析 NodePath。
+func _cache_nodes() -> void:
+	_visual = get_node_or_null("Visual") as Sprite2D
+	_hitbox = get_node_or_null("HitBox") as Area2D
+	_attack_shape = get_node_or_null("HitBox/AttackShape") as CollisionShape2D
+	_hurtbox = get_node_or_null("HurtBox") as Area2D
+	_body_collision = get_node_or_null("Collision") as CollisionShape2D
+	_fx = get_node_or_null("Fx")
+
 ## 敵人有自己的素材目錄時插到查找鏈最前；空字串＝沿用武松那三層
 func _apply_anim_dir() -> void:
 	if anim_dir == "":
 		return
-	$Visual.set_search_dirs([anim_dir, "res://assets/anim/redraw_clean/", "res://assets/anim/clean/", "res://assets/anim/"])
+	if _visual == null:
+		_visual = get_node_or_null("Visual") as Sprite2D
+	if _visual == null:
+		return
+	_visual.set_search_dirs([anim_dir, "res://assets/anim/redraw_clean/", "res://assets/anim/clean/", "res://assets/anim/"])
 
 func change_state(new_state: String) -> void:
 	if _state == new_state:
@@ -234,7 +269,7 @@ func _physics_process(delta: float) -> void:
 	if _state == "WallStick":
 		_frame += 1
 		velocity = Vector2.ZERO
-		$Visual.play_action(_state, spec, delta)
+		_visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
 			# 先切狀態再賦速度：change_state 會清零 velocity.x，倒過來寫彈回就沒有水平分量
 			if _is_corpse():
@@ -253,7 +288,7 @@ func _physics_process(delta: float) -> void:
 			return
 		_apply_gravity(delta)
 		move_and_slide()
-		$Visual.play_action(_state, spec, delta)
+		_visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
 			change_state(_idle_state())
 		return
@@ -289,7 +324,7 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.x = 0.0
 		move_and_slide()
-		$Visual.play_action(_state, spec, delta)
+		_visual.play_action(_state, spec, delta)
 		if _frame >= DATA.total_frames(spec):
 			change_state(_idle_state())
 		return
@@ -299,7 +334,7 @@ func _physics_process(delta: float) -> void:
 	_apply_gravity(delta)
 	move_and_slide()
 	_face_opponent_when_free()
-	$Visual.play_action(_play_state(), _spec(_play_state()), delta)
+	_visual.play_action(_play_state(), _spec(_play_state()), delta)
 
 ## 滿酒氣待機時切換為拔刀覺醒立繪（僅替換播放姿態，狀態機與判定不變）
 func _play_state() -> String:
@@ -846,7 +881,9 @@ static func can_block(low: bool, unblockable: bool, defense: String) -> bool:
 	return true
 
 func _enable_attack_shape() -> void:
-	var shape_node: CollisionShape2D = get_node("HitBox/AttackShape")
+	var shape_node: CollisionShape2D = _attack_shape
+	if shape_node == null:
+		return
 	var attack_spec: Dictionary = _spec(_state)
 	var hb: Dictionary = attack_spec.get("hitbox", {})
 	if hb.is_empty():
@@ -867,11 +904,11 @@ func _enable_attack_shape() -> void:
 
 ## 對重疊到的 HurtBox 結算一次傷害；回傳是否命中/被擋
 func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bool:
-	if dmg <= 0:
+	if dmg <= 0 or _hitbox == null:
 		return false
 	# 一個角色可能有多塊 HurtBox（Boss 頭/身/肚）；同一目標只結算一次，取最高倍率。
 	var targets: Dictionary = {}
-	for area in get_node("HitBox").get_overlapping_areas():
+	for area in _hitbox.get_overlapping_areas():
 		var target = _fighter_of(area)
 		if target == null or target == self:
 			continue
@@ -911,9 +948,8 @@ func _fighter_of(area: Area2D):
 
 ## 啟用/關閉攻擊盒；節點尚未就緒時安全跳過
 func _set_attack_shape(enabled: bool) -> void:
-	var n := get_node_or_null("HitBox/AttackShape")
-	if n != null:
-		n.set_disabled(not enabled)
+	if _attack_shape != null:
+		_attack_shape.set_disabled(not enabled)
 
 ## Boss 咆哮施加的純硬直（0 傷害）：30 幀正面、15 幀背對
 func apply_stun(frames: int) -> void:
@@ -968,20 +1004,20 @@ func _tick_death(delta: float) -> void:
 	_death_t += delta
 	_frame += 1
 	velocity = Vector2.ZERO
-	$Visual.play_action(_death_state(), _spec(_death_state()), delta)
+	_visual.play_action(_death_state(), _spec(_death_state()), delta)
 	if _death_t >= DEATH_FADE_START:
 		var k: float = clampf((_death_t - DEATH_FADE_START) / DEATH_FADE_TIME, 0.0, 1.0)
-		$Visual.modulate.a = 1.0 - k
+		_visual.modulate.a = 1.0 - k
 	if _death_t >= DEATH_TOTAL and not _death_done:
 		_finish_death()
 
 ## 演出收尾：隱藏本體、關碰撞（可穿過青煙）、按 10% 掉木牌
 func _finish_death() -> void:
 	_death_done = true
-	$Visual.visible = false
-	$Collision.set_deferred("disabled", true)
-	$HurtBox.set_deferred("monitorable", false)
-	$HurtBox.set_deferred("monitoring", false)
+	_visual.visible = false
+	_body_collision.set_deferred("disabled", true)
+	_hurtbox.set_deferred("monitorable", false)
+	_hurtbox.set_deferred("monitoring", false)
 	_spawn_drop(false)
 
 ## 掉落：碎銀必掉；木牌按 drop_chance（docs/04 §2「碎銀 ×10% 概率掉伥鬼的木牌」）
@@ -1056,32 +1092,30 @@ func on_blocked(dmg: int, from_dir: float, knock_up: float = 0.0, guard_ratio: f
 
 ## 覺醒 Super 金黃脈衝演出；非 Super 狀態復原原色（以 modulate 脈衝代替外部特效素材）
 func _update_super_effect() -> void:
-	var vis: Node2D = get_node_or_null("Visual")
-	if vis == null:
+	if _visual == null:
 		return
 	if _state == "Super":
 		var pulse: float = 0.5 + 0.5 * sin(float(_frame) * 0.35)
-		vis.modulate = Color(1.0 + 0.35 * pulse, 0.95 + 0.20 * pulse, 0.45 + 0.45 * pulse)
+		_visual.modulate = Color(1.0 + 0.35 * pulse, 0.95 + 0.20 * pulse, 0.45 + 0.45 * pulse)
 	elif _state == "Idle" and wine_gauge >= SUPER_REQUIRE_WINE:
 		# 滿氣待機：柔和金輝呼吸，與 Super 的強脈衝區分
 		var breath: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.003)
-		vis.modulate = Color(1.0, 0.94 + 0.10 * breath, 0.72 + 0.22 * breath)
-	elif vis.modulate != Color(1.0, 1.0, 1.0):
-		vis.modulate = Color(1.0, 1.0, 1.0)
+		_visual.modulate = Color(1.0, 0.94 + 0.10 * breath, 0.72 + 0.22 * breath)
+	elif _visual.modulate != Color(1.0, 1.0, 1.0):
+		_visual.modulate = Color(1.0, 1.0, 1.0)
 
 ## 特效層一次性觸發：進入招式狀態即出一刀刀光；醉打額外出酒紅刀光
 func _fx_state(state_name: String) -> void:
-	var fx := get_node_or_null("Fx")
-	if fx == null:
+	if _fx == null:
 		return
 	var kind := _fx_kind(state_name)
 	if kind == "":
-		fx.cancel()          # 切入非攻擊狀態（受擊/待機等）＝上一刀被打斷
+		_fx.cancel()          # 切入非攻擊狀態（受擊/待機等）＝上一刀被打斷
 		return
 	# 刀光等 startup 走完（進入 active 命中窗口）才亮，與判定盒開盒同步
 	var lg: Dictionary = _spec(state_name).get("logic", {})
 	var startup: int = int(lg.get("startup", 0))
-	fx.strike(kind, face_direction, float(startup) / 60.0)
+	_fx.strike(kind, face_direction, float(startup) / 60.0)
 
 ## 招式 → 刀光種類（弧度/寬度/色溫不同，rise 由下往上、air 由上往下）
 func _fx_kind(state_name: String) -> String:
@@ -1102,9 +1136,8 @@ func _fx_kind(state_name: String) -> String:
 
 ## 每邏輯幀同步酒氣模式（Super 金脈衝 / 滿氣柔和呼吸 / 醉打酒紅）與酒霧開關
 func _fx_sync() -> void:
-	var fx := get_node_or_null("Fx")
-	if fx != null:
-		fx.sync(_state, _frame, wine_gauge)
+	if _fx != null:
+		_fx.sync(_state, _frame, wine_gauge)
 
 func _apply_gravity(delta: float) -> void:
 	if not is_on_floor():
@@ -1118,4 +1151,5 @@ func _face_opponent_when_free() -> void:
 	var target: float = 1.0 if opponent.global_position.x > global_position.x else -1.0
 	if target != face_direction:
 		face_direction = target
-	$Visual.scale.x = absf($Visual.scale.x) * face_direction
+	if _visual != null:
+		_visual.scale.x = absf(_visual.scale.x) * face_direction

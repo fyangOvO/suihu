@@ -52,6 +52,10 @@ var _pending_next: String = ""
 var _banner_timer: float = 0.0
 var _pickup_timer: float = 0.0
 var _dialogue_active: bool = false
+# HUD 每幀刷新用的快取：避免數值沒變也重建字串／重設節點屬性
+var _hud_last_hp: Dictionary = {}
+var _hud_last_boss_phase: int = 0
+var _overlay_parts: Dictionary = {}
 
 # --- 子類可覆寫的設定 ---
 func scene_id() -> String:
@@ -397,18 +401,25 @@ func _add_hp_overlay(bar: ProgressBar, color: Color) -> Control:
 	cap.size = Vector2(2, bar.size.y - 2)
 	cap.color = Color(color.r, color.g, color.b, 0.9)
 	root.add_child(cap)
+	_overlay_parts[root] = [shine, cap]
 	return root
 
 func _update_hp_overlay(bar: ProgressBar, overlay: Control, max_v: float, value: float) -> void:
 	if overlay == null or bar == null:
 		return
+	var parts: Array = _overlay_parts.get(overlay, [])
+	if parts.is_empty():
+		return
 	var ratio: float = clampf(value / maxf(max_v, 1.0), 0.0, 1.0)
-	var shine := overlay.get_node_or_null("Shine") as ColorRect
-	if shine != null:
-		shine.size.x = maxf(0.0, bar.size.x * ratio - 2.0)
-	var cap := overlay.get_node_or_null("Cap") as ColorRect
+	var width: float = maxf(0.0, bar.size.x * ratio - 2.0)
+	var shine: ColorRect = parts[0]
+	var cap: ColorRect = parts[1]
+	if shine != null and not is_equal_approx(shine.size.x, width):
+		shine.size.x = width
 	if cap != null:
-		cap.position.x = maxf(1.0, bar.size.x * ratio - 2.0)
+		var cap_x: float = maxf(1.0, width)
+		if not is_equal_approx(cap.position.x, cap_x):
+			cap.position.x = cap_x
 
 func _add_bar_ticks(bar: ProgressBar, divisions: int) -> Control:
 	var root := Control.new()
@@ -493,34 +504,48 @@ func _tick_overlay(delta: float) -> void:
 
 func _update_hud() -> void:
 	if _p1hp != null:
-		_p1hp.max_value = p1.max_hp
-		_p1hp.value = p1.current_hp
-		if _p1hp_text != null:
-			_p1hp_text.text = "%d / %d" % [int(p1.current_hp), int(p1.max_hp)]
+		_sync_bar(_p1hp, p1.max_hp, p1.current_hp)
+		_sync_hp_text("p1", _p1hp_text, p1.current_hp, p1.max_hp)
 		_update_hp_overlay(_p1hp, _p1hp_overlay, p1.max_hp, p1.current_hp)
 	if _p1wine != null:
-		_p1wine.value = p1.wine_gauge
+		if not is_equal_approx(_p1wine.value, p1.wine_gauge):
+			_p1wine.value = p1.wine_gauge
 	if p2 != null and _p2hp != null:
-		_p2hp.max_value = p2.max_hp
-		_p2hp.value = p2.current_hp
-		if _p2hp_text != null:
-			_p2hp_text.text = "%d / %d" % [int(p2.current_hp), int(p2.max_hp)]
+		_sync_bar(_p2hp, p2.max_hp, p2.current_hp)
+		_sync_hp_text("p2", _p2hp_text, p2.current_hp, p2.max_hp)
 		_update_hp_overlay(_p2hp, _p2hp_overlay, p2.max_hp, p2.current_hp)
 	if _is_boss and _boss_hp != null:
-		_boss_hp.max_value = p2.max_hp
-		_boss_hp.value = p2.current_hp
-		if _boss_hp_text != null:
-			_boss_hp_text.text = "%d / %d" % [int(p2.current_hp), int(p2.max_hp)]
+		_sync_bar(_boss_hp, p2.max_hp, p2.current_hp)
+		_sync_hp_text("boss", _boss_hp_text, p2.current_hp, p2.max_hp)
 		if _boss_phase != null:
 			var phase_index: int = clampi(int(p2.boss_phase), 1, 3)
-			_boss_phase.text = ["一階段", "二階段", "三階段"][phase_index - 1]
-			for i in range(_boss_phase_pips.size()):
-				var lit: bool = i < phase_index
-				_boss_phase_pips[i].color = Color(
-					UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b,
-					0.86 if lit else 0.16
-				)
+			if phase_index != _hud_last_boss_phase:
+				_hud_last_boss_phase = phase_index
+				_boss_phase.text = ["一階段", "二階段", "三階段"][phase_index - 1]
+				for i in range(_boss_phase_pips.size()):
+					var lit: bool = i < phase_index
+					_boss_phase_pips[i].color = Color(
+						UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b,
+						0.86 if lit else 0.16
+					)
 		_update_hp_overlay(_boss_hp, _boss_overlay, p2.max_hp, p2.current_hp)
+
+## 血條只在數值真的變動時寫入，避免每幀觸發 Control 的 value_changed／重繪。
+func _sync_bar(bar: ProgressBar, max_v: float, value: float) -> void:
+	if not is_equal_approx(bar.max_value, max_v):
+		bar.max_value = max_v
+	if not is_equal_approx(bar.value, value):
+		bar.value = value
+
+## 血條文字只在整數血量的任一側變動時重建。
+func _sync_hp_text(tag: String, label: Label, hp: float, max_hp: float) -> void:
+	if label == null:
+		return
+	var now: Vector2i = Vector2i(int(hp), int(max_hp))
+	if _hud_last_hp.get(tag, Vector2i(-1, -1)) == now:
+		return
+	_hud_last_hp[tag] = now
+	label.text = "%d / %d" % [now.x, now.y]
 
 func _say(lines: Array, on_done: Callable = Callable()) -> void:
 	if lines.is_empty():

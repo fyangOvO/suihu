@@ -289,6 +289,13 @@
   - **倒影微動**：`TigerReflection` 與 `PoolReflection` 的 `modulate.a` 各自以不同相位微動，虎影與白虎倒影不會同步呼吸。
   - **邊界**：只動既有節點的 alpha 與 `PoolMist.position.x`，未新增節點、未改幾何、未改倒影位置或 scale。
   - **驗收**：`SCN06_POOL_SELFTEST result=PASS fails=[]`（34 項，新增水面 alpha、水霧位移、虎影 alpha 三項微動檢查）；`FLOW_SELFTEST fails=0`；重出 `docs/preview/scn06-pool.png`。
+- [x] **V0.3.28 戰鬥熱路徑節點與規格快取（效能優化，25 套自測 RC=0）**：
+  - **節點快取**：`rigged_fighter` 在 `_ready` 一次取好 `Visual`／`HitBox`／`AttackShape`／`HurtBox`／`Collision`／`Fx`，物理幀內不再逐幀解析 `NodePath`；`fighter_fx` 同樣快取 `SlashCore`／`SlashHalo`／`Aura`／`DrunkVapor`。
+  - **規格快取**：敵人 `_spec()` 的複製字典按狀態快取，`is_player1` 變更時清空（自測會在 `_ready` 後改身分），命中與每幀播放不再重建字典。
+  - **HUD 增量更新**：`stage_base` 血條只寫變動值、血量文字只寫變動整數、Boss 階段名與菱形只在階段切換時重繪；血條 overlay 子節點一次取好。
+  - **雜項**：對話框整句快取；`coin_pickup` 移除每幀多餘 `queue_redraw()`（本地繪製內容靜態，位移由節點座標負責）。
+  - **邊界**：只動節點查找、字典複製與 UI 寫入時機，未改任何玩法數值、判定盒、動畫時序或顏色。
+  - **驗收**：25 套 `tools/selftest_*.gd` 全部 RC=0／`fails=0`；主場景 `--quit-after 240` RC=0 且無 ERROR。
 
 
 

@@ -26,7 +26,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	age += delta
 	position.y = base_y - 4.0 * sin(age * 3.0)
-	queue_redraw()
+	# 本地繪製內容是靜態的，上下浮動只改節點位置，不需要每幀重畫。
 	if _touches_target():
 		_collect()
 
