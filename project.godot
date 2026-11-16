@@ -21,6 +21,7 @@ config/features=PackedStringArray("4.7")
 [autoload]
 
 ChapterManager="*res://scripts/chapter_manager.gd"
+AudioManager="*res://scripts/audio/audio_manager.gd"
 
 [display]
 

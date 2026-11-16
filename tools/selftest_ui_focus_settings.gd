@@ -21,9 +21,12 @@ func _check(name: String, ok: bool) -> void:
 	print("CHECK ", name, " = ", "PASS" if ok else "FAIL")
 
 func _next_of(btn: Button) -> Button:
-	if btn == null or btn.focus_next.is_empty():
+	return _focus_next(btn) as Button
+
+func _focus_next(ctrl: Control) -> Control:
+	if ctrl == null or ctrl.focus_next.is_empty():
 		return null
-	return btn.get_node_or_null(btn.focus_next) as Button
+	return ctrl.get_node_or_null(ctrl.focus_next) as Control
 
 func _initialize() -> void:
 	root.size = Vector2i(1, 1)
@@ -70,10 +73,30 @@ func _process(_delta: float) -> bool:
 		settings_btn.pressed.emit()
 		_check("settings page after button", shell.current_page() == "settings")
 		var mode := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMode") as Button
+		var master := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMaster") as HSlider
+		var bgm := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsBgm") as HSlider
+		var sfx := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsSfx") as HSlider
+		var voice := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsVoice") as HSlider
 		var back := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsBack") as Button
+		_check("settings four volume sliders", master != null and bgm != null and sfx != null and voice != null)
 		_check("settings initial focus on mode", mode != null and mode.has_focus())
-		_check("settings mode -> back", _next_of(mode) == back)
-		_check("settings back -> mode", _next_of(back) == mode)
+		_check("settings mode -> master", _focus_next(mode) == master)
+		_check("settings master -> bgm", _focus_next(master) == bgm)
+		_check("settings bgm -> sfx", _focus_next(bgm) == sfx)
+		_check("settings sfx -> voice", _focus_next(sfx) == voice)
+		_check("settings voice -> back", _focus_next(voice) == back)
+		_check("settings back -> mode", _focus_next(back) == mode)
+		_check("volume defaults shown", master != null and int(master.value) == 80
+			and bgm != null and int(bgm.value) == 70
+			and sfx != null and int(sfx.value) == 80
+			and voice != null and int(voice.value) == 90)
+		if master != null:
+			master.value = 35
+			var master_value := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMasterValue") as Label
+			_check("volume slider saves", is_equal_approx(SETTINGS.load_volume("master"), 0.35))
+			_check("volume label follows", master_value != null and master_value.text == "35")
+			master.value = 80
+			_check("volume slider restores", is_equal_approx(SETTINGS.load_volume("master"), 0.8))
 		_check("cancel from settings returns pause", shell.handle_cancel()
 			and shell.current_page() == "pause" and settings_btn.has_focus())
 		_check("cancel from pause resumes", shell.handle_cancel()

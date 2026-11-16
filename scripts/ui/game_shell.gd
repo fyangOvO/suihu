@@ -9,6 +9,7 @@ signal new_game_requested
 
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const SETTINGS := preload("res://scripts/ui/user_settings.gd")
+const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
 var _dim: ColorRect
 var _root: Control
@@ -26,9 +27,12 @@ var _summary_stats: Label
 var _death_hint: Label
 var _page: String = ""
 var _pause_buttons: Array[Button] = []
-var _settings_buttons: Array[Button] = []
+var _settings_focus: Array[Control] = []
 var _death_buttons: Array[Button] = []
 var _summary_buttons: Array[Button] = []
+var _volume_sliders: Dictionary = {}
+var _volume_labels: Dictionary = {}
+var _volume_titles: Dictionary = {}
 var _credits: Control
 var _credits_body: Control
 var _credits_skip: Button
@@ -63,7 +67,7 @@ func _ready() -> void:
 	_build_summary()
 	_build_credits()
 	_link_focus(_pause_buttons)
-	_link_focus(_settings_buttons)
+	_link_focus(_settings_focus)
 	_link_focus(_death_buttons)
 	_link_focus(_summary_buttons)
 
@@ -104,14 +108,14 @@ func _button(parent: Control, node_name: String, text: String, y: float, callbac
 	parent.add_child(b)
 	return b
 
-func _link_focus(buttons: Array[Button]) -> void:
+func _link_focus(buttons: Array) -> void:
 	var count: int = buttons.size()
 	if count < 2:
 		return
 	for i in range(count):
-		var b: Button = buttons[i]
-		var next: Button = buttons[(i + 1) % count]
-		var prev: Button = buttons[(i - 1 + count) % count]
+		var b: Control = buttons[i]
+		var next: Control = buttons[(i + 1) % count]
+		var prev: Control = buttons[(i - 1 + count) % count]
 		b.focus_next = b.get_path_to(next)
 		b.focus_previous = b.get_path_to(prev)
 		b.focus_neighbor_bottom = b.get_path_to(next)
@@ -148,7 +152,7 @@ func _build_pause() -> void:
 	_label(_pause, "PauseHint", "Esc 返回遊戲　·　手柄 Start 可呼出", Vector2(64, 508), Vector2(590, 22), 13, UI_STYLE.PAPER_DIM)
 
 func _build_settings() -> void:
-	_settings = _panel("SettingsPanel", Vector2(600, 270), Vector2(720, 520))
+	_settings = _panel("SettingsPanel", Vector2(600, 250), Vector2(720, 570))
 	var settings_title := _label(_settings, "SettingsTitle", "設置", Vector2(60, 24), Vector2(500, 70), 56, UI_STYLE.PAPER, true)
 	settings_title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.24))
 	settings_title.add_theme_constant_override("shadow_offset_x", 1)
@@ -161,10 +165,101 @@ func _build_settings() -> void:
 	settings_rule.position = Vector2(64, 146)
 	_settings.add_child(settings_rule)
 	_settings_mode = _button(_settings, "SettingsMode", "顯示：全屏", 174, _toggle_display, "screen")
-	_settings_mode.size = Vector2(592, 58)
-	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 254, _on_settings_back, "back")
-	_settings_buttons = [_settings_mode, settings_back]
-	_label(_settings, "SettingsHint", "顯示模式會即時保存，下次啟動沿用。音量、手柄死區、打擊停頓待音頻／輸入批次接入。", Vector2(64, 340), Vector2(590, 50), 13, UI_STYLE.PAPER_DIM)
+	_settings_mode.size = Vector2(592, 54)
+
+	_label(_settings, "SettingsAudioSection", "音量", Vector2(64, 246), Vector2(590, 20), 13, UI_STYLE.GOLD_DIM)
+	var audio_rule := UI_STYLE.text_rule(592.0)
+	audio_rule.name = "SettingsAudioRule"
+	audio_rule.position = Vector2(64, 270)
+	_settings.add_child(audio_rule)
+	_volume_row("master", "主音量", 288.0)
+	_volume_row("bgm", "背景音樂", 326.0)
+	_volume_row("sfx", "音效", 364.0)
+	_volume_row("voice", "語音", 402.0)
+
+	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 448, _on_settings_back, "back")
+	_settings_focus = [_settings_mode, _volume_sliders["master"], _volume_sliders["bgm"],
+		_volume_sliders["sfx"], _volume_sliders["voice"], settings_back]
+	_label(_settings, "SettingsHint", "音量为 0–100，即時保存；手柄死區、打擊停頓待輸入批次接入。", Vector2(64, 512), Vector2(590, 44), 13, UI_STYLE.PAPER_DIM)
+
+## 一列音量：標題、滑桿、數值；滑桿取得焦點時標題轉金，鍵盤／手柄可調。
+func _volume_row(kind: String, title: String, y: float) -> void:
+	var suffix: String = kind.capitalize()
+	var title_label := _label(_settings, "Settings%sLabel" % suffix, title, Vector2(64, y + 5), Vector2(104, 24), 19, UI_STYLE.PAPER)
+	var slider := HSlider.new()
+	slider.name = "Settings%s" % suffix
+	slider.position = Vector2(172, y)
+	slider.size = Vector2(330, 26)
+	slider.min_value = 0.0
+	slider.max_value = 100.0
+	slider.step = 1.0
+	slider.focus_mode = Control.FOCUS_ALL
+	slider.value = roundf(AUDIO.get_volume(kind) * 100.0)
+	_style_slider(slider)
+	_settings.add_child(slider)
+	var value_label := _label(_settings, "Settings%sValue" % suffix, "%d" % int(slider.value), Vector2(514, y + 4), Vector2(64, 24), 18, UI_STYLE.GOLD_DIM)
+	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	slider.value_changed.connect(_on_volume_changed.bind(kind))
+	slider.focus_entered.connect(_on_volume_focus.bind(kind, true))
+	slider.focus_exited.connect(_on_volume_focus.bind(kind, false))
+	_volume_sliders[kind] = slider
+	_volume_labels[kind] = value_label
+	_volume_titles[kind] = title_label
+
+## 音量滑桿外觀：細金線軌道＋菱形握把，沿用 UI 色板。
+func _style_slider(slider: HSlider) -> void:
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.045, 0.040, 0.034, 0.92)
+	track.border_color = Color(UI_STYLE.GOLD_DIM.r, UI_STYLE.GOLD_DIM.g, UI_STYLE.GOLD_DIM.b, 0.45)
+	track.border_width_top = 1
+	track.border_width_bottom = 1
+	track.content_margin_top = 3.0
+	track.content_margin_bottom = 3.0
+	slider.add_theme_stylebox_override("slider", track)
+	var fill := track.duplicate() as StyleBoxFlat
+	fill.bg_color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.55)
+	fill.border_color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.85)
+	slider.add_theme_stylebox_override("grabber_area", fill)
+	var hot := fill.duplicate() as StyleBoxFlat
+	hot.bg_color = Color(1.0, 0.86, 0.55, 0.85)
+	slider.add_theme_stylebox_override("grabber_area_highlight", hot)
+	slider.add_theme_icon_override("grabber", _diamond_texture(UI_STYLE.GOLD))
+	slider.add_theme_icon_override("grabber_highlight", _diamond_texture(Color(1.0, 0.88, 0.58)))
+
+func _diamond_texture(color: Color) -> ImageTexture:
+	var size: int = 15
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var mid: int = size / 2
+	for y in range(size):
+		var half: int = mid - absi(y - mid)
+		for x in range(mid - half, mid + half + 1):
+			img.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(img)
+
+func _on_volume_changed(value: float, kind: String) -> void:
+	AUDIO.set_volume(kind, clampf(value / 100.0, 0.0, 1.0))
+	var label: Label = _volume_labels.get(kind, null)
+	if label != null:
+		label.text = "%d" % int(round(value))
+
+func _on_volume_focus(kind: String, focused: bool) -> void:
+	var title: Label = _volume_titles.get(kind, null)
+	if title != null:
+		title.add_theme_color_override("font_color", UI_STYLE.GOLD if focused else UI_STYLE.PAPER)
+
+## 進入設置頁時把四根滑桿同步到存檔值（外部改過設定也不會顯示舊值）。
+func _sync_volume_ui() -> void:
+	for kind in SETTINGS.VOLUME_KEYS:
+		var slider: HSlider = _volume_sliders.get(kind, null)
+		if slider == null:
+			continue
+		var value: float = roundf(AUDIO.get_volume(kind) * 100.0)
+		if not is_equal_approx(slider.value, value):
+			slider.value = value
+		var label: Label = _volume_labels.get(kind, null)
+		if label != null:
+			label.text = "%d" % int(value)
 
 func _build_death() -> void:
 	_death = _panel("DeathPanel", Vector2(540, 290), Vector2(840, 500))
@@ -372,6 +467,7 @@ func _on_settings() -> void:
 	_settings.visible = true
 	_page = "settings"
 	_update_mode_text()
+	_sync_volume_ui()
 	_settings_mode.grab_focus()
 
 func _on_settings_back() -> void:

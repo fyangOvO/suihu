@@ -296,6 +296,13 @@
   - **雜項**：對話框整句快取；`coin_pickup` 移除每幀多餘 `queue_redraw()`（本地繪製內容靜態，位移由節點座標負責）。
   - **邊界**：只動節點查找、字典複製與 UI 寫入時機，未改任何玩法數值、判定盒、動畫時序或顏色。
   - **驗收**：25 套 `tools/selftest_*.gd` 全部 RC=0／`fails=0`；主場景 `--quit-after 240` RC=0 且無 ERROR。
+- [x] **V0.3.29 音頻總線與設置頁四項音量（AUD-02 核心，`selftest_audio` 58 項 PASS）**：
+  - **`AudioManager` autoload**：Master／BGM／SFX／Voice 四總線（缺則建立、全部送 Master）；8 路 SFX 池輪替；BGM 雙播放器交叉淡入淡出；對話 ducking −6dB；Voice 單軌；`register_stream()` 可注入佔位串流。
+  - **缺素材容錯**：`res://assets/audio/{sfx,bgm,voice}/` 不存在時 `play_*` 一律回傳 `false`、不報錯；未匯入的 `.wav` 以 `AudioStreamWAV.load_from_file()` 執行時回退，素材到位只補檔案即可。
+  - **`GameAudio` 靜態入口**：所有腳本透過 `/root/AudioManager` 發聲；`--script` 自測或單場景預覽沒有 autoload 時安全 no-op，設置寫入仍走 `UserSettings`。
+  - **設置持久化**：`user://settings.cfg` 的 `[audio]` 段保存 master／bgm／sfx／voice（0–1，越界或非數值回預設）；與 `[display]` 共存，互不覆蓋。
+  - **設置頁**：新增「音量」區四列滑桿（主音量／背景音樂／音效／語音）＋即時數值 Label＋金線軌道／菱形握把；焦點鏈 `顯示 → 主音量 → 背景音樂 → 音效 → 語音 → 返回`，進入頁面同步存檔值。
+  - **驗收**：`AUDIO_SELFTEST result=PASS fails=[]`（58 項：總線、預設值、夾取與靜音、非法值回退、SFX 池不增長、BGM 切換與淡入淡出、ducking −6dB、Voice、GameAudio no-op）；`UI_FOCUS_SETTINGS_SELFTEST result=PASS`（38 項）；`UI_SHELL_SELFTEST result=PASS`；主場景 240 幀 RC=0。
 
 
 
