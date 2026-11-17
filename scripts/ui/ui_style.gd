@@ -291,6 +291,16 @@ static func add_button_icon(btn: Button, kind: String) -> void:
 			_icon_poly(holder, PackedVector2Array([
 				Vector2(1, -6), Vector2(8, 0), Vector2(1, 6),
 			]), gold)
+		"eye":
+			var lid := PackedVector2Array()
+			var under := PackedVector2Array()
+			for i in range(11):
+				var a: float = -0.9 + 1.8 * float(i) / 10.0
+				lid.append(Vector2(sin(a) * 8.0, -cos(a) * 5.0))
+				under.append(Vector2(sin(-a) * 8.0, cos(-a) * 5.0))
+			_icon_line(holder, lid, gold)
+			_icon_line(holder, under, dim)
+			_icon_rect(holder, Vector2.ZERO, 2.0, gold)
 		_:
 			_icon_rect(holder, Vector2(-2, -2), 4.0, gold)
 

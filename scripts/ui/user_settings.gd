@@ -35,6 +35,10 @@ const ONBOARD_KEY := "onboarded"
 
 const CAMERA_FX_KEY := "camera_fx"
 
+# --- 打擊特效（架招白閃＋慢放，OPT-02）：預設開 ---
+
+const PARRY_FX_KEY := "parry_fx"
+
 static var _path: String = DEFAULT_PATH
 
 static func set_path_for_test(path: String) -> void:
@@ -181,6 +185,24 @@ static func load_camera_fx() -> bool:
 	var raw = cfg.get_value(SECTION, CAMERA_FX_KEY, true)
 	if typeof(raw) != TYPE_BOOL:
 		return default_camera_fx()
+	return bool(raw)
+
+# --- 打擊特效（架招白閃／慢放）：預設開；缺值、非布林一律回預設 ---
+
+static func default_parry_fx() -> bool:
+	return true
+
+static func save_parry_fx(enabled: bool) -> bool:
+	var cfg := _config()
+	cfg.set_value(SECTION, PARRY_FX_KEY, bool(enabled))
+	cfg.set_value(SECTION, "updated_at", Time.get_unix_time_from_system())
+	return cfg.save(_path) == OK
+
+static func load_parry_fx() -> bool:
+	var cfg := _config()
+	var raw = cfg.get_value(SECTION, PARRY_FX_KEY, true)
+	if typeof(raw) != TYPE_BOOL:
+		return default_parry_fx()
 	return bool(raw)
 
 # --- 首次啟動引導 ---

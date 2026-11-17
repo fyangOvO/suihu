@@ -22,6 +22,7 @@ var _flash: ColorRect = null
 
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
 const PRELOADER := preload("res://scripts/scene_preloader.gd")
+const SLOW_MO := preload("res://scripts/slow_mo.gd")
 const MENU_SCENE := "res://scenes/MainMenu.tscn"
 
 func _ready():
@@ -34,6 +35,9 @@ func _ready():
 	add_child(pool)
 	$P1.opponent = $P2
 	$P2.opponent = $P1
+	# OPT-02：試煉場也接架招慢放（白閃在角色身上，慢放屬舞台層）
+	if $P1.has_signal("parry_success"):
+		$P1.parry_success.connect(_on_parry_success)
 	_result_label = Label.new()
 	_result_label.set_anchors_preset(Control.PRESET_CENTER)
 	_result_label.add_theme_font_size_override("font_size", 48)
@@ -59,8 +63,13 @@ func _ready():
 
 func _exit_tree():
 	PRELOADER.settle_pending()
+	SLOW_MO.reset()
+
+func _on_parry_success() -> void:
+	SLOW_MO.trigger()
 
 func _process(delta):
+	SLOW_MO.tick(delta)
 	_update_cinematic(delta)
 	_tick_pickup_hint(delta)
 	if _battle_over:

@@ -11,6 +11,7 @@ const AUDIO := preload("res://scripts/audio/game_audio.gd")
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
 const PRELOADER := preload("res://scripts/scene_preloader.gd")
 const CAMERA_FX := preload("res://scripts/camera_fx.gd")
+const SLOW_MO := preload("res://scripts/slow_mo.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -100,6 +101,7 @@ func _ready() -> void:
 ## 離開舞台時把未完成的預載收乾，避免線程請求懸空到程式退出
 func _exit_tree() -> void:
 	PRELOADER.settle_pending()
+	SLOW_MO.reset()   # 場中架招慢放未結束就離場，全域倍率必須還原
 
 func _cm():
 	return get_node_or_null("/root/ChapterManager")
@@ -212,16 +214,22 @@ func _build_opponent() -> void:
 	p1.opponent = p2
 	_link_hit_feedback(p2)
 
-## OPT-01：把角色命中事件接到鏡頭層；同一個角色只接一次
+## OPT-01：把角色命中事件接到鏡頭層；OPT-02 再順帶接架招慢放；同一個角色只接一次
 func _link_hit_feedback(fighter) -> void:
 	if fighter == null or not fighter.has_signal("hit_landed"):
 		return
 	if not fighter.hit_landed.is_connected(_on_hit_landed):
 		fighter.hit_landed.connect(_on_hit_landed)
+	if fighter.has_signal("parry_success") and not fighter.parry_success.is_connected(_on_parry_success):
+		fighter.parry_success.connect(_on_parry_success)
 
 func _on_hit_landed(frames: int, _dmg: int, _at: Vector2) -> void:
 	if _cam_fx != null:
 		_cam_fx.kick(frames)
+
+## OPT-02 架招成立：白閃已由角色自己播，這裡只壓 0.15s 慢放（可關）
+func _on_parry_success() -> void:
+	SLOW_MO.trigger()
 
 func _build_camera() -> void:
 	camera = Camera2D.new()
@@ -526,6 +534,7 @@ func _on_shell_new_game() -> void:
 
 # --- 執行 ---
 func _process(delta: float) -> void:
+	SLOW_MO.tick(delta)
 	if _cam_fx != null:
 		_cam_fx.tick(delta)
 	_tick_overlay(delta)

@@ -75,6 +75,7 @@ func _process(_delta: float) -> bool:
 		settings_btn.pressed.emit()
 		_check("settings page after button", shell.current_page() == "settings")
 		var mode := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMode") as Button
+		var parry := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsParryFx") as Button
 		var camfx := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsCameraFx") as Button
 		var master := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMaster") as HSlider
 		var bgm := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsBgm") as HSlider
@@ -86,7 +87,9 @@ func _process(_delta: float) -> bool:
 		_check("settings deadzone slider", deadzone != null)
 		_check("settings initial focus on mode", mode != null and mode.has_focus())
 		_check("settings camera fx toggle exists", camfx != null)
-		_check("settings mode -> camera fx", _focus_next(mode) == camfx)
+		_check("settings parry fx toggle exists", parry != null)
+		_check("settings mode -> parry fx", _focus_next(mode) == parry)
+		_check("settings parry fx -> camera fx", _focus_next(parry) == camfx)
 		_check("settings camera fx -> master", _focus_next(camfx) == master)
 		_check("settings master -> bgm", _focus_next(master) == bgm)
 		_check("settings bgm -> sfx", _focus_next(bgm) == sfx)
@@ -96,6 +99,14 @@ func _process(_delta: float) -> bool:
 		_check("settings deadzone -> back", _focus_next(deadzone) == back)
 		_check("settings back -> mode", _focus_next(back) == mode)
 		_check("settings camera fx defaults on", camfx != null and camfx.text.begins_with("鏡頭效果：開"))
+		_check("settings parry fx defaults on", parry != null and parry.text.begins_with("打擊特效：開"))
+		if parry != null:
+			parry.pressed.emit()
+			_check("parry fx toggle saves off",
+				not SETTINGS.load_parry_fx() and parry.text.begins_with("打擊特效：關"))
+			parry.pressed.emit()
+			_check("parry fx toggle saves on",
+				SETTINGS.load_parry_fx() and parry.text.begins_with("打擊特效：開"))
 		if camfx != null:
 			camfx.pressed.emit()
 			_check("camera fx toggle saves off",

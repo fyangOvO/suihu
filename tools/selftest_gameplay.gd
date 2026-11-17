@@ -136,7 +136,7 @@ func _on_physics() -> void:
 	# 236 + 重 → 打虎拳
 	b.change_state("Idle")
 	b._dir_history = ["2", "3", "6"]
-	b._heavy_pressed = true
+	b._atk_buf_heavy = 6
 	b._light_pressed = false
 	b._decide_free_state(0.016)
 	_check("236+heavy -> CmdTiger", b._state == "CmdTiger")
@@ -144,21 +144,21 @@ func _on_physics() -> void:
 	# 623 + 重 → 昇龍
 	b.change_state("Idle")
 	b._dir_history = ["6", "2", "3"]
-	b._heavy_pressed = true
+	b._atk_buf_heavy = 6
 	b._decide_free_state(0.016)
 	_check("623+heavy -> CmdUp", b._state == "CmdUp")
 
 	# 214 + 重 → 飛雲浦反擊
 	b.change_state("Idle")
 	b._dir_history = ["2", "1", "4"]
-	b._heavy_pressed = true
+	b._atk_buf_heavy = 6
 	b._decide_free_state(0.016)
 	_check("214+heavy -> Counter", b._state == "Counter")
 
 	# 無指令 + 重 → 普通重攻
 	b.change_state("Idle")
 	b._dir_history = []
-	b._heavy_pressed = true
+	b._atk_buf_heavy = 6
 	b._decide_free_state(0.016)
 	_check("no-motion+heavy -> Heavy", b._state == "Heavy")
 
@@ -166,7 +166,7 @@ func _on_physics() -> void:
 	b.change_state("Idle")
 	b._dir_history = ["2", "3", "6"]
 	b._heavy_pressed = false
-	b._light_pressed = true
+	b._atk_buf_light = 6
 	b._decide_free_state(0.016)
 	_check("236+light -> Light1 (no command)", b._state == "Light1")
 

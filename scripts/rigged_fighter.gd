@@ -8,15 +8,25 @@ extends CharacterBody2D
 
 const DATA := preload("res://data/action_frame_data.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
+const SETTINGS := preload("res://scripts/ui/user_settings.gd")
+const FLASH_SHADER := preload("res://assets/shaders/white_flash.gdshader")
 
 ## OPT-01 打擊感：命中瞬間只凍結雙方邏輯幀，特效層（_fx_sync）照常推進。
 ## 幀數依 docs/09 §14.1：輕 4／重 8／覺醒 12。
 signal hit_landed(frames: int, dmg: int, at: Vector2)
+## OPT-02：架招（Counter）成立時發一次，舞台接去慢放；白閃在本角色身上播。
+signal parry_success
 
 const HITSTOP_LIGHT: int = 4
 const HITSTOP_HEAVY: int = 8
 const HITSTOP_SUPER: int = 12
 const HEAVY_HIT_STATES: Array = ["Heavy", "AirHeavy", "CmdDrunk", "CmdTiger", "CmdUp", "Counter"]
+
+# OPT-02 手感層（docs/09 §14.1）
+const ATTACK_BUFFER_FRAMES: int = 6    # 攻擊鍵緩衝：早按幾幀也能在恢復瞬間接上
+const DIR_BUFFER_FRAMES: int = 18      # 方向緩衝：與 CMD_BUFFER_FRAMES 同一窗
+const PARRY_FLASH_FRAMES: int = 5      # 架招白閃 5 邏輯幀
+const TECH_INVULN_FRAMES: int = 6      # 受身起身無敵 6 幀
 
 @export var is_player1: bool = true:
 	set(value):
@@ -77,6 +87,13 @@ var _super_pressed: bool = false
 var _drunk_cd: float = 0.0      # 醉打蔣門神冷卻（秒）
 var _dir_history: Array = []   # 最近相對方向事件（舊→新），供 214 指令緩衝判定
 
+# OPT-02 手感層：攻擊緩衝／受身無敵／架招白閃
+var _atk_buf_light: int = 0
+var _atk_buf_heavy: int = 0
+var _tech_invuln: int = 0
+var _flash_left: int = 0
+var _flash_mat: ShaderMaterial = null
+
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
 var _ai_retreat: float = 0.0    # 被打後退計時（秒）
@@ -112,7 +129,7 @@ const WALL_BONUS_MIN: int = 10
 const WALL_PROBE: float = 20.0      # 牆面偵測探針長度（px）
 const WALL_BOUNCE_X: float = 320.0
 const WALL_BOUNCE_Y: float = 280.0
-const CMD_BUFFER_FRAMES: int = 18   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
+const CMD_BUFFER_FRAMES: int = DIR_BUFFER_FRAMES   # 指令輸入緩衝窗口（邏輯幀），用於 214 方向序列識別
 const DRUNK_CD: float = 4.0         # 醉打蔣門神冷卻（06 §3.3）
 
 # 伥鬼 AI（docs/04 §2：會站防、會輕攻、偶爾前衝棍擊；不會跳/不會蹲防；被打會後退；低血慌亂）
@@ -257,6 +274,9 @@ func change_state(new_state: String) -> void:
 	# 指令技出手後清空指令緩衝，避免同一次輸入重複觸發
 	if new_state in ["Counter", "CmdTiger", "CmdUp"]:
 		_dir_history.clear()
+	# 架招成立：白閃（著色器混白）＋通知舞台慢放（docs/09 §14.1）
+	if new_state == "Counter" and old_state != "Counter" and is_player1:
+		_trigger_parry()
 	_fx_state(new_state)
 
 func _physics_process(delta: float) -> void:
@@ -264,6 +284,7 @@ func _physics_process(delta: float) -> void:
 	if not _anim_dirs_ready:
 		_apply_anim_dir()
 		_anim_dirs_ready = true
+	_tick_flash()
 	# 命中停頓：只凍結本角色的邏輯（狀態機／物理／冷卻），刀光與酒氣照常同步。
 	# 輸入仍然讀取並留在 _*_pressed 上，停頓結束後自然成為一次幾幀的輸入緩衝。
 	if _hitstop > 0:
@@ -276,11 +297,13 @@ func _physics_process(delta: float) -> void:
 		_tick_death(delta)
 		return
 	_read_input()
+	_tick_buffers()
 	_tick_cooldowns(delta)
 	_update_super_effect()
 	_fx_sync()
 	if not is_player1:
 		_run_ai(delta)
+	_capture_presses()
 
 	var spec: Dictionary = _spec(_state)
 
@@ -301,8 +324,13 @@ func _physics_process(delta: float) -> void:
 	# Reaction 層最高優先級：受擊/倒地/起身只推進時鐘與物理，不接受攻擊輸入
 	if _state in REACTION or _state in TIGER_REACTION or _state in BOSS_REACTION or _state in CORPSE_REACTION:
 		_frame += 1
+		# 倒地中按跳 → 受身：立刻起身上 WakeUp 並給 6 幀無敵（docs/09 §14.1「受身無敵 6 幀」）
+		if _state == "Knockdown" and _jump_pressed:
+			_start_tech()
+			return
 		# 被擊瞬間（前4邏輯幀）按重可搶出飞云浦反击 Counter（僅武松）
-		if not _is_tiger() and _state == "HurtStand" and _frame <= 4 and _heavy_pressed:
+		if not _is_tiger() and _state == "HurtStand" and _frame <= 4 and _buffered_heavy():
+			_consume_heavy()
 			change_state("Counter")
 			return
 		_apply_gravity(delta)
@@ -386,10 +414,73 @@ func _read_input() -> void:
 		_special_pressed = false
 		_super_pressed = false
 		_dir_history.clear()
+		_atk_buf_light = 0
+		_atk_buf_heavy = 0
 
 ## 冷卻推進（醉打蔣門神 4s）
 func _tick_cooldowns(delta: float) -> void:
 	_drunk_cd = maxf(0.0, _drunk_cd - delta)
+
+## 攻擊鍵存進 6 幀緩衝：出招／受擊尾段按太早也不會白按。
+## 必須在 _run_ai 之後呼叫——AI 是在決策階段才把 _light_pressed／_heavy_pressed 設起來的。
+func _capture_presses() -> void:
+	if _light_pressed:
+		_atk_buf_light = ATTACK_BUFFER_FRAMES
+	if _heavy_pressed:
+		_atk_buf_heavy = ATTACK_BUFFER_FRAMES
+
+## 手感層計時：攻擊緩衝與受身無敵只在邏輯幀推進（停頓／死亡期間不走）
+func _tick_buffers() -> void:
+	_atk_buf_light = maxi(0, _atk_buf_light - 1)
+	_atk_buf_heavy = maxi(0, _atk_buf_heavy - 1)
+	_tech_invuln = maxi(0, _tech_invuln - 1)
+
+func _buffered_light() -> bool:
+	return _atk_buf_light > 0
+
+func _buffered_heavy() -> bool:
+	return _atk_buf_heavy > 0
+
+func _consume_light() -> void:
+	_atk_buf_light = 0
+
+func _consume_heavy() -> void:
+	_atk_buf_heavy = 0
+
+## 受身：倒地按跳 → 直接起身，前 6 幀無敵（失敗＝不按，原地 36 幀可被追打）
+func _start_tech() -> void:
+	change_state("WakeUp")
+	_tech_invuln = TECH_INVULN_FRAMES
+
+func tech_invuln_frames() -> int:
+	return _tech_invuln
+
+## 自測用：緩衝剩餘幀
+func attack_buffer_left(kind: String) -> int:
+	return _atk_buf_light if kind == "light" else _atk_buf_heavy
+
+## 架招白閃：著色器把角色像素往白色混，5 幀線性淡出；關閉時只發信號不閃
+func _trigger_parry() -> void:
+	if not SETTINGS.load_parry_fx():
+		return
+	if _flash_mat == null and _visual != null:
+		_flash_mat = ShaderMaterial.new()
+		_flash_mat.shader = FLASH_SHADER
+		_visual.material = _flash_mat
+	_flash_left = PARRY_FLASH_FRAMES
+	if _flash_mat != null:
+		_flash_mat.set_shader_parameter("flash", 1.0)
+	parry_success.emit()
+
+## 每幀（含命中停頓）推進白閃；結束歸零，材質留著重用
+func _tick_flash() -> void:
+	if _flash_mat == null:
+		return
+	if _flash_left > 0:
+		_flash_left -= 1
+		_flash_mat.set_shader_parameter("flash", float(_flash_left) / float(PARRY_FLASH_FRAMES))
+	elif _flash_mat.get_shader_parameter("flash") != 0.0:
+		_flash_mat.set_shader_parameter("flash", 0.0)
 
 ## 記錄本幀相對朝向的方向事件，維持指令緩衝窗口（舊→新）
 ## 採數字小鍵盤語義（相對朝向）：5 中 / 2 下 / 1 下後 / 3 下前 / 4 後 / 6 前 / 7 上後 / 8 上 / 9 上前
@@ -701,10 +792,12 @@ func _decide_free_state(_delta: float) -> void:
 		if _block_held:
 			change_state("AirBlock")
 			return
-		if _light_pressed:
+		if _buffered_light():
+			_consume_light()
 			change_state("AirLight")
 			return
-		if _heavy_pressed:
+		if _buffered_heavy():
+			_consume_heavy()
 			change_state("AirHeavy")
 			return
 		change_state("AirUp" if velocity.y < 0.0 else "AirDown")
@@ -730,24 +823,30 @@ func _decide_free_state(_delta: float) -> void:
 		change_state("CmdDrunk")
 		return
 	# 防禦中按重 → 飛雲浦反擊（招架無敵後出手，簡化觸發）
-	if _heavy_pressed and _state in ["Block", "CrouchBlock"]:
+	if _buffered_heavy() and _state in ["Block", "CrouchBlock"]:
+		_consume_heavy()
 		change_state("Counter")
 		return
 	# 完整指令技（共用方向緩衝隊列；重鍵觸發，優先級 214 > 623 > 236）
-	if _heavy_pressed:
+	if _buffered_heavy():
 		if _has_214():
+			_consume_heavy()
 			change_state("Counter")
 			return
 		if _has_623():
+			_consume_heavy()
 			change_state("CmdUp")
 			return
 		if _has_236():
+			_consume_heavy()
 			change_state("CmdTiger")
 			return
-	if _light_pressed:
+	if _buffered_light():
+		_consume_light()
 		change_state("Light1")
 		return
-	if _heavy_pressed:
+	if _buffered_heavy():
+		_consume_heavy()
 		change_state("Heavy")
 		return
 	# 防禦姿態分化：站防 / 蹲防
@@ -838,13 +937,16 @@ func _try_cancel() -> bool:
 	var cancel_frame: int = int(spec.get("cancel_frame", -1))
 	if cancel_frame < 0 or _frame < cancel_frame:
 		return false
-	if _state == "Light1" and _light_pressed:
+	if _state == "Light1" and _buffered_light():
+		_consume_light()
 		change_state("Light2")
 		return true
-	if _state == "Light2" and _light_pressed:
+	if _state == "Light2" and _buffered_light():
+		_consume_light()
 		change_state("Light3")
 		return true
-	if (_state == "Light1" or _state == "Light2" or _state == "Heavy") and _heavy_pressed:
+	if (_state == "Light1" or _state == "Light2" or _state == "Heavy") and _buffered_heavy():
+		_consume_heavy()
 		change_state("Heavy")
 		return true
 	return false
@@ -1014,6 +1116,9 @@ func apply_stun(frames: int) -> void:
 
 func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 	if _dying:
+		return
+	# 受身起身的前 6 幀完全無敵（docs/09 §14.1）；失敗（沒按跳）則照常被追打
+	if _tech_invuln > 0:
 		return
 	var spec: Dictionary = _spec(_state)
 	if DATA.is_invulnerable(spec, _frame):

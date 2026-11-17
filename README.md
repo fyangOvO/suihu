@@ -365,6 +365,15 @@
   - **連帶調整**：`selftest_tiger` 三連撲窗口放寬（三段各帶 4 幀停頓，48→約 60 幀），改用「執行期間曾達到的已判定段數」斷言；`selftest_boss` 的頭／腹倍率段改為先歸零狀態再出招、手動召虎前清停頓；`selftest_scn05_boss_fight` 出手節奏由全域 `n % 24` 改本地間隔計數（停頓會讓取模相位漂移，導致出手機會被錯過），超時上限 2400→3000。
   - **驗收**：全量 30 套自測 PASS；`selftest_scn05_boss_fight` 2363 幀擊殺（Boss 三階段、player hp 545 未死）；`selftest_full_run` 3957 幀 deaths=0 B9；主場景 240 幀 RC=0、0 ERROR、0 泄漏。
 
+- [x] **V0.3.38 手感層：架招白閃＋慢放、輸入緩衝、受身（M5 OPT-02）**：
+  - **架招回饋**：攻擊中／防禦中按重成功轉入飛雲浦反擊（Counter）時，角色像素用 shader 混白 5 幀（`assets/shaders/white_flash.gdshader`，單一 uniform，不新增節點），同時把 `Engine.time_scale` 壓到 0.4 撐 150ms。用 `Time.get_ticks_msec` 計時，避免被慢放的 delta 二次拖長；無頭預設不啟用，避免拖慢既有自測。
+  - **開關**：`[display] parry_fx`（預設開），暫停頁新增「打擊特效」按鈕（顯示／打擊特效／鏡頭效果三鍵同排）；慢放層每 0.5s 重讀設置，關掉立即還原倍率。
+  - **輸入緩衝**：攻擊鍵 6 幀、方向與指令 18 幀。早按的輕／重不再白按——出招尾段按下的鍵會在取消窗口或恢復第一幀自動兌現；AI 的決策按鍵也在同一條 `_capture_presses()` 收進緩衝（否則 AI 永遠接不上招）。
+  - **受身**：倒地（Knockdown）中按跳立刻起身上 WakeUp，前 6 幀完全無敵；不按照舊躺 36 幀可被追打，仍保留「受身失敗不無解」的代價差。
+  - **自測**：`selftest_feel` 擴到 50 項（新增架招信號／白閃 uniform、慢放 0.4x／150ms／reset／關閉不觸發、緩衝衰減與消耗、真實早按接 Light2、受身無敵擋傷、不按受身照樣掉血）；`selftest_ui_focus_settings` 新增打擊特效按鈕焦點與持久化。離屏截圖 `docs/preview/parry-flash-on.png`／`parry-flash-off.png` 驗證白閃實際渲染（閃時全白剪影、6 幀後復原）。
+  - **連帶調整**：`selftest_gameplay` 的指令技用例改走 `_atk_buf_*` 緩衝欄位（原本直接塞 `_heavy_pressed`，現在按鍵要經緩衝才會兌現）。
+  - **驗收**：全量 30 套自測 PASS；`selftest_scn05_boss_fight` 2363 幀擊殺（p1_hp 545、Boss 三階段）；`selftest_full_run` 3949 幀 deaths=0 B9；主場景 240 幀 RC=0、0 ERROR、0 泄漏；兩套離屏截圖 RC=0、無 shader 編譯錯誤。
+
 
 
 ## 待實現
