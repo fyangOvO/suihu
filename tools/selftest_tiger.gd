@@ -24,6 +24,7 @@ var saw_hop: bool = false
 var saw_block: bool = false
 var saw_crouch: bool = false
 var saw_player_state: bool = false
+var chain_segs_seen: int = 0   # 三連撲執行期間曾達到的已判定段數（收招後被 change_state 清空）
 var hp_before: int = 0
 var hp_after: int = 0
 var hp_at_n1: int = 0
@@ -216,10 +217,11 @@ func _on_physics() -> void:
 			phase = 3
 			n = 0
 	elif phase == 3:
-		if n == 45:
-			_check("chain all 3 segments tried", c._chain_segments_done.count(true) == 3)
-		if n == 55:
+		# OPT-01：三連撲三段各帶 4 幀命中停頓，整招由 48 幀延長到約 60 幀，窗口相應放寬
+		chain_segs_seen = maxi(chain_segs_seen, c._chain_segments_done.count(true))
+		if n == 78:
 			var loss: int = ctrl_hp_before - d.current_hp
+			_check("chain all 3 segments tried", chain_segs_seen == 3)
 			_check("chain 3 segments deal 110 total", loss == 110)
 			_check("chain returns to free state", c._state in ["TigerIdle", "TigerWalk"])
 			# TIG-04 實跑：第一段被站防架住 → 小虎進 38 幀長硬直

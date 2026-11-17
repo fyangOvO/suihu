@@ -10,6 +10,7 @@ const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
 const PRELOADER := preload("res://scripts/scene_preloader.gd")
+const CAMERA_FX := preload("res://scripts/camera_fx.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -18,6 +19,7 @@ const SPAWN_P2 := Vector2(1320.0, 820.0)
 var p1: CharacterBody2D
 var p2: CharacterBody2D = null
 var camera: Camera2D
+var _cam_fx = null
 var dialogue: CanvasLayer
 var hud: CanvasLayer
 var _p1_panel: Panel
@@ -195,6 +197,7 @@ func _build_player() -> void:
 	add_child(p1)
 	if _cm().player_hp > 0:
 		p1.current_hp = clampi(_cm().player_hp, 1, p1.max_hp)
+	_link_hit_feedback(p1)
 
 func _build_opponent() -> void:
 	var path: String = opponent_scene_path()
@@ -207,6 +210,18 @@ func _build_opponent() -> void:
 	add_child(p2)
 	p2.opponent = p1
 	p1.opponent = p2
+	_link_hit_feedback(p2)
+
+## OPT-01：把角色命中事件接到鏡頭層；同一個角色只接一次
+func _link_hit_feedback(fighter) -> void:
+	if fighter == null or not fighter.has_signal("hit_landed"):
+		return
+	if not fighter.hit_landed.is_connected(_on_hit_landed):
+		fighter.hit_landed.connect(_on_hit_landed)
+
+func _on_hit_landed(frames: int, _dmg: int, _at: Vector2) -> void:
+	if _cam_fx != null:
+		_cam_fx.kick(frames)
 
 func _build_camera() -> void:
 	camera = Camera2D.new()
@@ -214,6 +229,7 @@ func _build_camera() -> void:
 	camera.position = Vector2(960, 540)
 	camera.enabled = true
 	add_child(camera)
+	_cam_fx = CAMERA_FX.new(camera)
 
 func _build_hud() -> void:
 	hud = CanvasLayer.new()
@@ -510,6 +526,8 @@ func _on_shell_new_game() -> void:
 
 # --- 執行 ---
 func _process(delta: float) -> void:
+	if _cam_fx != null:
+		_cam_fx.tick(delta)
 	_tick_overlay(delta)
 	if p1 == null:
 		return

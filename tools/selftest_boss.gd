@@ -212,22 +212,27 @@ func _initialize() -> void:
 	boss.position = Vector2(1040.0, 1050.0)   # 把頭盒抬到 P1 攻擊盒高度
 	player.position = Vector2(900.0, 880.0)
 	player.face_direction = 1.0
+	player.change_state("Idle")
 	player.set_physics_process(true)
+	player._hitstop = 0
 	player.change_state("Light1")
-	for i in 22:
+	for i in 26:
 		await physics_frame
 	_check("HeadBox x1.5 -> 60 dmg", boss.current_hp == 1140)
 	player.set_physics_process(false)
 
 	boss.position = Vector2(1040.0, 880.0)
+	boss._hitstop = 0
 	boss.change_state("BossKnockdown")
 	await process_frame
 	player.position = Vector2(900.0, 880.0)
 	player.face_direction = 1.0
 	player.current_hp = 800
+	player.change_state("Idle")
+	player._hitstop = 0
 	player.set_physics_process(true)
 	player.change_state("Light1")
-	for i in 22:
+	for i in 26:
 		await physics_frame
 	_check("BellyBox x2.0 -> 80 dmg", boss.current_hp == 1060)
 	player.set_physics_process(false)
@@ -238,6 +243,7 @@ func _initialize() -> void:
 	boss.opponent = player
 	boss._ai_cd = 0.0
 	boss.change_state("BossSummon")
+	boss._hitstop = 0
 	boss._frame = 19
 	boss._physics_process(1.0 / 60.0)
 	boss._physics_process(1.0 / 60.0)

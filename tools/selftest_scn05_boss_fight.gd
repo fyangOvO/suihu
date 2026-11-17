@@ -11,7 +11,7 @@ const TEST_SAVE := "user://selftest_scn05_boss_fight_checkpoint.json"
 const BOSS_ATTACKS: Array = ["BossPounce", "BossTail", "BossRearUp", "BossRoar", "BossSummon",
 	"BossIronTail", "BossDeathPounce", "BossPounceP3", "BossRearUpP3"]
 const UNBLOCKABLE_POUNCE: Array = ["BossPounce", "BossPounceP3", "BossDeathPounce"]
-const MAX_FRAMES: int = 2400
+const MAX_FRAMES: int = 3000
 
 var fails: Array = []
 var game: Node2D
@@ -28,6 +28,7 @@ var boss_hp_min: int = 1200
 var player_hp_start: int = 800
 var player_hp_min: int = 800
 var attack_timer: int = 0
+var punish_gap: int = 0   # 出手間隔用本地計數，不再依賴全域幀取模（命中停頓會讓取模相位漂移）
 var dash_timer: int = 0
 var special_timer: int = 0
 var block_held: bool = false
@@ -118,7 +119,8 @@ func _on_physics() -> void:
 	if p1.current_hp <= 0:
 		_finish()
 		return
-	if p2._death_done:
+	# 擊殺收尾要等舞台把 B7 寫入、B8 排進 pending 才算完；只看 _death_done 會在收尾延遲內提早收工
+	if p2._death_done and game._stage_over:
 		_finish()
 		return
 	if n >= MAX_FRAMES:
@@ -207,7 +209,7 @@ func _on_physics() -> void:
 			_release("p1_block")
 			block_held = false
 		var can_punish: bool = dist <= 155.0 and p2._ai_cd > 0.8 \
-			and n % 24 == 0
+			and punish_gap <= 0
 		var combo_cancel: bool = dist <= 170.0 \
 			and p1._state in ["Light1", "Light2"] and p1._frame >= 6
 		if combo_cancel:
@@ -218,6 +220,7 @@ func _on_physics() -> void:
 			_set_move(0)
 			_press("p1_light")
 			attack_timer = 2
+			punish_gap = 12
 		elif p2._ai_cd <= 0.8:
 			# Boss 隨時可能起手：退到 350–370，撲擊的 300px 前衝追不到。
 			if dist < 350.0:
@@ -235,6 +238,8 @@ func _on_physics() -> void:
 			else:
 				_set_move(0)
 
+	if punish_gap > 0:
+		punish_gap -= 1
 	if attack_timer > 0:
 		attack_timer -= 1
 		if attack_timer == 0:

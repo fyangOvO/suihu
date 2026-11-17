@@ -9,6 +9,15 @@ extends CharacterBody2D
 const DATA := preload("res://data/action_frame_data.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
 
+## OPT-01 打擊感：命中瞬間只凍結雙方邏輯幀，特效層（_fx_sync）照常推進。
+## 幀數依 docs/09 §14.1：輕 4／重 8／覺醒 12。
+signal hit_landed(frames: int, dmg: int, at: Vector2)
+
+const HITSTOP_LIGHT: int = 4
+const HITSTOP_HEAVY: int = 8
+const HITSTOP_SUPER: int = 12
+const HEAVY_HIT_STATES: Array = ["Heavy", "AirHeavy", "CmdDrunk", "CmdTiger", "CmdUp", "Counter"]
+
 @export var is_player1: bool = true:
 	set(value):
 		is_player1 = value
@@ -40,6 +49,8 @@ var _anim_dirs_ready: bool = false
 var _state: String = "Idle"
 var _frame: int = 0
 var _has_hit: bool = false
+## 命中停頓剩餘邏輯幀；>0 時整段狀態機、輸入與物理都不推進，只留 FX
+var _hitstop: int = 0
 
 # 節點快取：物理幀內原本用 $Visual／get_node("HitBox/...") 逐幀解析路徑，
 # 這裡在 _ready 一次取好，戰鬥每幀只做屬性存取。缺節點時保留 null 並走安全分支。
@@ -253,6 +264,13 @@ func _physics_process(delta: float) -> void:
 	if not _anim_dirs_ready:
 		_apply_anim_dir()
 		_anim_dirs_ready = true
+	# 命中停頓：只凍結本角色的邏輯（狀態機／物理／冷卻），刀光與酒氣照常同步。
+	# 輸入仍然讀取並留在 _*_pressed 上，停頓結束後自然成為一次幾幀的輸入緩衝。
+	if _hitstop > 0:
+		_hitstop -= 1
+		_read_input()
+		_fx_sync()
+		return
 	# 死亡演出：完全接管本幀，不再讀輸入、不再出招
 	if _dying:
 		_tick_death(delta)
@@ -831,6 +849,23 @@ func _try_cancel() -> bool:
 		return true
 	return false
 
+## 命中停頓幀數：覺醒 12／重招（或單下 ≥100 傷害）8／其餘輕招 4（docs/09 §14.1）
+static func hitstop_frames_for(state_name: String, dmg: int) -> int:
+	if state_name == "Super":
+		return HITSTOP_SUPER
+	if state_name in HEAVY_HIT_STATES or dmg >= 100:
+		return HITSTOP_HEAVY
+	return HITSTOP_LIGHT
+
+## 施加命中停頓；同一次命中若已有多幀停頓在走，取較長者，避免被輕招截短
+func _add_hitstop(frames: int) -> void:
+	if frames > 0:
+		_hitstop = maxi(_hitstop, frames)
+
+## 自測用：當前剩餘停頓幀
+func hitstop_frames() -> int:
+	return _hitstop
+
 func _try_hit(spec: Dictionary) -> void:
 	# 出招方無敵（invuln）只在被打方 take_damage 判定；不關閉己方攻擊盒，否則 Super/CmdDrunk 永遠打不中
 	# 三連撲是「一招三判定」：不能用 _has_hit 一次鎖死，走獨立分段流程
@@ -944,6 +979,12 @@ func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bo
 		target.take_damage(final_dmg, face_direction, knock_up)
 		_has_hit = true
 		wine_gauge = minf(100.0, wine_gauge + 3.0)
+		# OPT-01：雙方各凍結同等邏輯幀（特效照常），並把重量交給鏡頭層做震屏
+		var stop_n: int = hitstop_frames_for(_state, final_dmg)
+		_add_hitstop(stop_n)
+		if target.has_method("_add_hitstop"):
+			target._add_hitstop(stop_n)
+		hit_landed.emit(stop_n, final_dmg, target.global_position)
 		return true
 	return false
 

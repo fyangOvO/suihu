@@ -75,6 +75,7 @@ func _process(_delta: float) -> bool:
 		settings_btn.pressed.emit()
 		_check("settings page after button", shell.current_page() == "settings")
 		var mode := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMode") as Button
+		var camfx := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsCameraFx") as Button
 		var master := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsMaster") as HSlider
 		var bgm := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsBgm") as HSlider
 		var sfx := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsSfx") as HSlider
@@ -84,7 +85,9 @@ func _process(_delta: float) -> bool:
 		_check("settings four volume sliders", master != null and bgm != null and sfx != null and voice != null)
 		_check("settings deadzone slider", deadzone != null)
 		_check("settings initial focus on mode", mode != null and mode.has_focus())
-		_check("settings mode -> master", _focus_next(mode) == master)
+		_check("settings camera fx toggle exists", camfx != null)
+		_check("settings mode -> camera fx", _focus_next(mode) == camfx)
+		_check("settings camera fx -> master", _focus_next(camfx) == master)
 		_check("settings master -> bgm", _focus_next(master) == bgm)
 		_check("settings bgm -> sfx", _focus_next(bgm) == sfx)
 		_check("settings sfx -> voice", _focus_next(sfx) == voice)
@@ -92,6 +95,14 @@ func _process(_delta: float) -> bool:
 		_check("settings deadzone defaults 30", deadzone != null and int(deadzone.value) == 30)
 		_check("settings deadzone -> back", _focus_next(deadzone) == back)
 		_check("settings back -> mode", _focus_next(back) == mode)
+		_check("settings camera fx defaults on", camfx != null and camfx.text.begins_with("鏡頭效果：開"))
+		if camfx != null:
+			camfx.pressed.emit()
+			_check("camera fx toggle saves off",
+				not SETTINGS.load_camera_fx() and camfx.text.begins_with("鏡頭效果：關"))
+			camfx.pressed.emit()
+			_check("camera fx toggle saves on",
+				SETTINGS.load_camera_fx() and camfx.text.begins_with("鏡頭效果：開"))
 		_check("volume defaults shown", master != null and int(master.value) == 80
 			and bgm != null and int(bgm.value) == 70
 			and sfx != null and int(sfx.value) == 80

@@ -31,6 +31,10 @@ const MOVEMENT_ACTIONS := [
 const META_SECTION := "meta"
 const ONBOARD_KEY := "onboarded"
 
+# --- 鏡頭效果（震屏／微推，OPT-01）：預設開 ---
+
+const CAMERA_FX_KEY := "camera_fx"
+
 static var _path: String = DEFAULT_PATH
 
 static func set_path_for_test(path: String) -> void:
@@ -160,6 +164,24 @@ static func apply_deadzone(value: float = -1.0) -> float:
 		if InputMap.has_action(action):
 			InputMap.action_set_deadzone(action, target)
 	return target
+
+# --- 鏡頭效果（震屏／微推）：預設開；缺值、非布林一律回預設 ---
+
+static func default_camera_fx() -> bool:
+	return true
+
+static func save_camera_fx(enabled: bool) -> bool:
+	var cfg := _config()
+	cfg.set_value(SECTION, CAMERA_FX_KEY, bool(enabled))
+	cfg.set_value(SECTION, "updated_at", Time.get_unix_time_from_system())
+	return cfg.save(_path) == OK
+
+static func load_camera_fx() -> bool:
+	var cfg := _config()
+	var raw = cfg.get_value(SECTION, CAMERA_FX_KEY, true)
+	if typeof(raw) != TYPE_BOOL:
+		return default_camera_fx()
+	return bool(raw)
 
 # --- 首次啟動引導 ---
 

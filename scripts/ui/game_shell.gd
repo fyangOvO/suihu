@@ -20,6 +20,7 @@ var _summary: Panel
 var _pause_btn: Button
 var _settings_btn: Button
 var _settings_mode: Button
+var _settings_camfx: Button
 var _death_retry: Button
 var _death_checkpoint: Button
 var _summary_new: Button
@@ -170,7 +171,10 @@ func _build_settings() -> void:
 	settings_rule.position = Vector2(64, 146)
 	_settings.add_child(settings_rule)
 	_settings_mode = _button(_settings, "SettingsMode", "顯示：全屏", 174, _toggle_display, "screen")
-	_settings_mode.size = Vector2(592, 54)
+	_settings_mode.size = Vector2(360, 54)
+	_settings_camfx = _button(_settings, "SettingsCameraFx", "鏡頭效果：開", 174, _toggle_camera_fx, "eye")
+	_settings_camfx.position = Vector2(436, 174)
+	_settings_camfx.size = Vector2(220, 54)
 
 	_label(_settings, "SettingsAudioSection", "音量", Vector2(64, 246), Vector2(590, 20), 13, UI_STYLE.GOLD_DIM)
 	var audio_rule := UI_STYLE.text_rule(592.0)
@@ -190,9 +194,9 @@ func _build_settings() -> void:
 	_deadzone_row(478.0)
 
 	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 524, _on_settings_back, "back")
-	_settings_focus = [_settings_mode, _volume_sliders["master"], _volume_sliders["bgm"],
+	_settings_focus = [_settings_mode, _settings_camfx, _volume_sliders["master"], _volume_sliders["bgm"],
 		_volume_sliders["sfx"], _volume_sliders["voice"], _deadzone_slider, settings_back]
-	_label(_settings, "SettingsHint", "音量與手柄死區即時保存（0–100）；打擊停頓待輸入批次接入。", Vector2(64, 588), Vector2(590, 44), 13, UI_STYLE.PAPER_DIM)
+	_label(_settings, "SettingsHint", "音量、手柄死區與鏡頭效果即時保存；命中停頓為 4／8／12 幀。", Vector2(64, 588), Vector2(590, 44), 13, UI_STYLE.PAPER_DIM)
 
 ## 一列音量：標題、滑桿、數值；滑桿取得焦點時標題轉金，鍵盤／手柄可調。
 func _volume_row(kind: String, title: String, y: float) -> void:
@@ -493,6 +497,7 @@ func _on_settings() -> void:
 	_settings.visible = true
 	_page = "settings"
 	_update_mode_text()
+	_update_camera_fx_text()
 	_sync_volume_ui()
 	_settings_mode.grab_focus()
 
@@ -511,6 +516,14 @@ func _toggle_display() -> void:
 
 func _update_mode_text() -> void:
 	_settings_mode.text = "顯示：全屏" if SETTINGS.current_display_mode() == "fullscreen" else "顯示：視窗"
+
+## OPT-01：震屏／微推總開關，寫回 settings.cfg；舞台的鏡頭層每 0.5s 重讀，切換即時生效
+func _toggle_camera_fx() -> void:
+	SETTINGS.save_camera_fx(not SETTINGS.load_camera_fx())
+	_update_camera_fx_text()
+
+func _update_camera_fx_text() -> void:
+	_settings_camfx.text = "鏡頭效果：開" if SETTINGS.load_camera_fx() else "鏡頭效果：關"
 
 func _on_death_retry() -> void:
 	_close_all(true)
