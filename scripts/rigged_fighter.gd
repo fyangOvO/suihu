@@ -1108,6 +1108,8 @@ func _free_mist() -> void:
 
 ## 擊退方向上 20px 內是否有靜態牆；對手身體不算牆（貼身對打不能誤判成牆族）
 func _wall_on_side(dir: float) -> bool:
+	if not is_inside_tree():
+		return false
 	if absf(dir) < 0.01:
 		return false
 	var col := KinematicCollision2D.new()

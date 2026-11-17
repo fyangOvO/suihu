@@ -351,6 +351,12 @@
   - **數據**：六章節冷載 `SCENE_COST worst_load=70ms`（SCN-03 最慢 82–88ms、SCN-06 53–61ms、SCN-05 28–38ms），預載後取用 0ms，對 3000ms 預算留足餘量。
   - **驗收**：`PRELOAD_SELFTEST result=PASS fails=[] checks=24`；全量 33 套自測 RC=0（`selftest_preload`／`onboard`／`ui_shell`／`ui_focus_settings`／`death`／`flow` err=0／leak=0）；`selftest_full_run` 3901 幀 0 死亡 B9；主場景 240 幀 RC=0 無 ERROR。
 
+- [x] **V0.3.36 目標機帧率記錄與回歸噪音收斂（OPT-04 收尾）**：
+  - **帧率記錄（本機即 Intel UHD 730 目標配置）**：Godot 4.7.2、1920×1080、Vulkan Forward+，`--disable-vsync`＋`--print-fps`，視窗啟動後用 `SetWindowPos` 移到螢幕外（-4000,-3000），全程無可見窗口。離屏渲染上限：主菜單 240–276、酒肆 175–267、山道 188–268、亂林 214–265、山神廟 378–392、崗頂 290–345 fps；有桌面合成時：主菜單 86–88、酒肆 89–100，其餘撞 144Hz 上限。最差一檔（酒肆 89fps）對 ≥55fps 目標仍有 60% 餘量。
+  - **玩法自測乾淨**：`rigged_fighter._wall_on_side()` 開頭補 `if not is_inside_tree(): return false`——`selftest_gameplay` 曾在未入樹的假人上呼叫 `take_damage`，`test_move` 噴 `Condition "!is_inside_tree()" is true`；現在該套 err=0。
+  - **Boss 戰偶發死亡收斂**：`selftest_full_run` 的 Boss 驅動改成狀態機閃避表——咆哮半徑內先撤、命中窗口衝刺離場；階段轉場先退；Boss 殘血（≤90）無視小虎先收頭；召喚小虎只在出招時格擋；玩家低血（≤480）切遠距風箏、只吃收招窗口。週期性輸入全部改用場景內幀計數，不受開場載入差一幀影響。連跑 5 次 `deaths=0`、全部 B1–B9 clear；未動任何血量與 Boss 數值。
+  - **驗收**：`selftest_gameplay`／`wall`／`wall_stage`／`ai`／`tiger`／`boss`／`corpse_ghost`／`fx`／`scn02_fight`／`scn05_boss_fight`／`scn03_forest` 全 PASS、err=0；`selftest_full_run` 5/5 PASS。
+
 
 
 ## 待實現

@@ -167,7 +167,7 @@ func _on_physics() -> void:
 	var dialogue = scene.get("dialogue")
 	if dialogue != null and dialogue.has_method("is_active") and dialogue.call("is_active"):
 		_drop_all()
-		if n % 18 == 0:
+		if scene_frames % 18 == 0:
 			dialogue.call("next")
 			dialogue_calls += 1
 		return
@@ -213,7 +213,7 @@ func _on_physics() -> void:
 	var dist: float = absf(p2.global_position.x - p1.global_position.x)
 	var p2state: String = String(p2._state)
 	var p2frame: int = int(p2._frame)
-	if n % 120 == 0:
+	if scene_frames % 120 == 0:
 		print("TICK ", n, " ", sid, " beat=", cm.current_beat, " p1=", p1._state,
 			" hp=", p1.current_hp, " p2=", p2state, " f=", p2frame,
 			" hp=", p2.current_hp, " dist=", int(dist), " ai_cd=", snappedf(p2._ai_cd, 0.01))
@@ -222,7 +222,7 @@ func _on_physics() -> void:
 	else:
 		_drive_melee(p1, p2, dist, p2state, p2frame)
 
-func _drive_melee(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state: String, p2frame: int) -> void:
+func _drive_melee(p1, p2, dist: float, p2state: String, p2frame: int) -> void:
 	var threat: bool = p2state in ALL_ATTACKS
 	var chain_unblockable: bool = p2state == "TigerPounceChain" and p2frame >= 22
 	if chain_unblockable and dist <= 280.0:
@@ -249,16 +249,30 @@ func _drive_melee(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state
 		return
 	_set_move(0)
 	var combo_cancel: bool = p1._state in ["Light1", "Light2"] and p1._frame >= 6
-	if combo_cancel or n % 18 == 0:
+	if combo_cancel or scene_frames % 18 == 0:
 		_tap("p1_light")
 
 func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state: String, p2frame: int) -> void:
 	var boss_threatening: bool = p2state == "BossPhase" or p2state in ALL_ATTACKS
 	var unblockable: bool = p2state in BOSS_UNBLOCKABLE
-	if unblockable:
+	# 低血安全模式：不再貼身硬吃，只在 Boss 收招窗口遠距追打，避免偶發被削死
+	var safe_mode: bool = p1.current_hp <= 480
+	# 咆哮：300 半徑內沒得格擋，30 幀硬直會直接餵下一刀——聽到就往外撤、夠近就衝刺離場
+	if p2state == "BossRoar" and dist < 420.0:
 		if block_held:
 			_release("p1_block")
 			block_held = false
+		_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
+		if dist < 300.0 and p2frame >= 8 and p2frame <= 16:
+			_tap("p1_dash")
+		return
+	# 階段轉場：Boss 不動但醒來就會出手，先退到安全距離
+	if p2state == "BossPhase":
+		_drop_block()
+		_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
+		return
+	if unblockable:
+		_drop_block()
 		_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
 		var special_at: int = 38
 		if p2state == "BossPounceP3":
@@ -275,7 +289,25 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 		elif dist <= 340.0 and p2frame >= dash_at and p2frame <= dash_at + 3:
 			_tap("p1_dash")
 		return
+	# Boss 剩最後一點血就別再管小虎，先把 Boss 打死（打死 Boss 場景即結束）
+	if int(p2.current_hp) <= 90:
+		_drive_melee(p1, p2, dist, p2state, p2frame)
+		return
+	# 階段二召出的小虎只做威脅判斷：牠在出招就格擋，牠沒動就繼續打 Boss（盡快收掉回合）
+	var tiger = _nearest_summon(p2, p1)
+	if tiger != null and absf(tiger.global_position.x - p1.global_position.x) <= 360.0 \
+			and String(tiger._state) in ALL_ATTACKS:
+		_set_move(0)
+		if not block_held:
+			_press("p1_block")
+			block_held = true
+		return
 	if boss_threatening:
+		if safe_mode:
+			# 血少時不格擋，寧可後撤吃不到
+			_drop_block()
+			_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
+			return
 		_set_move(0)
 		if not block_held:
 			_press("p1_block")
@@ -284,11 +316,22 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 	if block_held:
 		_release("p1_block")
 		block_held = false
+	if safe_mode:
+		# 維持 430~520 的遠距，等 Boss 出招後的冷卻窗口才追打
+		if dist < 430.0:
+			_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
+		elif dist > 560.0:
+			_set_move(1 if p2.global_position.x > p1.global_position.x else -1)
+		else:
+			_set_move(0)
+		if dist <= 540.0 and p2._ai_cd > 0.8 and scene_frames % 24 == 0:
+			_tap("p1_dash")
+		return
 	var combo_cancel: bool = dist <= 170.0 and p1._state in ["Light1", "Light2"] and p1._frame >= 6
 	if combo_cancel:
 		_set_move(0)
 		_tap("p1_light")
-	elif dist <= 155.0 and p2._ai_cd > 0.8 and n % 24 == 0:
+	elif dist <= 155.0 and p2._ai_cd > 0.8 and scene_frames % 24 == 0:
 		_set_move(0)
 		_tap("p1_light")
 	elif p2._ai_cd <= 0.8:
@@ -305,3 +348,24 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 			_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
 		else:
 			_set_move(0)
+
+func _drop_block() -> void:
+	if block_held:
+		_release("p1_block")
+		block_held = false
+
+## Boss 第二階段召出的小虎仍活著就回傳最近那隻（死亡中的不算）
+func _nearest_summon(p2, p1) -> Node:
+	var arr = p2.get("boss_summoned")
+	if arr == null:
+		return null
+	var best: Node = null
+	var best_d: float = 1e9
+	for t in arr:
+		if not is_instance_valid(t) or bool(t._dying):
+			continue
+		var d: float = absf(t.global_position.x - p1.global_position.x)
+		if d < best_d:
+			best_d = d
+			best = t
+	return best
