@@ -21,8 +21,12 @@ var _slash: ColorRect = null
 var _flash: ColorRect = null
 
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
+const PRELOADER := preload("res://scripts/scene_preloader.gd")
+const MENU_SCENE := "res://scenes/MainMenu.tscn"
 
 func _ready():
+	# OPT-04：戰鬥一開場就線程預載回菜單的場景，結算時切場不必等載入
+	PRELOADER.request(MENU_SCENE)
 	# OPT-04：試煉場也掛一格物件池，伥鬼扔石頭走回收路徑
 	var pool := Node.new()
 	pool.name = "ObjectPool"
@@ -53,13 +57,20 @@ func _ready():
 	_slash = get_node_or_null("Cinematic/Slash")
 	_flash = get_node_or_null("Cinematic/Flash")
 
+func _exit_tree():
+	PRELOADER.settle_pending()
+
 func _process(delta):
 	_update_cinematic(delta)
 	_tick_pickup_hint(delta)
 	if _battle_over:
 		_result_timer -= delta
 		if _result_timer <= 0:
-			get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+			var packed: PackedScene = PRELOADER.ready_scene(MENU_SCENE)
+			if packed != null:
+				get_tree().change_scene_to_packed(packed)
+			else:
+				get_tree().change_scene_to_file(MENU_SCENE)
 		return
 
 	# 血條上限跟隨角色 max_hp（小虎 350／武松 800，數值集中在角色節點上）

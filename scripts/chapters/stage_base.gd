@@ -9,6 +9,7 @@ const STORY := preload("res://data/story_beats.gd")
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
+const PRELOADER := preload("res://scripts/scene_preloader.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -94,12 +95,31 @@ func _ready() -> void:
 		_cm().set_beat(first_beat())
 	call_deferred("_deferred_start")
 
+## 離開舞台時把未完成的預載收乾，避免線程請求懸空到程式退出
+func _exit_tree() -> void:
+	PRELOADER.settle_pending()
+
 func _cm():
 	return get_node_or_null("/root/ChapterManager")
 
 func _deferred_start() -> void:
 	AUDIO.play_bgm(bgm_track())
+	_preload_next_scene()
 	_on_stage_start()
+
+## OPT-04：趁玩家還在打這一拍，把下一拍的場景線程載好，切場時直接 change_scene_to_packed。
+## 下一拍若還是同一個場景（多節拍共用一景），沒有可預載的目標，直接跳過。
+func _preload_next_scene() -> void:
+	var cm = _cm()
+	if cm == null:
+		return
+	var next_id: String = STORY.next_id(cm.current_beat)
+	if next_id == "":
+		return
+	var next_path: String = STORY.scene_path(next_id)
+	if next_path == "" or next_path == cm.current_scene_path():
+		return
+	PRELOADER.request(next_path)
 
 func _on_stage_start() -> void:
 	pass

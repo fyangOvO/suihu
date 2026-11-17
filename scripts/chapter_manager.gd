@@ -7,6 +7,7 @@ signal checkpoint_saved(beat_id: String)
 signal checkpoint_failed(reason: String)
 
 const STORY := preload("res://data/story_beats.gd")
+const PRELOADER := preload("res://scripts/scene_preloader.gd")
 const DEFAULT_LOOT := {"碎銀": 0, "小虎爪": 0, "伥鬼的木牌": 0}
 const CHECKPOINT_PATH := "user://checkpoint.json"
 const BACKUP_SUFFIX := ".bak"
@@ -44,8 +45,16 @@ func goto_beat(id: String) -> bool:
 	var path: String = STORY.scene_path(id)
 	if path == "":
 		return false
-	get_tree().change_scene_to_file(path)
+	_switch_scene(path)
 	return true
+
+## 切場景：下一個場景若已被非同步預載好，直接吃現成 PackedScene；否則退回同步載入。
+func _switch_scene(path: String) -> void:
+	var packed: PackedScene = PRELOADER.ready_scene(path)
+	if packed != null:
+		get_tree().change_scene_to_packed(packed)
+	else:
+		get_tree().change_scene_to_file(path)
 
 func advance() -> bool:
 	var next: String = STORY.next_id(current_beat)
@@ -159,7 +168,7 @@ func goto_checkpoint() -> bool:
 	var path: String = STORY.scene_path(current_beat)
 	if path == "":
 		return false
-	get_tree().change_scene_to_file(path)
+	_switch_scene(path)
 	return true
 
 func clear_checkpoint() -> void:

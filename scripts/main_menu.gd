@@ -6,6 +6,7 @@ const FIRST_SCENE := "res://scenes/chapters/SCN_01_Inn.tscn"
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const SETTINGS := preload("res://scripts/ui/user_settings.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
+const PRELOADER := preload("res://scripts/scene_preloader.gd")
 
 @onready var _title: Label = $Title
 @onready var _subtitle: Label = $Subtitle
@@ -32,6 +33,8 @@ func _ready() -> void:
 	SETTINGS.apply_display_mode()
 	SETTINGS.apply_deadzone()
 	AUDIO.play_bgm("bgm_menu")
+	# OPT-04：菜單一出來就線程預載第一幕，玩家點「開始新局」時不必再等資源載入
+	PRELOADER.request(FIRST_SCENE)
 	_buttons = [_btn_new, _btn_continue, _btn_quit]
 	_btn_new.pressed.connect(_start_new)
 	_btn_continue.pressed.connect(_continue_game)
@@ -74,6 +77,10 @@ func _ready() -> void:
 	else:
 		_btn_new.grab_focus()
 
+## 離開菜單時把未完成的預載收乾，避免線程請求懸空到程式退出
+func _exit_tree() -> void:
+	PRELOADER.settle_pending()
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _onboarding:
 		if event.is_action_pressed("ui_down") or event.is_action_pressed("ui_right"):
@@ -109,7 +116,7 @@ func _start_new() -> void:
 	var cm = get_node_or_null("/root/ChapterManager")
 	if cm != null:
 		cm.start_new_game()
-	get_tree().change_scene_to_file(FIRST_SCENE)
+	_switch_scene(FIRST_SCENE)
 
 func _continue_game() -> void:
 	AUDIO.play_sfx("sfx_ui_confirm", -7.0)
@@ -120,7 +127,15 @@ func _continue_game() -> void:
 	var path: String = cm.current_scene_path()
 	if path == "":
 		return
-	get_tree().change_scene_to_file(path)
+	_switch_scene(path)
+
+## 預載好了就直接吃現成 PackedScene，沒好（或壞了）退回同步載入
+func _switch_scene(path: String) -> void:
+	var packed: PackedScene = PRELOADER.ready_scene(path)
+	if packed != null:
+		get_tree().change_scene_to_packed(packed)
+	else:
+		get_tree().change_scene_to_file(path)
 
 # --- 首次啟動引導（TUT-02）：顯示模式、主音量、手柄死區，一次設置成功 ---
 

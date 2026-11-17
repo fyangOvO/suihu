@@ -343,6 +343,14 @@
   - **既有斷言不受影響**：`selftest_death` 仍 `drops_left=0`、碎銀與小虎爪計數照舊；池內節點掛在 `ObjectPool` 下，不會被測試用 `main.get_children()` 的 `_pickups()` 誤數。
   - **驗收**：`POOL_SELFTEST result=PASS fails=[] checks=62`（拾取物回收進池、身分切換、浮動計時歸零、無池退回都逐項斷言）；全量 32 套自測 RC=0；`selftest_full_run` 3919 幀 0 死亡；主場景 240 幀 RC=0 且無 ERROR。
 
+- [x] **V0.3.35 場景非同步預載（OPT-04 第三批，對應「切場景 <3s」，`tools/selftest_preload.gd` 24 項 PASS）**：
+  - **預載器**：新增 `scripts/scene_preloader.gd`（`extends RefCounted`、全靜態、不加 autoload）：`request` 去重、`poll` 推進、`ready_scene`／`take` 取用、`State { NONE, LOADING, READY, FAILED }`，FAILED 允許重試；`stats()` 給 requested／ready／failed／in_flight／load_ms。
+  - **接線**：`chapter_manager.goto_beat()`／`goto_checkpoint()` 走 `_switch_scene(path)`，已備好就 `change_scene_to_packed`，否則退回 `change_scene_to_file`；`stage_base._deferred_start()` 依下一拍預載下一場景（同場景跳過）；主菜單預載第一幕並用它進場；試煉場預載主菜單、結算切場亦走預載結果。
+  - **收尾**：主菜單／舞台／試煉場的 `_exit_tree()` 都呼叫 `PRELOADER.settle_pending()`，把仍在載的請求收乾。漏這一步，行程退出時引擎會報 `1 ObjectDB instance was leaked`（線程請求懸空，不是資源沒放）。
+  - **無頭取捨**：`force_headless`（預設 false）讓自測／CI 不自動預載，避免每套測試退出都掛一條線程；`selftest_preload` 自己開旗標驗真實線程路徑，視窗模式接線照常。
+  - **數據**：六章節冷載 `SCENE_COST worst_load=70ms`（SCN-03 最慢 82–88ms、SCN-06 53–61ms、SCN-05 28–38ms），預載後取用 0ms，對 3000ms 預算留足餘量。
+  - **驗收**：`PRELOAD_SELFTEST result=PASS fails=[] checks=24`；全量 33 套自測 RC=0（`selftest_preload`／`onboard`／`ui_shell`／`ui_focus_settings`／`death`／`flow` err=0／leak=0）；`selftest_full_run` 3901 幀 0 死亡 B9；主場景 240 幀 RC=0 無 ERROR。
+
 
 
 ## 待實現
