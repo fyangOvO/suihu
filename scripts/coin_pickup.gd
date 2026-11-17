@@ -14,11 +14,23 @@ var age: float = 0.0
 var is_tag: bool = false
 
 func setup(p_target, p_item: String, p_pos: Vector2) -> void:
+	pool_reset()
 	target = p_target
 	item_name = p_item
 	position = p_pos
 	base_y = p_pos.y
 	is_tag = p_item.contains("木牌")
+	queue_redraw()   # 碎銀與木牌是兩套程序繪製，重用的節點必須按新身分重畫
+
+## 池化重用時的狀態歸零：清掉上一次的浮動進度、目標與道具身分
+func pool_reset() -> void:
+	age = 0.0
+	target = null
+	item_name = "碎銀"
+	base_y = 0.0
+	is_tag = false
+	visible = true
+	queue_redraw()
 
 func _ready() -> void:
 	z_index = 2
@@ -45,6 +57,16 @@ func _collect() -> void:
 	var parent_node: Node = get_parent()
 	if parent_node != null and parent_node.has_method("_on_pickup_collected"):
 		parent_node._on_pickup_collected(item_name)
+	_despawn()
+
+## 收尾：有池就還回池子（下次掉落重用），沒有池才真的釋放
+func _despawn() -> void:
+	if has_meta("pool"):
+		var pool: Node = get_meta("pool")
+		var key: String = String(get_meta("pool_key")) if has_meta("pool_key") else "pickup"
+		if pool != null and is_instance_valid(pool) and pool.has_method("release"):
+			pool.release(key, self)
+			return
 	queue_free()
 
 func _draw() -> void:

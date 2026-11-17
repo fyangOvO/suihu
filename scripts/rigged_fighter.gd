@@ -1046,14 +1046,27 @@ func _spawn_drop(force_tag: bool) -> void:
 	var parent_node: Node = get_parent()
 	if parent_node == null:
 		return
-	var silver: Node2D = PICKUP_SCENE.new()
-	parent_node.add_child(silver)
+	var silver: Node2D = _acquire_pickup(parent_node)
+	if silver == null:
+		return
 	silver.setup(opponent, "碎銀", Vector2(global_position.x - 30.0, global_position.y - 30.0))
 	if force_tag or _rng.randf() < drop_chance:
-		var tag: Node2D = PICKUP_SCENE.new()
-		parent_node.add_child(tag)
+		var tag: Node2D = _acquire_pickup(parent_node)
+		if tag == null:
+			return
 		var tag_name: String = "小虎爪" if _is_tiger() else "伥鬼的木牌"
 		tag.setup(opponent, tag_name, Vector2(global_position.x + 30.0, global_position.y - 30.0))
+
+## 掉落物同樣走物件池：舞台上優先回收重用，沒有池才直接 new
+func _acquire_pickup(parent_node: Node) -> Node2D:
+	var pool: Node = parent_node.get_node_or_null("ObjectPool")
+	if pool != null and pool.has_method("acquire"):
+		var pooled: Node = pool.acquire("pickup", func() -> Node: return PICKUP_SCENE.new(), parent_node)
+		if pooled is Node2D:
+			return pooled
+	var item: Node2D = PICKUP_SCENE.new()
+	parent_node.add_child(item)
+	return item
 
 ## 青煙：播六幀手繪水墨序列（9fps，不循環），播完停在最淡一幀再收起。
 ## 序列幀與 SpriteFrames 全場只建一次（6 張 512×640 貼圖逐格 add_frame 很貴），

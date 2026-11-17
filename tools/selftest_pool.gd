@@ -9,6 +9,7 @@ extends SceneTree
 
 const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
 const ROCK_SCRIPT := preload("res://scripts/rock_projectile.gd")
+const PICKUP_SCRIPT := preload("res://scripts/coin_pickup.gd")
 const FIGHTER_SCENE := preload("res://scenes/RiggedFighter.tscn")
 const FIGHTER_SCRIPT := preload("res://scripts/rigged_fighter.gd")
 
@@ -50,6 +51,7 @@ func _process(_delta: float) -> bool:
 				_check_pool_basic()
 				_check_pool_capacity()
 				_check_rock()
+				_check_pickup()
 				f1 = FIGHTER_SCENE.instantiate()
 				f1.name = "F1"
 				world.add_child(f1)
@@ -147,6 +149,52 @@ func _check_rock() -> void:
 	lone._physics_process(0.0)
 	_check("no pool falls back to queue_free", lone.is_queued_for_deletion())
 	pool.release("rock", r)
+
+# --- C2. 拾取物回收 ---
+
+func _check_pickup() -> void:
+	var target := Node2D.new()
+	target.position = Vector2(1000.0, 820.0)
+	world.add_child(target)
+
+	var p: Node2D = pool.acquire("pickup", func() -> Node: return PICKUP_SCRIPT.new(), world)
+	_check("pickup created from pool", p.get_parent() == world and int(pool.stats("pickup")["created"]) == 1)
+	_check("pickup visible on acquire", p.visible)
+
+	p.setup(target, "伥鬼的木牌", Vector2(1000.0, 700.0))
+	_check("pickup setup marks tag", p.is_tag and p.item_name == "伥鬼的木牌")
+	_check("pickup setup resets float age", is_equal_approx(p.age, 0.0))
+	_check("pickup setup anchors base_y", is_equal_approx(p.base_y, 700.0))
+	p._process(0.0)
+	_check("pickup floats around base", absf(p.position.y - 700.0) < 0.01)
+
+	# 玩家走到掉落物上：應回收進池而不是 queue_free
+	p.position = Vector2(1000.0, 820.0)
+	p.base_y = 820.0
+	p._process(1.0 / 60.0)
+	var st: Dictionary = pool.stats("pickup")
+	_check("pickup collect releases instead of freeing", not p.is_queued_for_deletion())
+	_check("pickup collect parks in pool", p.get_parent() == pool)
+	_check("pickup collect hidden", not p.visible)
+	_check("pickup collect live drops", int(st["live"]) == 0)
+
+	# 同一個節點改掉碎銀：身分要切回來（碎銀與木牌是兩套繪製）
+	p = pool.acquire("pickup", func() -> Node: return PICKUP_SCRIPT.new(), world)
+	_check("pickup reused instance", int(pool.stats("pickup")["created"]) == 1)
+	_check("pickup reuse counts", int(pool.stats("pickup")["reused"]) == 1)
+	p.setup(target, "碎銀", Vector2(900.0, 820.0))
+	_check("pickup reuse switches to coin", not p.is_tag and p.item_name == "碎銀")
+	_check("pickup reuse visible again", p.visible)
+	_check("pickup reuse live count back to 1", int(pool.stats("pickup")["live"]) == 1)
+
+	# 無池退回：真的排隊刪除
+	var lone: Node2D = PICKUP_SCRIPT.new()
+	world.add_child(lone)
+	lone.setup(target, "碎銀", Vector2(900.0, 820.0))
+	lone._collect()
+	_check("pickup no pool falls back to queue_free", lone.is_queued_for_deletion())
+	pool.release("pickup", p)
+	target.queue_free()
 
 # --- D. 青煙快取與重用 ---
 

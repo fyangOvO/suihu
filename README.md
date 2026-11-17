@@ -337,6 +337,12 @@
   - **青煙**：`SpriteFrames` 改靜態快取，六張 512×640 全場只 `add_frame` 一次；每具敵人固定一格 `DeathMist`，死亡時重播、收起時 `stop()`＋隱藏，不再每次死亡新建再 `queue_free`。
   - **驗收**：`POOL_SELFTEST result=PASS fails=[] checks=46`（20 次循環 created 仍為 1、5 個同時歸還只留 3 個、石頭落地歸還而非刪除、無池退回 `queue_free`、青煙跨實例共用同一份 SpriteFrames）；全量 32 套自測 RC=0；`selftest_full_run` 3972 幀 0 死亡；主場景 240 幀 RC=0 且無 ERROR。
 
+- [x] **V0.3.34 拾取物併入物件池（OPT-04 第二批，`selftest_pool` 擴充至 62 項 PASS）**：
+  - **生成／回收**：`_spawn_drop()` 的碎銀與木牌改走 `_acquire_pickup()`（池 key `pickup`），沒有池時照舊直接 `new`；`_collect()` 的 `queue_free()` 換成 `_despawn()` 歸還。
+  - **重用重畫**：`setup()` 先 `pool_reset()` 並補一次 `queue_redraw()`——碎銀與木牌是兩套程序繪製，池化後 `_ready` 只跑一次，不補重畫會出現「撿完碎銀、下次掉出木牌卻是銀塊外觀」的錯誤。
+  - **既有斷言不受影響**：`selftest_death` 仍 `drops_left=0`、碎銀與小虎爪計數照舊；池內節點掛在 `ObjectPool` 下，不會被測試用 `main.get_children()` 的 `_pickups()` 誤數。
+  - **驗收**：`POOL_SELFTEST result=PASS fails=[] checks=62`（拾取物回收進池、身分切換、浮動計時歸零、無池退回都逐項斷言）；全量 32 套自測 RC=0；`selftest_full_run` 3919 幀 0 死亡；主場景 240 幀 RC=0 且無 ERROR。
+
 
 
 ## 待實現
