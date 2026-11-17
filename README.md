@@ -311,6 +311,15 @@
   - **UI**：殼層按鈕與主菜單游標移動／確認音；所有調用點在缺素材時安全無聲。
   - **驗收**：`AUDIO_SELFTEST result=PASS fails=[]`（62 項，新增對話 ducking 調用點與主菜單 BGM 場景調用點）；26 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
 
+- [x] **V0.3.31 存檔備份與損壞回退（FLOW-03，`tools/selftest_save.gd` 54 項 PASS）**：
+  - **原子寫入收斂**：`save_checkpoint()` 統一走 `_write_atomic()`（先寫 `.tmp` 再 rename，rename 不支援覆蓋時退回直寫），主檔與備份共用同一條寫入路徑；任一步失敗都回填 `last_checkpoint_error` 並發 `checkpoint_failed`。
+  - **覆蓋前備份**：存檔前先讀現有主檔，只有「讀得懂」才寫 `checkpoint.json.bak`——壞檔不會把上一份好檔蓋掉；首次存檔不產生備份。
+  - **損壞回退**：`load_checkpoint()` 先讀主檔，解析失敗或主檔遺失時自動改讀備份，並把備份內容回寫成新主檔完成修復；`last_load_source` 記錄 `primary／backup`，`last_load_recovered` 標記是否走過救援。
+  - **四態狀態**：新增 `checkpoint_state()` → `none／ok／backup／corrupt`；主菜單據此顯示「檢查點：山神廟／存檔損壞，已備份／存檔損壞，請開新局／尚無檢查點」，`has_checkpoint()` 只在 `ok`、`backup` 兩態為真。
+  - **容錯**：`_parse_text()` 驗證節拍存在、`flags`／`loot` 必為字典；`_safe_int()` 接受 int／float／bool／數字字串；HP `clampi(…,1,800)`；未知掉落鍵保留、缺鍵補 0。
+  - **清理**：`clear_checkpoint()` 一併清掉主檔、備份與兩份 `.tmp`，避免殘檔被下一次讀取誤判。
+  - **驗收**：`SAVE_SELFTEST result=PASS fails=0 checks=54`（基本讀寫、備份、主檔損壞回退、雙壞拒絕、主檔遺失由備份續玩、非法節拍、型別容錯）；28 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
+
 
 
 ## 待實現

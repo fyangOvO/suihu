@@ -44,9 +44,18 @@ func _ready() -> void:
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 	var cm = get_node_or_null("/root/ChapterManager")
-	var has_save: bool = cm != null and cm.has_checkpoint()
+	var state: String = "none" if cm == null else String(cm.checkpoint_state())
+	var has_save: bool = state == "ok" or state == "backup"
 	_btn_continue.disabled = not has_save
-	_save_hint.text = "檢查點：山神廟" if has_save else "尚無檢查點"
+	match state:
+		"ok":
+			_save_hint.text = "檢查點：山神廟"
+		"backup":
+			_save_hint.text = "存檔損壞，已備份"
+		"corrupt":
+			_save_hint.text = "存檔損壞，請開新局"
+		_:
+			_save_hint.text = "尚無檢查點"
 	_btn_new.grab_focus()
 
 func _unhandled_input(event: InputEvent) -> void:
