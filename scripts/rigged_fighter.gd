@@ -639,7 +639,8 @@ func _ai_apply_corpse(plan: String, dx: float) -> void:
 		"wait":
 			pass
 
-## 生成石頭：純 Node2D + 腳本弧線，不進物理空間，物理幀裡 add_child 也安全
+## 生成石頭：純 Node2D + 腳本弧線，不進物理空間，物理幀裡 add_child 也安全。
+## 舞台上有 ObjectPool 就從池裡取（回收重用），沒有池（單獨測試場景）才直接 new。
 func _ai_spawn_rock() -> void:
 	if opponent == null or not is_instance_valid(opponent):
 		return
@@ -649,10 +650,21 @@ func _ai_spawn_rock() -> void:
 	var dir: float = signf(opponent.global_position.x - global_position.x)
 	if is_zero_approx(dir):
 		dir = face_direction
-	var rock: Node2D = ROCK_SCENE.new()
-	parent_node.add_child(rock)
+	var rock: Node2D = _acquire_rock(parent_node)
+	if rock == null:
+		return
 	rock.setup(opponent, dir, ROCK_DAMAGE,
 		Vector2(global_position.x + dir * 46.0, global_position.y - 120.0))
+
+func _acquire_rock(parent_node: Node) -> Node2D:
+	var pool: Node = parent_node.get_node_or_null("ObjectPool")
+	if pool != null and pool.has_method("acquire"):
+		var pooled: Node = pool.acquire("rock", func() -> Node: return ROCK_SCENE.new(), parent_node)
+		if pooled is Node2D:
+			return pooled
+	var rock: Node2D = ROCK_SCENE.new()
+	parent_node.add_child(rock)
+	return rock
 
 ## 依血量決定下一次出手間隔（低血慌亂時明顯更密集；重招本就更慢）
 func _ai_cd_for_next(base_cd: float) -> float:
@@ -1043,29 +1055,43 @@ func _spawn_drop(force_tag: bool) -> void:
 		var tag_name: String = "小虎爪" if _is_tiger() else "伥鬼的木牌"
 		tag.setup(opponent, tag_name, Vector2(global_position.x + 30.0, global_position.y - 30.0))
 
-## 青煙：播六幀手繪水墨序列（9fps，不循環），播完停在最淡一幀再自清
+## 青煙：播六幀手繪水墨序列（9fps，不循環），播完停在最淡一幀再收起。
+## 序列幀與 SpriteFrames 全場只建一次（6 張 512×640 貼圖逐格 add_frame 很貴），
+## 節點每具敵人固定一格，死亡時 reset 重用而不是每次都 new ＋ queue_free。
+static var _mist_frames_cache: SpriteFrames = null
+
+static func _mist_sprite_frames() -> SpriteFrames:
+	if _mist_frames_cache == null:
+		var frames := SpriteFrames.new()
+		frames.add_animation("mist")
+		frames.set_animation_speed("mist", MIST_FPS)
+		frames.set_animation_loop("mist", false)
+		for tex in MIST_FRAMES:
+			frames.add_frame("mist", tex)
+		_mist_frames_cache = frames
+	return _mist_frames_cache
+
 func _spawn_death_mist() -> void:
-	var mist := AnimatedSprite2D.new()
-	var frames := SpriteFrames.new()
-	frames.add_animation("mist")
-	frames.set_animation_speed("mist", MIST_FPS)
-	frames.set_animation_loop("mist", false)
-	for tex in MIST_FRAMES:
-		frames.add_frame("mist", tex)
-	mist.sprite_frames = frames
-	mist.animation = "mist"
-	mist.position = Vector2(0.0, -288.0)   # 512×640 幀底邊 612 → 縮放後腳底約在原點
-	mist.scale = Vector2(0.9, 0.9)
-	mist.z_index = 1
-	mist.play("mist")
-	_mist_node = mist
-	add_child(mist)
+	if not is_instance_valid(_mist_node):
+		var mist := AnimatedSprite2D.new()
+		mist.name = "DeathMist"
+		mist.sprite_frames = _mist_sprite_frames()
+		mist.animation = "mist"
+		mist.position = Vector2(0.0, -288.0)   # 512×640 幀底邊 612 → 縮放後腳底約在原點
+		mist.scale = Vector2(0.9, 0.9)
+		mist.z_index = 1
+		_mist_node = mist
+		add_child(mist)
+	_mist_node.visible = true
+	_mist_node.modulate.a = 1.0
+	_mist_node.play("mist")
+	_mist_node.frame = 0
 	get_tree().create_timer(1.8).timeout.connect(_free_mist)
 
 func _free_mist() -> void:
 	if is_instance_valid(_mist_node):
-		_mist_node.queue_free()
-	_mist_node = null
+		_mist_node.stop()
+		_mist_node.visible = false
 
 ## 擊退方向上 20px 內是否有靜態牆；對手身體不算牆（貼身對打不能誤判成牆族）
 func _wall_on_side(dir: float) -> bool:

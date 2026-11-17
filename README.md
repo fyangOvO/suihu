@@ -330,6 +330,13 @@
   - **共用樣式**：滑桿軌道／菱形握把抽到 `ui_style.gd`（`style_slider`／`diamond_texture`），設置頁與引導頁同一套外觀。
   - **驗收**：`ONBOARD_SELFTEST result=PASS fails=[] checks=48`；`UI_FOCUS_SETTINGS_SELFTEST result=PASS`（43 項，含新增死區鏈路）；全量 31 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
 
+- [x] **V0.3.33 石頭與青煙物件池（OPT-04 第一批，`tools/selftest_pool.gd` 46 項 PASS）**：
+  - **通用池**：新增 `scripts/object_pool.gd`，`acquire(key, factory, target_parent)` 先取回收桶、沒有才新建；`release(key, node)` 摘下節點、隱藏並掛回池下，單 key 閒置上限 3，超額直接釋放；`stats()` 回報 created／reused／released／dropped／live。池節點 `PROCESS_MODE_DISABLED`，回收期間不跑邏輯。
+  - **掛載位置**：章節舞台在 `_build_world()` 最前面建 `ObjectPool`；試煉場 `MainRigged` 在 `_ready()` 同樣掛一格；找不到池的場合（單獨實例化敵人測試）石頭仍照舊 `new`，行為不變。
+  - **石頭**：`_ai_spawn_rock()` 改走池；命中／落地／超時三處 `queue_free()` 換成 `_despawn()` 歸還；`setup()` 先 `pool_reset()`（位置、旋轉、速度、目標、age、damage 歸零）再設參數；投擲音效從 `_ready()` 移進 `setup()`（池化後 `_ready` 只跑一次，否則重用的石頭沒聲音）；刪掉 `_physics_process` 的逐幀 `queue_redraw()`，靜態多邊形只畫一次。
+  - **青煙**：`SpriteFrames` 改靜態快取，六張 512×640 全場只 `add_frame` 一次；每具敵人固定一格 `DeathMist`，死亡時重播、收起時 `stop()`＋隱藏，不再每次死亡新建再 `queue_free`。
+  - **驗收**：`POOL_SELFTEST result=PASS fails=[] checks=46`（20 次循環 created 仍為 1、5 個同時歸還只留 3 個、石頭落地歸還而非刪除、無池退回 `queue_free`、青煙跨實例共用同一份 SpriteFrames）；全量 32 套自測 RC=0；`selftest_full_run` 3972 幀 0 死亡；主場景 240 幀 RC=0 且無 ERROR。
+
 
 
 ## 待實現

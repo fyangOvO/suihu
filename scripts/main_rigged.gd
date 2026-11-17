@@ -20,7 +20,14 @@ var _dim: ColorRect = null
 var _slash: ColorRect = null
 var _flash: ColorRect = null
 
+const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
+
 func _ready():
+	# OPT-04：試煉場也掛一格物件池，伥鬼扔石頭走回收路徑
+	var pool := Node.new()
+	pool.name = "ObjectPool"
+	pool.set_script(POOL_SCRIPT)
+	add_child(pool)
 	$P1.opponent = $P2
 	$P2.opponent = $P1
 	_result_label = Label.new()

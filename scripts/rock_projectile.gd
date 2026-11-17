@@ -22,6 +22,7 @@ var flight_time: float = 1.0
 
 ## 設定投擲參數：起點、方向、傷害與目標；弧線按距離算飛行時間，落點正好壓在對手身上
 func setup(p_target, p_dir: float, p_damage: int, p_from: Vector2) -> void:
+	pool_reset()
 	position = p_from
 	target = p_target
 	from_dir = p_dir
@@ -32,28 +33,49 @@ func setup(p_target, p_dir: float, p_damage: int, p_from: Vector2) -> void:
 		dist = absf(p_target.global_position.x - p_from.x)
 	flight_time = clampf(dist / 430.0, 0.55, 1.5)
 	velocity = Vector2(p_dir * dist / flight_time, -0.5 * GRAVITY * flight_time)
+	AUDIO.play_sfx("sfx_rock_throw", -3.0)
+
+## 池化重用時的狀態歸零：清掉上一次飛行的殘留（位置／旋轉／速度／目標／計時）
+func pool_reset() -> void:
+	age = 0.0
+	rotation = 0.0
+	velocity = Vector2.ZERO
+	target = null
+	damage = 75
+	flight_time = 1.0
+	visible = true
+	queue_redraw()
 
 func _ready() -> void:
 	z_index = 3
 	queue_redraw()
-	AUDIO.play_sfx("sfx_rock_throw", -3.0)
 
 func _physics_process(delta: float) -> void:
 	age += delta
 	velocity.y += GRAVITY * delta
 	position += velocity * delta
 	rotation += 7.0 * delta
-	queue_redraw()
+	# 圖形是靜態多邊形，轉動由節點 transform 完成，不必逐幀重繪
 	if _hits_target():
 		_apply_hit()
-		queue_free()
+		_despawn()
 		return
 	if position.y >= FLOOR_Y - RADIUS or position.x < STAGE_LEFT or position.x > STAGE_RIGHT:
 		AUDIO.play_sfx("sfx_rock_break", -4.0)
-		queue_free()       # 落地／撞邊界即碎，不留殘骸
+		_despawn()         # 落地／撞邊界即碎，回收不留殘骸
 		return
 	if age >= flight_time + EXTRA_LIFE:
-		queue_free()
+		_despawn()
+
+## 收尾：有池就還回池子（下次出手重用），沒有池才真的釋放
+func _despawn() -> void:
+	if has_meta("pool"):
+		var pool: Node = get_meta("pool")
+		var key: String = String(get_meta("pool_key")) if has_meta("pool_key") else "rock"
+		if pool != null and is_instance_valid(pool) and pool.has_method("release"):
+			pool.release(key, self)
+			return
+	queue_free()
 
 func _hits_target() -> bool:
 	if target == null or not is_instance_valid(target):

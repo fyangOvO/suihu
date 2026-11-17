@@ -8,6 +8,7 @@ const GAME_SHELL := preload("res://scripts/ui/game_shell.gd")
 const STORY := preload("res://data/story_beats.gd")
 const UI_STYLE := preload("res://scripts/ui/ui_style.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
+const POOL_SCRIPT := preload("res://scripts/object_pool.gd")
 
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
@@ -108,6 +109,7 @@ func _tick_stage(_delta: float) -> void:
 
 # --- 世界搭建 ---
 func _build_world() -> void:
+	_build_pool()
 	_build_background()
 	_build_ground()
 	_build_player()
@@ -116,6 +118,15 @@ func _build_world() -> void:
 	_build_hud()
 	_build_dialogue()
 	_build_shell()
+
+## OPT-04：舞台掛一格物件池，伥鬼扔石頭這類短命節點循環重用，不再每次 new＋free
+func _build_pool() -> void:
+	if get_node_or_null("ObjectPool") != null:
+		return
+	var pool := Node.new()
+	pool.name = "ObjectPool"
+	pool.set_script(POOL_SCRIPT)
+	add_child(pool)
 
 func _build_background() -> void:
 	var tex_path: String = background_texture_path()
