@@ -315,3 +315,34 @@ static func _icon_rect(parent: Node2D, center: Vector2, radius: float, color: Co
 		center + Vector2(radius, radius),
 		center + Vector2(-radius, radius),
 	]), color)
+
+## 滑桿外觀：細金線軌道＋菱形握把；設置頁與首次啟動引導共用同一套。
+static func style_slider(slider: HSlider) -> void:
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.045, 0.040, 0.034, 0.92)
+	track.border_color = Color(GOLD_DIM.r, GOLD_DIM.g, GOLD_DIM.b, 0.45)
+	track.border_width_top = 1
+	track.border_width_bottom = 1
+	track.content_margin_top = 3.0
+	track.content_margin_bottom = 3.0
+	slider.add_theme_stylebox_override("slider", track)
+	var fill := track.duplicate() as StyleBoxFlat
+	fill.bg_color = Color(GOLD.r, GOLD.g, GOLD.b, 0.55)
+	fill.border_color = Color(GOLD.r, GOLD.g, GOLD.b, 0.85)
+	slider.add_theme_stylebox_override("grabber_area", fill)
+	var hot := fill.duplicate() as StyleBoxFlat
+	hot.bg_color = Color(1.0, 0.86, 0.55, 0.85)
+	slider.add_theme_stylebox_override("grabber_area_highlight", hot)
+	slider.add_theme_icon_override("grabber", diamond_texture(GOLD))
+	slider.add_theme_icon_override("grabber_highlight", diamond_texture(Color(1.0, 0.88, 0.58)))
+
+static func diamond_texture(color: Color) -> ImageTexture:
+	var size: int = 15
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var mid: int = size / 2
+	for y in range(size):
+		var half: int = mid - absi(y - mid)
+		for x in range(mid - half, mid + half + 1):
+			img.set_pixel(x, y, color)
+	return ImageTexture.create_from_image(img)

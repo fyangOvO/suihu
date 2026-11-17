@@ -16,6 +16,21 @@ const VOLUME_DEFAULTS := {
 	"voice": 0.9,
 }
 
+# --- 手柄死區（只作用在移動類比軸，按鍵動作維持 0.5 不變） ---
+
+const INPUT_SECTION := "input"
+const DEADZONE_KEY := "movement_deadzone"
+const DEFAULT_DEADZONE := 0.30
+const MOVEMENT_ACTIONS := [
+	"p1_left", "p1_right", "p1_up", "p1_down",
+	"p2_left", "p2_right", "p2_up", "p2_down",
+]
+
+# --- 首次啟動引導標記 ---
+
+const META_SECTION := "meta"
+const ONBOARD_KEY := "onboarded"
+
 static var _path: String = DEFAULT_PATH
 
 static func set_path_for_test(path: String) -> void:
@@ -114,3 +129,49 @@ static func _read_volume(cfg: ConfigFile, kind: String) -> float:
 	if is_nan(value) or is_inf(value) or value < 0.0 or value > 1.0:
 		return fallback
 	return value
+
+# --- 手柄死區 ---
+
+static func default_deadzone() -> float:
+	return DEFAULT_DEADZONE
+
+static func save_deadzone(value: float) -> bool:
+	var cfg := _config()
+	cfg.set_value(INPUT_SECTION, DEADZONE_KEY, clampf(value, 0.0, 1.0))
+	cfg.set_value(INPUT_SECTION, "updated_at", Time.get_unix_time_from_system())
+	return cfg.save(_path) == OK
+
+## 讀死區；缺值、非數值、NaN／越界一律回預設 0.30，避免壞檔把搖桿鎖死。
+static func load_deadzone() -> float:
+	var cfg := _config()
+	var raw = cfg.get_value(INPUT_SECTION, DEADZONE_KEY, DEFAULT_DEADZONE)
+	if typeof(raw) != TYPE_FLOAT and typeof(raw) != TYPE_INT:
+		return DEFAULT_DEADZONE
+	var value: float = float(raw)
+	if is_nan(value) or is_inf(value) or value < 0.0 or value > 1.0:
+		return DEFAULT_DEADZONE
+	return value
+
+## 把死區寫進 InputMap：只動移動動作，按鍵動作（輕／重／擋…）維持工程預設。
+static func apply_deadzone(value: float = -1.0) -> float:
+	var target: float = value if value >= 0.0 else load_deadzone()
+	target = clampf(target, 0.0, 1.0)
+	for action in MOVEMENT_ACTIONS:
+		if InputMap.has_action(action):
+			InputMap.action_set_deadzone(action, target)
+	return target
+
+# --- 首次啟動引導 ---
+
+static func has_onboarded() -> bool:
+	var cfg := _config()
+	return bool(cfg.get_value(META_SECTION, ONBOARD_KEY, false))
+
+static func is_first_run() -> bool:
+	return not has_onboarded()
+
+static func mark_onboarded() -> bool:
+	var cfg := _config()
+	cfg.set_value(META_SECTION, ONBOARD_KEY, true)
+	cfg.set_value(META_SECTION, "onboarded_at", Time.get_unix_time_from_system())
+	return cfg.save(_path) == OK

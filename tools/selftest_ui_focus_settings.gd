@@ -33,6 +33,8 @@ func _initialize() -> void:
 	root.process_mode = Node.PROCESS_MODE_ALWAYS
 	SETTINGS.set_path_for_test(TEST_CFG)
 	SETTINGS.clear()
+	# 主菜單自 V0.3.32 起首次啟動會先彈引導頁；本套只測常規焦點，先標記已引導。
+	SETTINGS.mark_onboarded()
 	cm = root.get_node_or_null("ChapterManager")
 	if cm == null:
 		cm = load("res://scripts/chapter_manager.gd").new()
@@ -78,13 +80,17 @@ func _process(_delta: float) -> bool:
 		var sfx := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsSfx") as HSlider
 		var voice := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsVoice") as HSlider
 		var back := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsBack") as Button
+		var deadzone := shell.get_node_or_null("ShellRoot/SettingsPanel/SettingsDeadzone") as HSlider
 		_check("settings four volume sliders", master != null and bgm != null and sfx != null and voice != null)
+		_check("settings deadzone slider", deadzone != null)
 		_check("settings initial focus on mode", mode != null and mode.has_focus())
 		_check("settings mode -> master", _focus_next(mode) == master)
 		_check("settings master -> bgm", _focus_next(master) == bgm)
 		_check("settings bgm -> sfx", _focus_next(bgm) == sfx)
 		_check("settings sfx -> voice", _focus_next(sfx) == voice)
-		_check("settings voice -> back", _focus_next(voice) == back)
+		_check("settings voice -> deadzone", _focus_next(voice) == deadzone)
+		_check("settings deadzone defaults 30", deadzone != null and int(deadzone.value) == 30)
+		_check("settings deadzone -> back", _focus_next(deadzone) == back)
 		_check("settings back -> mode", _focus_next(back) == mode)
 		_check("volume defaults shown", master != null and int(master.value) == 80
 			and bgm != null and int(bgm.value) == 70

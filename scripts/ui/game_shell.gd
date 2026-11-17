@@ -33,6 +33,9 @@ var _summary_buttons: Array[Button] = []
 var _volume_sliders: Dictionary = {}
 var _volume_labels: Dictionary = {}
 var _volume_titles: Dictionary = {}
+var _deadzone_slider: HSlider
+var _deadzone_label: Label
+var _deadzone_title: Label
 var _credits: Control
 var _credits_body: Control
 var _credits_skip: Button
@@ -154,7 +157,7 @@ func _build_pause() -> void:
 	_label(_pause, "PauseHint", "Esc 返回遊戲　·　手柄 Start 可呼出", Vector2(64, 508), Vector2(590, 22), 13, UI_STYLE.PAPER_DIM)
 
 func _build_settings() -> void:
-	_settings = _panel("SettingsPanel", Vector2(600, 250), Vector2(720, 570))
+	_settings = _panel("SettingsPanel", Vector2(600, 250), Vector2(720, 640))
 	var settings_title := _label(_settings, "SettingsTitle", "設置", Vector2(60, 24), Vector2(500, 70), 56, UI_STYLE.PAPER, true)
 	settings_title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.24))
 	settings_title.add_theme_constant_override("shadow_offset_x", 1)
@@ -179,10 +182,17 @@ func _build_settings() -> void:
 	_volume_row("sfx", "音效", 364.0)
 	_volume_row("voice", "語音", 402.0)
 
-	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 448, _on_settings_back, "back")
+	_label(_settings, "SettingsInputSection", "手柄", Vector2(64, 440), Vector2(590, 20), 13, UI_STYLE.GOLD_DIM)
+	var input_rule := UI_STYLE.text_rule(592.0)
+	input_rule.name = "SettingsInputRule"
+	input_rule.position = Vector2(64, 464)
+	_settings.add_child(input_rule)
+	_deadzone_row(478.0)
+
+	var settings_back := _button(_settings, "SettingsBack", "返回暫停", 524, _on_settings_back, "back")
 	_settings_focus = [_settings_mode, _volume_sliders["master"], _volume_sliders["bgm"],
-		_volume_sliders["sfx"], _volume_sliders["voice"], settings_back]
-	_label(_settings, "SettingsHint", "音量为 0–100，即時保存；手柄死區、打擊停頓待輸入批次接入。", Vector2(64, 512), Vector2(590, 44), 13, UI_STYLE.PAPER_DIM)
+		_volume_sliders["sfx"], _volume_sliders["voice"], _deadzone_slider, settings_back]
+	_label(_settings, "SettingsHint", "音量與手柄死區即時保存（0–100）；打擊停頓待輸入批次接入。", Vector2(64, 588), Vector2(590, 44), 13, UI_STYLE.PAPER_DIM)
 
 ## 一列音量：標題、滑桿、數值；滑桿取得焦點時標題轉金，鍵盤／手柄可調。
 func _volume_row(kind: String, title: String, y: float) -> void:
@@ -208,36 +218,44 @@ func _volume_row(kind: String, title: String, y: float) -> void:
 	_volume_labels[kind] = value_label
 	_volume_titles[kind] = title_label
 
+## 一列手柄死區：即時寫入 InputMap 與存檔；按鍵動作的死區不動。
+func _deadzone_row(y: float) -> void:
+	_deadzone_title = _label(_settings, "SettingsDeadzoneLabel", "手柄死區", Vector2(64, y + 5), Vector2(104, 24), 19, UI_STYLE.PAPER)
+	var slider := HSlider.new()
+	slider.name = "SettingsDeadzone"
+	slider.position = Vector2(172, y)
+	slider.size = Vector2(330, 26)
+	slider.min_value = 0.0
+	slider.max_value = 100.0
+	slider.step = 5.0
+	slider.focus_mode = Control.FOCUS_ALL
+	slider.value = roundf(SETTINGS.load_deadzone() * 100.0)
+	_style_slider(slider)
+	_settings.add_child(slider)
+	_deadzone_label = _label(_settings, "SettingsDeadzoneValue", "%d" % int(slider.value), Vector2(514, y + 4), Vector2(64, 24), 18, UI_STYLE.GOLD_DIM)
+	_deadzone_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	slider.value_changed.connect(_on_deadzone_changed)
+	slider.focus_entered.connect(_on_deadzone_focus.bind(true))
+	slider.focus_exited.connect(_on_deadzone_focus.bind(false))
+	_deadzone_slider = slider
+
+func _on_deadzone_changed(value: float) -> void:
+	var ratio: float = clampf(value / 100.0, 0.0, 1.0)
+	SETTINGS.save_deadzone(ratio)
+	SETTINGS.apply_deadzone(ratio)
+	if _deadzone_label != null:
+		_deadzone_label.text = "%d" % int(round(value))
+
+func _on_deadzone_focus(focused: bool) -> void:
+	if _deadzone_title != null:
+		_deadzone_title.add_theme_color_override("font_color", UI_STYLE.GOLD if focused else UI_STYLE.PAPER)
+
 ## 音量滑桿外觀：細金線軌道＋菱形握把，沿用 UI 色板。
 func _style_slider(slider: HSlider) -> void:
-	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.045, 0.040, 0.034, 0.92)
-	track.border_color = Color(UI_STYLE.GOLD_DIM.r, UI_STYLE.GOLD_DIM.g, UI_STYLE.GOLD_DIM.b, 0.45)
-	track.border_width_top = 1
-	track.border_width_bottom = 1
-	track.content_margin_top = 3.0
-	track.content_margin_bottom = 3.0
-	slider.add_theme_stylebox_override("slider", track)
-	var fill := track.duplicate() as StyleBoxFlat
-	fill.bg_color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.55)
-	fill.border_color = Color(UI_STYLE.GOLD.r, UI_STYLE.GOLD.g, UI_STYLE.GOLD.b, 0.85)
-	slider.add_theme_stylebox_override("grabber_area", fill)
-	var hot := fill.duplicate() as StyleBoxFlat
-	hot.bg_color = Color(1.0, 0.86, 0.55, 0.85)
-	slider.add_theme_stylebox_override("grabber_area_highlight", hot)
-	slider.add_theme_icon_override("grabber", _diamond_texture(UI_STYLE.GOLD))
-	slider.add_theme_icon_override("grabber_highlight", _diamond_texture(Color(1.0, 0.88, 0.58)))
+	UI_STYLE.style_slider(slider)
 
 func _diamond_texture(color: Color) -> ImageTexture:
-	var size: int = 15
-	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var mid: int = size / 2
-	for y in range(size):
-		var half: int = mid - absi(y - mid)
-		for x in range(mid - half, mid + half + 1):
-			img.set_pixel(x, y, color)
-	return ImageTexture.create_from_image(img)
+	return UI_STYLE.diamond_texture(color)
 
 func _on_volume_changed(value: float, kind: String) -> void:
 	AUDIO.set_volume(kind, clampf(value / 100.0, 0.0, 1.0))
@@ -262,6 +280,12 @@ func _sync_volume_ui() -> void:
 		var label: Label = _volume_labels.get(kind, null)
 		if label != null:
 			label.text = "%d" % int(value)
+	if _deadzone_slider != null:
+		var deadzone: float = roundf(SETTINGS.load_deadzone() * 100.0)
+		if not is_equal_approx(_deadzone_slider.value, deadzone):
+			_deadzone_slider.value = deadzone
+		if _deadzone_label != null:
+			_deadzone_label.text = "%d" % int(deadzone)
 
 func _build_death() -> void:
 	_death = _panel("DeathPanel", Vector2(540, 290), Vector2(840, 500))

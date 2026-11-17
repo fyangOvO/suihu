@@ -53,6 +53,8 @@
 - [x] 血量條 + 酒氣條 HUD
 - [x] 自動面向對手
 - [x] 輸入緩衝系統（18 幀內方向輸入有效）
+- [x] 首次啟動引導（顯示模式／主音量／手柄死區，確認後不再彈）
+- [x] 手柄死區生效（移動類比軸可調，按鍵動作不受影響）
 
 ## V0.1.1 幀動畫毫秒管線（本輪重構，詳見 `../docs/07-動畫幀毫秒映射規格.md`）
 
@@ -319,6 +321,14 @@
   - **容錯**：`_parse_text()` 驗證節拍存在、`flags`／`loot` 必為字典；`_safe_int()` 接受 int／float／bool／數字字串；HP `clampi(…,1,800)`；未知掉落鍵保留、缺鍵補 0。
   - **清理**：`clear_checkpoint()` 一併清掉主檔、備份與兩份 `.tmp`，避免殘檔被下一次讀取誤判。
   - **驗收**：`SAVE_SELFTEST result=PASS fails=0 checks=54`（基本讀寫、備份、主檔損壞回退、雙壞拒絕、主檔遺失由備份續玩、非法節拍、型別容錯）；28 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
+
+- [x] **V0.3.32 首次啟動引導與手柄死區（TUT-02，`tools/selftest_onboard.gd` 48 項 PASS）**：
+  - **初次進山頁**：主菜單在「沒有 settings.cfg 或 `[meta] onboarded` 未設」時先彈引導頁，擋住常規按鈕；三項為顯示模式（視窗／全屏切換）、主音量（0–100）、手柄死區（0–100，預設 30）；確認後寫檔並標記 `[meta] onboarded=true`，之後不再出現。
+  - **手柄死區真生效**：`UserSettings.apply_deadzone()` 對 `p1_left/right/up/down`、`p2_left/right/up/down` 呼叫 `InputMap.action_set_deadzone`；按鍵動作（輕／重／擋／跳／衝／必殺）維持工程預設 0.5，不被滑桿影響。滑桿 0–100 映射 0.00–1.00，寫入 `[input] movement_deadzone`。
+  - **設置頁同步**：暫停 → 設置新增「手柄」分區與死區滑桿，焦點鏈改為 `顯示 → 主音量 → 背景音樂 → 音效 → 語音 → 手柄死區 → 返回暫停`；面板加高到 640，四項音量與死區都會在進入頁面時同步存檔值。
+  - **容錯**：設定檔損壞或死區值非數值／越界時回預設 0.30 並重新引導一次；主音量、顯示模式沿用 `UserSettings` 既有校驗。
+  - **共用樣式**：滑桿軌道／菱形握把抽到 `ui_style.gd`（`style_slider`／`diamond_texture`），設置頁與引導頁同一套外觀。
+  - **驗收**：`ONBOARD_SELFTEST result=PASS fails=[] checks=48`；`UI_FOCUS_SETTINGS_SELFTEST result=PASS`（43 項，含新增死區鏈路）；全量 31 套自測 RC=0；主場景 240 幀 RC=0 且無 ERROR。
 
 
 
