@@ -427,6 +427,12 @@
   - HID-05 死亡台詞：`rigged_fighter.last_hit_state` 記錄致命一擊招式；被 Boss「絕命撲擊」`BossDeathPounce` 打死時先播「你也是被放出來的」2.4s，再顯示死亡面板；其他死因立即顯示面板。
   - 新增 `tools/selftest_hid.gd`（A–E 五案：吸酒、超時、絕命撲擊死、普通死、last_hit_state 預設）與 `tools/capture_hid.gd`（離屏出 `docs/preview/hid01-absorb.png`、`hid05-line.png`）。全量 34 套自測 PASS、主場景 240 幀 0 ERROR。
 
+- [x] **V0.3.46 OPT-08 封版回歸（RC1）**：
+  - 34 套 `selftest_*.gd` 全數 rc=0、0 FAIL、0 `SCRIPT ERROR`；`full_run` 連跑兩次皆 PASS（beat=B9、dialogue_calls=15，frames 4048／4045 屬物理抖動）；主場景 240 幀 0 ERROR。
+  - soak 以 `--minutes=3` 再煙測 PASS（10831 幀、8 次載入、6 擊殺、2 死亡、記憶體 0 增長、孤兒 0）；V0.3.44 的 62 分鐘有效數據沿用。
+  - 離屏重截主菜單／引導、SCN-01 對話、SCN-05 Boss、UI 暫停／設置等關鍵畫面，全部無可見窗口。
+  - 回歸清單與已知缺口見 `docs/release/OPT-08-封版回歸.md`；tag `v0.3.46-lite-rc1`。正式 `V1.0.0-lite` 待 OPT-05 三輪平衡補錄與手把人工實玩確認。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）
