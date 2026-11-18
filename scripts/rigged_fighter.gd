@@ -122,6 +122,8 @@ const CORPSE_REACTION: Array = ["CorpseHurt", "CorpseHurtAir", "CorpseDeath"]
 
 # 防禦減傷比例（站防 / 蹲防 / 空防）
 const GUARD_RATIO := {"stand": 0.5, "crouch": 0.35, "air": 0.4}
+# 格擋成功也折算成攻擊者的削韌（用防禦換破防，OPT-05 容錯輪）
+const BLOCK_POISE_RATIO: float = 0.35
 const SUPER_REQUIRE_WINE: float = 100.0
 # 牆族（牆邊連段獎勵）：被擊退時背已貼牆 → 額外傷害 + 黏牆 30 幀 + 彈回可追打（docs/01 §牆族）
 const WALL_BONUS_RATIO: float = 0.25
@@ -1073,6 +1075,8 @@ func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bo
 		if target.is_blocking and can_block(low, unblockable, target._defense):
 			target.on_blocked(final_dmg, face_direction, knock_up, guard_ratio, guard_push)
 			_has_hit = true
+			# 格擋成功也給攻擊者累積削韌（預設無效果，Boss 覆寫）
+			_on_attack_blocked(int(ceil(float(final_dmg) * BLOCK_POISE_RATIO)), face_direction)
 			# 小虎被架招/格擋後進入長硬直 38 幀，這是 docs/04 §3 的弱點
 			if _is_tiger():
 				_tiger_guard_stun()
@@ -1095,6 +1099,10 @@ func _tiger_guard_stun() -> void:
 		return
 	if _state in TIGER_ATTACKS:
 		change_state("TigerHurtLong")
+
+## 自己的攻擊被格擋時的回饋鉤子；預設不做事（Boss 用它累積削韌）
+func _on_attack_blocked(_poise: int, _from_dir: float) -> void:
+	pass
 
 ## 重疊到的 Area2D 若是對手 HurtBox，回傳其所屬角色控制器節點
 func _fighter_of(area: Area2D):

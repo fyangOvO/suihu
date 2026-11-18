@@ -14,6 +14,11 @@ const BOSS_POISE_MAX: int = 320
 const BOSS_PHASE_TIME: float = 1.2
 const BOSS_HP_PHASE2: float = 0.66
 const BOSS_HP_PHASE3: float = 0.33
+# OPT-05 節奏輪：出手間隔收緊 20%，下限 1.2s；BossIdle 每吃一下提前 0.12s 反擊（上限一次待機最多 0.36s）
+const BOSS_AI_CD_MUL: float = 0.9
+const BOSS_AI_CD_MIN: float = 1.3
+const BOSS_IDLE_HIT_CHIP: float = 0.10
+const BOSS_IDLE_CHIP_CAP: int = 2
 const TIGER_SCENE := preload("res://scenes/Tiger.tscn")
 
 var boss_phase: int = 1
@@ -26,6 +31,7 @@ var boss_summoned: Array = []
 var boss_retreat_t: float = 0.0
 var boss_fight_started: bool = false
 var boss_roar_done: bool = false
+var boss_idle_chips: int = 0
 var _boss_booted: bool = false
 
 func _ready() -> void:
@@ -218,7 +224,8 @@ func _start_boss_attack(plan: String, toward: float) -> void:
 		else:
 			boss_summon_cd = 12.0
 	var spec: Dictionary = _spec(target)
-	_ai_cd = float(spec.get("cooldown", 2.0))
+	_ai_cd = maxf(BOSS_AI_CD_MIN, float(spec.get("cooldown", 2.0)) * BOSS_AI_CD_MUL)
+	boss_idle_chips = 0
 	change_state(target)
 	# 撲擊類起手先給一點前衝；base 的 vx 欄位會在活躍窗口維持速度
 	if "vx" in spec:
@@ -300,6 +307,24 @@ func take_damage(dmg: int, from_dir: float, knock_up: float = 0.0) -> void:
 		velocity = Vector2(from_dir * 120.0, -60.0)
 		return
 	velocity.x = 0.0
+	# BossIdle 被打中：縮短待機，讓老虎更快離開空窗反擊（避免站著被連段）
+	if _state == BOSS_IDLE and boss_idle_chips < BOSS_IDLE_CHIP_CAP:
+		boss_idle_chips += 1
+		_ai_cd = maxf(0.0, _ai_cd - BOSS_IDLE_HIT_CHIP)
+
+## 玩家格擋成功也累積 Boss 削韌：格擋是「防禦換破防」，不是純挨打
+func _on_attack_blocked(poise: int, from_dir: float) -> void:
+	if _dying or _state == BOSS_PHASE:
+		return
+	boss_poise += poise
+	if boss_poise >= BOSS_POISE_MAX:
+		boss_poise = 0
+		change_state(BOSS_HURT)
+		velocity = Vector2(from_dir * 120.0, -60.0)
+		return
+	if _state == BOSS_IDLE and boss_idle_chips < BOSS_IDLE_CHIP_CAP:
+		boss_idle_chips += 1
+		_ai_cd = maxf(0.0, _ai_cd - BOSS_IDLE_HIT_CHIP)
 
 func _begin_death() -> void:
 	if _dying:

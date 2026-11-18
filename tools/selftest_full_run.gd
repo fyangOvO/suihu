@@ -256,7 +256,7 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 	var boss_threatening: bool = p2state == "BossPhase" or p2state in ALL_ATTACKS
 	var unblockable: bool = p2state in BOSS_UNBLOCKABLE
 	# 低血安全模式：不再貼身硬吃，只在 Boss 收招窗口遠距追打，避免偶發被削死
-	var safe_mode: bool = p1.current_hp <= 480
+	var safe_mode: bool = p1.current_hp <= 560
 	# 咆哮：300 半徑內沒得格擋，30 幀硬直會直接餵下一刀——聽到就往外撤、夠近就衝刺離場
 	if p2state == "BossRoar" and dist < 420.0:
 		if block_held:
@@ -324,17 +324,17 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 			_set_move(1 if p2.global_position.x > p1.global_position.x else -1)
 		else:
 			_set_move(0)
-		if dist <= 540.0 and p2._ai_cd > 0.8 and scene_frames % 24 == 0:
+		if dist <= 540.0 and p2._ai_cd > 0.6 and scene_frames % 24 == 0:
 			_tap("p1_dash")
 		return
 	var combo_cancel: bool = dist <= 170.0 and p1._state in ["Light1", "Light2"] and p1._frame >= 6
 	if combo_cancel:
 		_set_move(0)
 		_tap("p1_light")
-	elif dist <= 155.0 and p2._ai_cd > 0.8 and scene_frames % 24 == 0:
+	elif dist <= 155.0 and p2._ai_cd > 0.6 and scene_frames % 24 == 0:
 		_set_move(0)
 		_tap("p1_light")
-	elif p2._ai_cd <= 0.8:
+	elif p2._ai_cd <= 0.6:
 		if dist < 350.0:
 			_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
 		elif dist > 370.0:

@@ -121,6 +121,28 @@ func _initialize() -> void:
 	boss.take_damage(100, 1.0)
 	_check("poise 50 -> armor, stays idle", boss._state == "BossIdle" and boss.boss_poise == 50)
 
+	# ---- C2. 節奏輪：待機被打提前反擊、出手冷卻收緊、格擋計削韌 ----
+	boss.current_hp = 1000
+	boss._ai_cd = 2.0
+	boss.take_damage(40, 1.0)
+	_check("idle hit -> cd -0.10", is_equal_approx(boss._ai_cd, 1.90))
+	boss._ai_cd = 2.0
+	boss.boss_idle_chips = 2
+	boss.take_damage(40, 1.0)
+	_check("idle chip capped at 2", is_equal_approx(boss._ai_cd, 2.0))
+	boss.boss_poise = 0
+	boss.change_state("BossIdle")
+	boss._start_boss_attack("tail", 1.0)
+	_check("tail cd tightened 0.9x", boss._ai_cd >= 1.3 and boss._ai_cd <= 1.7)
+	boss.change_state("BossIdle")
+	boss.boss_poise = 0
+	boss._on_attack_blocked(77, 1.0)
+	_check("block adds poise 77", boss.boss_poise == 77 and boss._state == "BossIdle")
+	boss.boss_poise = 300
+	boss._on_attack_blocked(77, 1.0)
+	_check("block breaks poise -> BossHurt", boss._state == "BossHurt")
+	boss.change_state("BossIdle")
+
 	# ---- D. 腹部 ×2 僅倒地窗口 ----
 	boss.change_state("BossKnockdown")
 	await process_frame
