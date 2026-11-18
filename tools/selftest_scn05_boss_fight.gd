@@ -11,7 +11,7 @@ const TEST_SAVE := "user://selftest_scn05_boss_fight_checkpoint.json"
 const BOSS_ATTACKS: Array = ["BossPounce", "BossTail", "BossRearUp", "BossRoar", "BossSummon",
 	"BossIronTail", "BossDeathPounce", "BossPounceP3", "BossRearUpP3"]
 const UNBLOCKABLE_POUNCE: Array = ["BossPounce", "BossPounceP3", "BossDeathPounce"]
-const MAX_FRAMES: int = 4500
+const MAX_FRAMES: int = 5200
 
 var fails: Array = []
 var game: Node2D

@@ -30,9 +30,11 @@ func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--minutes="):
 			target_frames = int(arg.get_slice("=", 1)) * 60 * 60
-	cm = load(CHAPTER_MANAGER).new()
-	cm.name = "ChapterManager"
-	root.add_child(cm)
+	cm = root.get_node_or_null("ChapterManager")
+	if cm == null:
+		cm = load(CHAPTER_MANAGER).new()
+		cm.name = "ChapterManager"
+		root.add_child(cm)
 	await process_frame
 
 	print("SOAK_START target_frames=", target_frames, " minutes=", target_frames / 3600)

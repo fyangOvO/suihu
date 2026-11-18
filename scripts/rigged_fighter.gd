@@ -190,6 +190,8 @@ const MIST_FPS: float = 9.0
 ## 死亡狀態 / 掉落
 var _dying: bool = false
 var _death_done: bool = false
+## HID-05：最後一次打中自己的對手招式名（由攻擊方結算時寫入），供死亡台詞判斷死因。
+var last_hit_state: String = ""
 var _death_t: float = 0.0
 var _mist_node: AnimatedSprite2D = null
 var _rng := RandomNumberGenerator.new()
@@ -1124,6 +1126,9 @@ func _resolve_hit(dmg: int, unblockable: bool, low: bool, knock_up: float) -> bo
 			return true
 		AUDIO.play_sfx("sfx_hit_heavy" if final_dmg >= 100 else "sfx_hit_light", -3.0)
 		target.take_damage(final_dmg, face_direction, knock_up)
+		# HID-05：記下致命一擊來自哪個招式（Boss 絕命撲擊 = BossDeathPounce）
+		if target.get("last_hit_state") != null:
+			target.set("last_hit_state", _state)
 		_has_hit = true
 		wine_gauge = minf(100.0, wine_gauge + 3.0)
 		# OPT-01：雙方各凍結同等邏輯幀（特效照常），並把重量交給鏡頭層做震屏

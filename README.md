@@ -419,7 +419,13 @@
 - [x] **V0.3.44 OPT-07 soak 60 分鐘：三場循環＋死亡重開 0 崩潰**：
   - 新增 `tools/soak_60min.gd`（SceneTree 腳本，`-- --minutes=60` 可調）：SCN-02（B3）→ SCN-03（B5）→ SCN-05（B7）循環，每輪固定輸入作戰（穩定優先定期補血），每輪抽 SCN-03 走一次 `take_damage(9999)` 死亡流程；打不死則強制處決保證流程前進。
   - 每遊戲分鐘記錄 `mem_mb / nodes / orphan / loads / kills / deaths`，結束輸出 `SOAK_RESULT`；判定：跑滿 216000 幀、記憶體增長 ≤64MB、孤兒節點 ≤16、載入 ≥2。
-  - **實測**：`result=PASS minutes=60.2 frames=216847 loads=116 kills=87 deaths=29 grew_mb=0.9 nodes=15 orphan=0`；日誌 0 個 `SCRIPT ERROR`、進程 RC=0。記憶體全程 106.6→107.5MB 幾乎平坦。
+  - **實測**：修正 `ChapterManager` 取 autoload（首輪自建第二個實例導致 beat 不生效、場景多開在過場）後，以 `--fixed-fps 60` 重跑 60 遊戲分鐘：`result=PASS minutes=62.0 frames=223351 loads=120 kills=90 deaths=30 grew_mb=1.0 nodes=14 orphan=0 fails=[]`；日誌 0 個 `SCRIPT ERROR`、進程 RC=0，牆鐘約 5 分鐘。記憶體全程 106.4→107.4MB 幾乎平坦。
+  - 首輪 216847／116／87／29／+0.9MB 的數據作廢（該輪 beat 未生效，未真正作戰）。真機牆鐘 60 分鐘可去掉 `--fixed-fps` 直接重跑同一腳本。
+
+- [x] **V0.3.45 HID-01／HID-05 敘事演出**：
+  - HID-01 虎屍吸酒氣：Boss 擊殺演出（3s 字幕）結束後開 5s 互動窗，虎屍位置持續冒黑霧 `CorpseMist`（柔邊徑向貼圖）標位置；玩家進入 150px 半徑 0.35s 後 `wine_gauge=100`、banner「酒氣入喉，筋骨如火。」、`sfx_wine_full`、黑霧轉為朝玩家的一次性 `WineMist`，2.2s 後轉 B8；未靠近則 5s 超時同樣轉 B8。
+  - HID-05 死亡台詞：`rigged_fighter.last_hit_state` 記錄致命一擊招式；被 Boss「絕命撲擊」`BossDeathPounce` 打死時先播「你也是被放出來的」2.4s，再顯示死亡面板；其他死因立即顯示面板。
+  - 新增 `tools/selftest_hid.gd`（A–E 五案：吸酒、超時、絕命撲擊死、普通死、last_hit_state 預設）與 `tools/capture_hid.gd`（離屏出 `docs/preview/hid01-absorb.png`、`hid05-line.png`）。全量 34 套自測 PASS、主場景 240 幀 0 ERROR。
 
 ## 待實現
 
