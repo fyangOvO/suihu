@@ -37,6 +37,8 @@ blend_mode = 1
 collision_layer = 1
 collision_mask = 1
 script = ExtResource("2_ctrl")
+rim_color = Color(0.7, 0.85, 1, 1)
+rim_strength = 0.35
 
 ; 特效層 Fx：獨立於角色貼圖，純程序繪製（刀光雙線 / 酒氣輝光 / 醉打酒霧）
 ; z_index：輝光與酒霧 -1（貼在角色身後），刀光 +2（壓在角色身前）

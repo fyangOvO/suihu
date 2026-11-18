@@ -9,3 +9,6 @@ anim_dir = "res://assets/anim/tiger/"
 start_state = "TigerIdle"
 ai_profile = "tiger"
 drop_chance = 0.3
+rim_color = Color(0.95, 0.7, 0.3, 1)
+rim_strength = 0.75
+rim_width = 2.4

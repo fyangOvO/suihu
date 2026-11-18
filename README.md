@@ -408,6 +408,14 @@
   - **自測連帶**：`selftest_boss` 階段數學改 470/470（910／440）、`selftest_scn05_boss_fight` 上限 3000→4500、`check_boss_scene`／`check_boss_arena`／`selftest_flow` 數值改 1380；`selftest_full_run` 低血段改為衝刺脫離＋Boss 剩 360 血提前強攻，4021 幀 deaths=0。
   - **驗收**：全量 33 套自測 PASS；`check_boss_arena`／`check_boss_scene` 0 fails；主場景 240 幀 RC=0、0 ERROR。
 
+- [x] **V0.3.43 OPT-06 可讀性：三敵剪影分級＋前搖輪廓提示**：
+  - **輪廓光**：新增 `assets/shaders/fighter_look.gdshader`，把原 `white_flash` 併進來（一個材質同時管 rim 與架招白閃）。每個角色實例各自一份，不串場景。
+  - **配色分級**：伥鬼灰 `(0.78,0.84,0.90)` / 小虎土黃 `(0.95,0.70,0.30)` / Boss 白 `(0.94,0.98,1.00)`；玩家冷白 0.35，只做基本分離。敵人強度 0.75–0.9、寬 2.4–3.0。
+  - **前搖提示**：敵人攻擊 startup 內 `rim_energy` 由基礎值線性推到 +0.90，命中窗口回落——用輪廓亮度提示出手，不畫紅圈（§14.4）。
+  - **量測**（`tools/build_readability_sheet.py`，三張實際場景截圖）：中間調檔位 伥鬼 6／小虎 5／Boss 7（≥3）；暖色面積 0%／7.6%／7.9%（≤15%）；冷青 0.7%／0／0（≤5%）。
+  - **產物**：`docs/preview/readability-blind.png`（三敵並排、無標籤）供 3 秒盲測；`selftest_readability` 結構斷言（配色分級、材質獨立、前搖提亮與回落、三敵 startup、特效面積上限）。
+  - **驗收**：33 套自測全 PASS；主場景 240 幀 RC=0、0 ERROR。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）

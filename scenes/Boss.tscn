@@ -23,6 +23,9 @@ anim_dir = "res://assets/anim/boss/"
 start_state = "BossIdle"
 ai_profile = "boss"
 drop_chance = 0.0
+rim_color = Color(0.94, 0.98, 1, 1)
+rim_strength = 0.9
+rim_width = 3.0
 script = ExtResource("2_boss")
 
 ; Boss 素材畫布 768×768（基線 720），Sprite 原點要下移讓腳底落在 (0,0)

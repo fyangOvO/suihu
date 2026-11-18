@@ -9,7 +9,7 @@ extends CharacterBody2D
 const DATA := preload("res://data/action_frame_data.gd")
 const AUDIO := preload("res://scripts/audio/game_audio.gd")
 const SETTINGS := preload("res://scripts/ui/user_settings.gd")
-const FLASH_SHADER := preload("res://assets/shaders/white_flash.gdshader")
+const FLASH_SHADER := preload("res://assets/shaders/fighter_look.gdshader")
 
 ## OPT-01 打擊感：命中瞬間只凍結雙方邏輯幀，特效層（_fx_sync）照常推進。
 ## 幀數依 docs/09 §14.1：輕 4／重 8／覺醒 12。
@@ -45,6 +45,14 @@ const TECH_INVULN_FRAMES: int = 6      # 受身起身無敵 6 幀
 @export var walk_speed: float = 220.0
 @export var jump_velocity: float = -520.0
 @export var gravity: float = 1400.0
+
+# OPT-06 可讀性：輪廓光（docs/09 §14.4「三敵剪影分級」）
+# 伥鬼灰 / 小虎土黃 / Boss 白額 由各自場景設定；玩家留一點冷白，暗景裡也能看清站位。
+@export var rim_color: Color = Color(0.72, 0.82, 0.92, 1.0)
+@export var rim_strength: float = 0.0
+@export var rim_width: float = 1.8
+## 攻擊前搖時輪廓額外提亮的幅度（0＝不提示）
+const RIM_TELEGRAPH_GAIN: float = 0.9
 
 # 戰鬥資源
 var current_hp: int
@@ -93,6 +101,7 @@ var _atk_buf_heavy: int = 0
 var _tech_invuln: int = 0
 var _flash_left: int = 0
 var _flash_mat: ShaderMaterial = null
+var _rim_energy_now: float = -1.0
 
 # P2 AI 冷卻
 var _ai_cd: float = 0.8
@@ -219,6 +228,7 @@ func _spec(state_name: String) -> Dictionary:
 func _ready() -> void:
 	_rng.randomize()
 	_cache_nodes()
+	_ensure_look_material()
 	current_hp = max_hp
 	face_direction = 1.0 if is_player1 else -1.0
 	_apply_anim_dir.call_deferred()
@@ -287,6 +297,7 @@ func _physics_process(delta: float) -> void:
 		_apply_anim_dir()
 		_anim_dirs_ready = true
 	_tick_flash()
+	_update_rim()
 	# 命中停頓：只凍結本角色的邏輯（狀態機／物理／冷卻），刀光與酒氣照常同步。
 	# 輸入仍然讀取並留在 _*_pressed 上，停頓結束後自然成為一次幾幀的輸入緩衝。
 	if _hitstop > 0:
@@ -465,14 +476,44 @@ func attack_buffer_left(kind: String) -> int:
 func _trigger_parry() -> void:
 	if not SETTINGS.load_parry_fx():
 		return
-	if _flash_mat == null and _visual != null:
-		_flash_mat = ShaderMaterial.new()
-		_flash_mat.shader = FLASH_SHADER
-		_visual.material = _flash_mat
+	_ensure_look_material()
 	_flash_left = PARRY_FLASH_FRAMES
 	if _flash_mat != null:
 		_flash_mat.set_shader_parameter("flash", 1.0)
 	parry_success.emit()
+
+## 可讀性材質：輪廓光與白閃共用一份 ShaderMaterial（每個實例各自一份，避免場景間串參數）
+func _ensure_look_material() -> void:
+	if _visual == null:
+		_visual = get_node_or_null("Visual") as Sprite2D
+	if _visual == null:
+		return
+	if _flash_mat == null:
+		_flash_mat = ShaderMaterial.new()
+		_flash_mat.shader = FLASH_SHADER
+		_visual.material = _flash_mat
+		_flash_mat.set_shader_parameter("flash", 0.0)
+		_flash_mat.set_shader_parameter("rim_color", rim_color)
+		_flash_mat.set_shader_parameter("rim_width", rim_width)
+		_flash_mat.set_shader_parameter("rim_energy", rim_strength)
+		_rim_energy_now = rim_strength
+
+## OPT-06：攻擊前搖讓輪廓光漸亮，命中窗口回到基礎亮度；不靠紅圈提示。
+func _update_rim() -> void:
+	if _flash_mat == null or is_player1:
+		return
+	var startup: int = 0
+	var spec: Dictionary = _spec(_state)
+	if spec.has("logic"):
+		startup = int(spec["logic"].get("startup", 0))
+	var e: float = rim_strength
+	if startup > 0 and _frame < startup:
+		e += RIM_TELEGRAPH_GAIN * clampf(float(_frame + 1) / float(startup), 0.0, 1.0)
+	elif startup > 0 and _frame <= startup + 2:
+		e += RIM_TELEGRAPH_GAIN * 0.55
+	if absf(e - _rim_energy_now) > 0.01:
+		_rim_energy_now = e
+		_flash_mat.set_shader_parameter("rim_energy", e)
 
 ## 每幀（含命中停頓）推進白閃；結束歸零，材質留著重用
 func _tick_flash() -> void:
