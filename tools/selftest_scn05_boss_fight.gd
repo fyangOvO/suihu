@@ -40,6 +40,8 @@ var saw_special: bool = false
 var allow_first_hit: bool = true
 var taking_hit: bool = false
 var last_boss_state: String = ""
+var first_hit_frame: int = -1
+var kill_frame: int = -1
 
 func _check(name: String, ok: bool) -> void:
 	if not ok:
@@ -94,10 +96,15 @@ func _finish() -> void:
 	_check("Boss died from player attacks", game.p2._death_done)
 	_check("B7 marked clear", cm.is_clear("B7"))
 	_check("SCN-05 queues B8", game._stage_over and game._pending_next == "B8")
+	var ttk: float = -1.0
+	if kill_frame > 0 and first_hit_frame > 0:
+		ttk = snappedf(float(kill_frame - first_hit_frame) / 60.0, 1)
 	print("SCN05_BOSS_FIGHT_SELFTEST result=", "PASS" if fails.is_empty() else "FAIL",
 		" fails=", fails, " frames=", n, " p1_hp=", game.p1.current_hp,
 		" p1_min=", player_hp_min, " boss_hp=", game.p2.current_hp,
 		" boss_min=", boss_hp_min, " attacks=", boss_attack_count,
+		" first_hit=", first_hit_frame, " kill_frame=", kill_frame,
+		" ttk_sec=", ttk,
 		" phase=", game.p2.boss_phase)
 	quit(0 if fails.is_empty() else 1)
 
@@ -129,6 +136,10 @@ func _on_physics() -> void:
 		return
 
 	boss_hp_min = mini(boss_hp_min, p2.current_hp)
+	if p2.current_hp < boss_hp_start and first_hit_frame < 0:
+		first_hit_frame = n
+	if p2.current_hp <= 0 and kill_frame < 0:
+		kill_frame = n
 	player_hp_min = mini(player_hp_min, p1.current_hp)
 	if p1.current_hp < player_hp_start:
 		saw_player_hurt = true
