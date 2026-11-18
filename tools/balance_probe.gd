@@ -15,6 +15,8 @@ const NEUTRAL := ["Idle", "Walk", "Air", "Hurt", "Knockdown", "WakeUp", "Death",
 
 var scene_id: String = "SCN-02"
 var cautious: bool = false
+var novice: bool = false
+var novice_cd: int = 0
 var trace_tick: bool = false
 var game: Node2D
 var cm
@@ -66,6 +68,8 @@ func _initialize() -> void:
 			cautious = true
 		elif a == "--trace":
 			trace_tick = true
+		elif a == "--novice":
+			novice = true
 	var info: Array = SCENES[scene_id]
 	seed(20261118)
 	cm = root.get_node_or_null("ChapterManager")
@@ -184,12 +188,26 @@ func _on_physics() -> void:
 		_tap("p1_dash", 2)
 		dash_cd = 14
 		return
-	# 有傷害的起手且已在打得到的距離：站防（擋不住也吃折減）
-	if threat_window and dist <= 240.0:
+	# 有傷害的起手且已在打得到的距離：站防（守規玩家偶爾會漏擋）
+	if threat_window and dist <= 240.0 and (not novice or n % 7 != 0):
 		_set_move(0)
 		_set_block(true)
 		return
 	_set_block(false)
+	if novice:
+		# 新手節奏：約每 1.8 秒才組織一次進攻，出手時機不挑、距離不對就空揮
+		if novice_cd > 0:
+			novice_cd -= 1
+		if dist > 235.0:
+			_set_move(dir)
+		elif dist < 185.0:
+			_set_move(-dir)
+		else:
+			_set_move(0)
+		if novice_cd <= 0 and p1._state in ["Idle", "Walk"]:
+			_tap("p1_light", 2)
+			novice_cd = 110
+		return
 	if cautious:
 		# 保守打法：只在敵人收招後的空窗打一兩下，其餘時間拉到 230–260 等下一次起手
 		if dist > 250.0:
