@@ -374,6 +374,16 @@
   - **連帶調整**：`selftest_gameplay` 的指令技用例改走 `_atk_buf_*` 緩衝欄位（原本直接塞 `_heavy_pressed`，現在按鍵要經緩衝才會兌現）。
   - **驗收**：全量 30 套自測 PASS；`selftest_scn05_boss_fight` 2363 幀擊殺（p1_hp 545、Boss 三階段）；`selftest_full_run` 3949 幀 deaths=0 B9；主場景 240 幀 RC=0、0 ERROR、0 泄漏；兩套離屏截圖 RC=0、無 shader 編譯錯誤。
 
+- [x] **V0.3.39 相機：lookahead、邊界 clamp、Boss 拉遠、階段微推（M5 OPT-03）**：
+  - **取景前提**：世界與背景都只有 1920×1080。1.0 取景時相機水平可動半徑是 0，任何 lookahead 都會露背景邊；把背景放大會連帶拖歪 SCN-03 掛在 Background 下的樹幹／霧帶。故基準取景統一收到 **1.15**（可視寬 1670，左右各留 125px），換得 ±120 平移，背景與所有子節點原樣不動。
+  - **Lookahead**：`camera_fx` 新增 `_follow`（建相機時直接接 `p1`）。目標 =（玩家 x − 960）× 0.25＋朝向 20px，夾在 ±120；用 8/s 的 lerp 追平，不會硬切。
+  - **邊界 clamp**：每幀用「目前 zoom（含過掃）」算視野，把機位夾在世界內；視野比世界大時直接置中，Boss 拉遠時也不會出現黑邊。
+  - **Boss 拉遠 10%**：`stage_base` 新增 `camera_zoom_mul()`，SCN-05 回 `1.0/1.1`，實測 1.15→1.045。
+  - **階段微推 0.3s**：HUD 偵測到 Boss 由一階換二／三階時呼叫 `phase_push()`，0.3s 正弦推近 5% 再收回（開場第一次不算）。
+  - **水潭固定機位**：SCN-06 覆寫 `camera_lookahead_enabled()=false`，機位鎖 960，對稱倒影構圖不被推歪。
+  - **自測**：新增 `tools/selftest_camera.gd`（26 項）——中線歸零、朝向 20px 提前量、左右各夾 ±120、機位不越界、Boss 1.045 與較窄的平移量、階段微推峰值與收乾、水潭鎖死、關掉設置全歸位、三個舞台的覆寫值。新增 `tools/capture_camera_framing.gd` 離屏驗圖（主窗 1×1 移屏外）。
+  - **驗收**：全量 32 套自測 PASS（含新增 camera）；`selftest_scn05_boss_fight` 2363 幀、p1_hp 545；`selftest_full_run` 3779 幀 deaths=0 B9；離屏截圖 4 張 err=0，最左／最右機位 840／1054（120px 全用滿也未露邊）。
+
 
 
 ## 待實現

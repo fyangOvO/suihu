@@ -22,6 +22,10 @@ func opponent_scene_path() -> String:
 func opponent_display_name() -> String:
 	return "景陽岡猛虎"
 
+## OPT-03：Boss 戰比平常再拉遠 10%，留出虎撲的呼吸空間
+func camera_zoom_mul() -> float:
+	return 1.0 / 1.1
+
 func _on_stage_start() -> void:
 	if p2 != null:
 		p2.set_physics_process(false)

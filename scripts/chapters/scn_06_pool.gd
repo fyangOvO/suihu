@@ -35,6 +35,10 @@ func bgm_track() -> String:
 func background_color() -> Color:
 	return Color(0.035, 0.05, 0.075)
 
+## OPT-03：水潭是對稱倒影構圖，鏡頭鎖死中線，不吃預看
+func camera_lookahead_enabled() -> bool:
+	return false
+
 func _on_stage_start() -> void:
 	_build_water()
 	_build_pool_reflection()

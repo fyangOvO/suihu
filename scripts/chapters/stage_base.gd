@@ -16,6 +16,8 @@ const SLOW_MO := preload("res://scripts/slow_mo.gd")
 const GROUND_Y: float = 870.0
 const SPAWN_P1 := Vector2(600.0, 820.0)
 const SPAWN_P2 := Vector2(1320.0, 820.0)
+## 背景剛好 1920×1080；基準取景收到 1.15，左右各留 125px，才換得到 ±120 的平視預看
+const CAMERA_BASE_ZOOM: float = 1.15
 
 var p1: CharacterBody2D
 var p2: CharacterBody2D = null
@@ -231,13 +233,22 @@ func _on_hit_landed(frames: int, _dmg: int, _at: Vector2) -> void:
 func _on_parry_success() -> void:
 	SLOW_MO.trigger()
 
+## 子類覆寫：水潭這類固定機位回 false；Boss 戰把鏡頭拉遠 10% 回 (1.0/1.1)
+func camera_lookahead_enabled() -> bool:
+	return true
+
+func camera_zoom_mul() -> float:
+	return 1.0
+
 func _build_camera() -> void:
 	camera = Camera2D.new()
 	camera.name = "BattleCam"
 	camera.position = Vector2(960, 540)
+	camera.zoom = Vector2(CAMERA_BASE_ZOOM, CAMERA_BASE_ZOOM) * camera_zoom_mul()
 	camera.enabled = true
 	add_child(camera)
-	_cam_fx = CAMERA_FX.new(camera)
+	_cam_fx = CAMERA_FX.new(camera, p1)
+	_cam_fx.set_look_enabled(camera_lookahead_enabled())
 
 func _build_hud() -> void:
 	hud = CanvasLayer.new()
@@ -586,6 +597,9 @@ func _update_hud() -> void:
 			if phase_index != _hud_last_boss_phase:
 				_hud_last_boss_phase = phase_index
 				_boss_phase.text = ["一階段", "二階段", "三階段"][phase_index - 1]
+				# 換階段（不是開場第一次）給 0.3s 微推，提醒「虎變了」
+				if phase_index > 1 and _cam_fx != null:
+					_cam_fx.phase_push()
 				for i in range(_boss_phase_pips.size()):
 					var lit: bool = i < phase_index
 					_boss_phase_pips[i].color = Color(
