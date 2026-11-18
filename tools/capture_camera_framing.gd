@@ -5,7 +5,7 @@ extends SceneTree
 ## 用法：<console.exe> --path <game> --resolution 1x1 --position -32000,-32000 --script res://tools/capture_camera_framing.gd
 
 const DEST := "D:/水滸g/docs/preview/"
-const RES := Vector2i(1280, 720)
+const RES := Vector2i(1920, 1080)
 
 var vp: SubViewport
 var cm: Node
@@ -64,15 +64,17 @@ func _advance() -> void:
 		0:
 			_quiet()
 			stage.get("_cam_fx").force_enabled = true
+			if stage.get("p2") != null:
+				stage.get("p2").set_physics_process(false)
 			p1.global_position = Vector2(1800, 820)
 			step = 1
-			_hold(30)
+			_hold(120)
 		1:
 			_capture("camera-look-right.png")
 			print("FRAME right cam_x=", cam.position.x, " zoom=", cam.zoom.x)
 			p1.global_position = Vector2(120, 820)
 			step = 2
-			_hold(30)
+			_hold(120)
 		2:
 			_capture("camera-look-left.png")
 			print("FRAME left cam_x=", cam.position.x, " zoom=", cam.zoom.x)
