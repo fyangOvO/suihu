@@ -18,7 +18,7 @@ size = Vector2(150, 100)
 
 [node name="Boss" instance=ExtResource("1_base")]
 is_player1 = false
-max_hp = 1200
+max_hp = 1380
 anim_dir = "res://assets/anim/boss/"
 start_state = "BossIdle"
 ai_profile = "boss"

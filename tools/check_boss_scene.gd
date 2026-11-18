@@ -20,7 +20,7 @@ func _initialize() -> void:
 	root.add_child(boss)
 	await physics_frame
 	_check("is not player1", not boss.is_player1)
-	_check("max_hp 1200", boss.max_hp == 1200)
+	_check("max_hp 1380", boss.max_hp == 1380)
 	_check("anim_dir boss", boss.anim_dir == "res://assets/anim/boss/")
 	_check("start_state BossIdle", boss.start_state == "BossIdle")
 	_check("ai_profile boss", boss.ai_profile == "boss")

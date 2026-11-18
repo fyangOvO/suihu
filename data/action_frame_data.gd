@@ -419,7 +419,7 @@ const SPECS: Dictionary = {
 	},
 
 	# ---------- 景陽岡猛虎 Boss（docs/10-BOS-01 招式表凍結） ----------
-	# 幀名落在 assets/anim/boss/，由 Boss.tscn 的 anim_dir 指定；血量 1200 在場景上設定
+	# 幀名落在 assets/anim/boss/，由 Boss.tscn 的 anim_dir 指定；血量 1380 在場景上設定
 	"BossIdle": {
 		"loop": true,
 		"logic": {"startup": 0, "active": 0, "recovery": 0},

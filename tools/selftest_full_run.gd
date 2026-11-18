@@ -290,7 +290,7 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 			_tap("p1_dash")
 		return
 	# Boss 剩最後一點血就別再管小虎，先把 Boss 打死（打死 Boss 場景即結束）
-	if int(p2.current_hp) <= 90:
+	if int(p2.current_hp) <= 360:
 		_drive_melee(p1, p2, dist, p2state, p2frame)
 		return
 	# 階段二召出的小虎只做威脅判斷：牠在出招就格擋，牠沒動就繼續打 Boss（盡快收掉回合）
@@ -304,9 +304,11 @@ func _drive_boss(p1: CharacterBody2D, p2: CharacterBody2D, dist: float, p2state:
 		return
 	if boss_threatening:
 		if safe_mode:
-			# 血少時不格擋，寧可後撤吃不到
+			# 血少時不格擋，寧可後撤吃不到；貼太近就衝刺穿走（6 幀無敵）
 			_drop_block()
 			_set_move(-1 if p2.global_position.x > p1.global_position.x else 1)
+			if dist <= 330.0 and scene_frames % 30 == 0:
+				_tap("p1_dash")
 			return
 		_set_move(0)
 		if not block_held:

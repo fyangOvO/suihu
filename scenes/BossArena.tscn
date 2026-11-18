@@ -140,8 +140,8 @@ offset_left = 1360.0
 offset_top = 30.0
 offset_right = 1860.0
 offset_bottom = 50.0
-max_value = 1200.0
-value = 1200.0
+max_value = 1380.0
+value = 1380.0
 
 [node name="P1Name" type="Label" parent="HUD"]
 offset_left = 60.0

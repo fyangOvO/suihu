@@ -6,7 +6,7 @@ extends SceneTree
 const SCENES := {
 	"SCN-02": ["res://scenes/chapters/SCN_02_Trail.tscn", "B3", 180],
 	"SCN-03": ["res://scenes/chapters/SCN_03_Forest.tscn", "B5", 350],
-	"SCN-05": ["res://scenes/chapters/SCN_05_Ridge.tscn", "B7", 1200],
+	"SCN-05": ["res://scenes/chapters/SCN_05_Ridge.tscn", "B7", 1380],
 }
 const TEST_SAVE := "user://balance_probe_checkpoint.json"
 const MAX_FRAMES: int = 9000

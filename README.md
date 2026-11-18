@@ -401,6 +401,13 @@
   - **自測**：`selftest_boss` 新增 5 項（待機 -0.10s、上限 2 次、冷卻 0.9x、格擋 +77 削韌、格擋破防進 BossHurt）；`selftest_scn05_boss_fight` 2363→2549 幀、p1_hp 545→197；`selftest_full_run` 3982 幀 deaths=0（Boss 段延長，安全模式閾值 480→560、出手窗口 0.8→0.6s 以貼合新節奏）。
   - **驗收**：全量 33 套自測 PASS；主場景 240 幀 RC=0、0 ERROR。
 
+- [x] **V0.3.42 OPT-05 收尾：Boss HP +15%（1200 → 1380）**：
+  - **唯一一次加血**：`Boss.tscn` `max_hp 1380`，`BossArena.tscn` 的 HUD `max_value/value` 同步；階段門檻 66%/33% 依比例變成 911／456。
+  - **不變**：招式傷害、`_ai_cd 0.9x`、BossIdle 受擊 0.10s×2、格擋削韌 0.35 全部照 V0.3.41。
+  - **量測（改後）**：激進 13.4s（死亡）／保守 17.4s（擊殺，剩 280 血）／新手 10.3s（死亡）；`selftest_scn05_boss_fight` 的穩定高手打法 **4407 幀（73.5s）、剩 200 血**，正式落進 60–75s 目標帶。
+  - **自測連帶**：`selftest_boss` 階段數學改 470/470（910／440）、`selftest_scn05_boss_fight` 上限 3000→4500、`check_boss_scene`／`check_boss_arena`／`selftest_flow` 數值改 1380；`selftest_full_run` 低血段改為衝刺脫離＋Boss 剩 360 血提前強攻，4021 幀 deaths=0。
+  - **驗收**：全量 33 套自測 PASS；`check_boss_arena`／`check_boss_scene` 0 fails；主場景 240 幀 RC=0、0 ERROR。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）

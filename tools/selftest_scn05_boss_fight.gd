@@ -11,7 +11,7 @@ const TEST_SAVE := "user://selftest_scn05_boss_fight_checkpoint.json"
 const BOSS_ATTACKS: Array = ["BossPounce", "BossTail", "BossRearUp", "BossRoar", "BossSummon",
 	"BossIronTail", "BossDeathPounce", "BossPounceP3", "BossRearUpP3"]
 const UNBLOCKABLE_POUNCE: Array = ["BossPounce", "BossPounceP3", "BossDeathPounce"]
-const MAX_FRAMES: int = 3000
+const MAX_FRAMES: int = 4500
 
 var fails: Array = []
 var game: Node2D
@@ -23,8 +23,8 @@ var saw_player_hurt: bool = false
 var saw_phase2: bool = false
 var saw_phase3: bool = false
 var saw_player_dash: bool = false
-var boss_hp_start: int = 1200
-var boss_hp_min: int = 1200
+var boss_hp_start: int = 1380
+var boss_hp_min: int = 1380
 var player_hp_start: int = 800
 var player_hp_min: int = 800
 var attack_timer: int = 0
@@ -83,7 +83,7 @@ func _finish() -> void:
 	finished = true
 	for a in ["p1_light", "p1_jump", "p1_dash", "p1_block", "p1_left", "p1_right", "p1_special"]:
 		Input.action_release(a)
-	_check("Boss starts at 1200 hp", boss_hp_start == 1200)
+	_check("Boss starts at 1380 hp", boss_hp_start == 1380)
 	_check("player starts at 800 hp", player_hp_start == 800)
 	_check("Boss used attacks", saw_attack)
 	_check("Boss damaged player", saw_player_hurt)

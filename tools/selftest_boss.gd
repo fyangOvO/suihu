@@ -49,7 +49,7 @@ func _initialize() -> void:
 	await physics_frame
 	boss._physics_process(1.0 / 60.0)   # 先跑一次 _boss_boot，避免後續血量被 boot 重置
 	# ---- A. 數據 ----
-	_check("boss max_hp 1200 / current 1200", boss.max_hp == 1200 and boss.current_hp == 1200)
+	_check("boss max_hp 1380 / current 1380", boss.max_hp == 1380 and boss.current_hp == 1380)
 	_check("boss starts BossIdle", boss._state == "BossIdle")
 	# BOS-10 觀感：Visual 必須蓋過 110×240 受擊盒，且腳底落在原點附近。
 	var visual: Sprite2D = boss.get_node("Visual")
@@ -95,8 +95,8 @@ func _initialize() -> void:
 	# ---- B. 階段轉場 ----
 	boss._ai_cd = 999.0
 	boss.opponent = null
-	boss.take_damage(410, 1.0)
-	_check("410 -> phase window", boss.current_hp == 790 and boss._state == "BossPhase")
+	boss.take_damage(470, 1.0)
+	_check("470 -> phase window", boss.current_hp == 910 and boss._state == "BossPhase")
 	_check("phase transition 1.2s", is_equal_approx(boss.boss_transition_t, 1.2))
 	var hp_during: int = boss.current_hp
 	boss.take_damage(100, 1.0)
@@ -104,8 +104,8 @@ func _initialize() -> void:
 	for i in 80:
 		boss._physics_process(1.0 / 60.0)
 	_check("transition ends -> phase 2", boss.boss_phase == 2 and boss._state == "BossIdle")
-	boss.take_damage(400, 1.0)
-	_check("400 -> phase 3 window", boss.current_hp == 390 and boss._state == "BossPhase")
+	boss.take_damage(470, 1.0)
+	_check("470 -> phase 3 window", boss.current_hp == 440 and boss._state == "BossPhase")
 	for i in 80:
 		boss._physics_process(1.0 / 60.0)
 	_check("transition ends -> phase 3", boss.boss_phase == 3 and boss._state == "BossIdle")
