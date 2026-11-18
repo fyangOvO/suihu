@@ -416,6 +416,11 @@
   - **產物**：`docs/preview/readability-blind.png`（三敵並排、無標籤）供 3 秒盲測；`selftest_readability` 結構斷言（配色分級、材質獨立、前搖提亮與回落、三敵 startup、特效面積上限）。
   - **驗收**：33 套自測全 PASS；主場景 240 幀 RC=0、0 ERROR。
 
+- [x] **V0.3.44 OPT-07 soak 60 分鐘：三場循環＋死亡重開 0 崩潰**：
+  - 新增 `tools/soak_60min.gd`（SceneTree 腳本，`-- --minutes=60` 可調）：SCN-02（B3）→ SCN-03（B5）→ SCN-05（B7）循環，每輪固定輸入作戰（穩定優先定期補血），每輪抽 SCN-03 走一次 `take_damage(9999)` 死亡流程；打不死則強制處決保證流程前進。
+  - 每遊戲分鐘記錄 `mem_mb / nodes / orphan / loads / kills / deaths`，結束輸出 `SOAK_RESULT`；判定：跑滿 216000 幀、記憶體增長 ≤64MB、孤兒節點 ≤16、載入 ≥2。
+  - **實測**：`result=PASS minutes=60.2 frames=216847 loads=116 kills=87 deaths=29 grew_mb=0.9 nodes=15 orphan=0`；日誌 0 個 `SCRIPT ERROR`、進程 RC=0。記憶體全程 106.6→107.5MB 幾乎平坦。
+
 ## 待實現
 
 - [x] 酒氣滿自動拔刀（立繪切換：正常→覺醒版+金黃閃光）
